@@ -16,6 +16,7 @@ public sealed class TrayIconController
 {
     private readonly TrayIcon _icon;
     private readonly NativeMenuItem _toggle = new("Подключить");
+    private readonly NativeMenuItem _domainsItem = new("Домены (0)") { IsEnabled = false };
     private readonly VpnCoordinator _coordinator;
 
     public TrayIconController(VpnCoordinator coordinator, AppStateStore store, FavoritesStore favorites, Window window)
@@ -44,6 +45,8 @@ public sealed class TrayIconController
         menu.Add(_toggle);
         menu.Add(fastest);
         menu.Add(locations);
+        menu.Add(new NativeMenuItemSeparator());
+        menu.Add(_domainsItem);
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(show);
         menu.Add(exit);
@@ -121,6 +124,11 @@ public sealed class TrayIconController
         {
             _icon.ToolTipText = $"{glyph} Vantah — Отключено";
         }
+
+        // Счётчик доменов-исключений: неактивный пункт меню + строка в подсказке.
+        // Дописывается в самом конце, чтобы не накапливаться поверх базового текста.
+        _domainsItem.Header = $"Домены ({s.ExclusionsCount})";
+        _icon.ToolTipText += $"\nДомены: {s.ExclusionsCount}";
     }
 
     private static string Format(double bytes)
