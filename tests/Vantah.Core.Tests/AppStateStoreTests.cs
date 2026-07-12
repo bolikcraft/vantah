@@ -22,4 +22,13 @@ public class AppStateStoreTests
         store.Set(s => s with { Connection = ConnectionState.Connected, Location = "OSLO" });
         Assert.Equal("OSLO", store.Current.Location);
     }
+
+    [Fact]
+    public void ExclusionsCount_defaults_to_zero_and_is_settable()
+    {
+        var store = new Vantah.Core.State.AppStateStore();
+        Assert.Equal(0, store.Current.ExclusionsCount);
+        store.Set(s => s with { ExclusionsCount = 7 });
+        Assert.Equal(7, store.Current.ExclusionsCount);
+    }
 }

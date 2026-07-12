@@ -10,6 +10,7 @@ public sealed record AppSnapshot
     public string? Interface { get; init; }
     public TrafficSample? Traffic { get; init; }
     public string? Error { get; init; }
+    public int ExclusionsCount { get; init; }
 }
 
 public sealed class AppStateStore
