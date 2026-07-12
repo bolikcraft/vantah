@@ -5,7 +5,8 @@
              x:DataType="vm:DomainsViewModel">
   <DockPanel Margin="12">
 
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="16" Margin="0,0,0,8">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="16" Margin="0,0,0,8"
+                IsEnabled="{Binding !IsBusy}">
       <RadioButton Content="Общий (general)" GroupName="ExclMode" IsChecked="{Binding IsGeneral, Mode=TwoWay}"/>
       <RadioButton Content="Выборочный (selective)" GroupName="ExclMode" IsChecked="{Binding IsSelective, Mode=TwoWay}"/>
     </StackPanel>

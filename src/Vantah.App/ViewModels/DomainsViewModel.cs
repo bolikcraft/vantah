@@ -89,7 +89,16 @@ public partial class DomainsViewModel : ObservableObject
             await _exclusions.SetModeAsync(_mode, target, _all.ToList());
             await ReloadAsync();
         }
-        catch (Exception ex) { Error = ex.Message; }
+        catch (Exception ex)
+        {
+            // Переключение упало: CLI/_mode остались на прежнем режиме — вернуть радио к нему,
+            // иначе визуально «залипнет» на целевом, а повторный клик того же радио ничего не запустит.
+            Error = ex.Message;
+            _switchingMode = true;
+            IsGeneral = _mode == SiteExclusionMode.General;
+            IsSelective = _mode == SiteExclusionMode.Selective;
+            _switchingMode = false;
+        }
         finally { IsBusy = false; }
     }
 
@@ -133,12 +142,13 @@ public partial class DomainsViewModel : ObservableObject
         catch (Exception ex) { Error = ex.Message; }
     }
 
-    // Путь выбирает View через файловый диалог.
-    public async Task ExportAsync(string path)
+    // Путь выбирает View через файловый диалог. Экспорт синхронный (_store.Export),
+    // сигнатура Task оставлена ради единообразия с ImportAsync и вызывающего кода.
+    public Task ExportAsync(string path)
     {
         try { _store.Export(path, _all); }
         catch (Exception ex) { Error = ex.Message; }
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 
     public async Task ImportAsync(string path)
