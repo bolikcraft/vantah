@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantah.App.ViewModels"
+             x:Class="Vantah.App.Views.DomainsView"
+             x:DataType="vm:DomainsViewModel">
+  <DockPanel Margin="12">
+
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="16" Margin="0,0,0,8">
+      <RadioButton Content="Общий (general)" GroupName="ExclMode" IsChecked="{Binding IsGeneral, Mode=TwoWay}"/>
+      <RadioButton Content="Выборочный (selective)" GroupName="ExclMode" IsChecked="{Binding IsSelective, Mode=TwoWay}"/>
+    </StackPanel>
+
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+      <TextBox Grid.Column="0" PlaceholderText="Домен (напр. example.com)" Text="{Binding NewDomain}">
+        <TextBox.KeyBindings>
+          <KeyBinding Gesture="Enter" Command="{Binding AddCommand}"/>
+        </TextBox.KeyBindings>
+      </TextBox>
+      <Button Grid.Column="1" Content="Добавить" Command="{Binding AddCommand}" Margin="8,0,0,0"/>
+    </Grid>
+
+    <TextBox DockPanel.Dock="Top" PlaceholderText="Фильтр…" Text="{Binding Filter}" Margin="0,0,0,8"/>
+
+    <TextBlock DockPanel.Dock="Bottom" Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap"
+               IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="0,8,0,0"/>
+
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+      <Button Content="Импорт" Click="OnImportClick"/>
+      <Button Content="Экспорт" Click="OnExportClick"/>
+      <Button Content="Вставить из буфера" Click="OnPasteClick"/>
+      <Button Content="Очистить" Click="OnClearClick"/>
+    </StackPanel>
+
+    <ListBox ItemsSource="{Binding Items}">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:DomainItemViewModel">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Grid.Column="0" Text="{Binding Domain}" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Content="✕"
+                    Command="{Binding $parent[ListBox].((vm:DomainsViewModel)DataContext).RemoveCommand}"
+                    CommandParameter="{Binding}" Background="Transparent" BorderThickness="0"/>
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </DockPanel>
+</UserControl>

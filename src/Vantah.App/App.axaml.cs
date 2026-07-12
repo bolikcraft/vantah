@@ -9,6 +9,7 @@ using Vantah.App.Tray;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
 using Vantah.Core.Cli;
+using Vantah.Core.Exclusions;
 using Vantah.Core.Favorites;
 using Vantah.Core.State;
 using Vantah.Core.Traffic;
@@ -33,10 +34,13 @@ public partial class App : Application
             var traffic = new TrafficMonitor(new SysfsTrafficReader());
             var coordinator = new VpnCoordinator(vpn, traffic, store);
             var favorites = new FavoritesStore();
+            var exclusionsStore = new ExclusionsStore();
+            var exclusions = new ExclusionsService(runner, exclusionsStore);
 
             var mainVm = new MainWindowViewModel(
                 new StatusViewModel(coordinator, store),
-                new LocationsViewModel(vpn, coordinator, favorites, store));
+                new LocationsViewModel(vpn, coordinator, favorites, store),
+                new DomainsViewModel(exclusions, exclusionsStore, store));
 
             var window = new MainWindow { DataContext = mainVm };
             desktop.MainWindow = window;
