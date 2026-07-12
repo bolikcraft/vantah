@@ -1,0 +1,2 @@
+VPN is disconnected
+You can connect to a location by running `adguardvpn-cli connect -l 'city, country or ISO code'`

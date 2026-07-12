@@ -1,0 +1,2 @@
+Connected to [1mAMSTERDAM[0m in [1mTUN[0m mode, running on [1mtun0[0m
+You can disconnect by running `adguardvpn-cli disconnect`

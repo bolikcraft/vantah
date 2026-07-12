@@ -1,0 +1,4 @@
+Logged in as [1muser@example.com[0m
+You are using the [1mPREMIUM[0m version
+Up to [1m10[0m devices simultaneously
+Your subscription will be renewed on 2028-07-08
