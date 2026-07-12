@@ -1,9 +1,11 @@
 using System;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Vantah.App.Services;
+using Vantah.App.Tray;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
 using Vantah.Core.Cli;
@@ -36,7 +38,17 @@ public partial class App : Application
                 new StatusViewModel(coordinator, store),
                 new LocationsViewModel(vpn, coordinator, favorites, store));
 
-            desktop.MainWindow = new MainWindow { DataContext = mainVm };
+            var window = new MainWindow { DataContext = mainVm };
+            desktop.MainWindow = window;
+
+            // Системный трей + сворачивание окна вместо выхода.
+            _ = new TrayIconController(coordinator, store, window);
+            window.Closing += (_, e) =>
+            {
+                e.Cancel = true;
+                window.Hide();
+            };
+            desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             // Таймер-опрос статуса/трафика.
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
