@@ -9,6 +9,9 @@
         x:DataType="vm:MainWindowViewModel"
         Title="Vantah" Width="520" Height="640">
 
-  <v:StatusView DataContext="{Binding Status}"/>
+  <TabControl>
+    <TabItem Header="Статус"><v:StatusView DataContext="{Binding Status}"/></TabItem>
+    <!-- Вкладка «Локации» подключается в Task 15 -->
+  </TabControl>
 
 </Window>
