@@ -1,8 +1,15 @@
+using System;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
+using Vantah.App.Services;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
+using Vantah.Core.Cli;
+using Vantah.Core.State;
+using Vantah.Core.Traffic;
+using Vantah.Core.Vpn;
 
 namespace Vantah.App;
 
@@ -17,10 +24,22 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = new MainViewModel(),
-            };
+            var store = new AppStateStore();
+            var runner = new CliRunner();
+            var vpn = new VpnService(runner);
+            var traffic = new TrafficMonitor(new SysfsTrafficReader());
+            var coordinator = new VpnCoordinator(vpn, traffic, store);
+
+            var mainVm = new MainWindowViewModel(
+                new StatusViewModel(coordinator, store));
+
+            desktop.MainWindow = new MainWindow { DataContext = mainVm };
+
+            // Таймер-опрос статуса/трафика.
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
+            timer.Tick += async (_, _) => await coordinator.PollOnceAsync();
+            timer.Start();
+            _ = coordinator.PollOnceAsync(); // первый опрос сразу
         }
 
         base.OnFrameworkInitializationCompleted();

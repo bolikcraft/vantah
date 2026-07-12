@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantah.App.ViewModels"
+             x:DataType="vm:StatusViewModel"
+             x:Class="Vantah.App.Views.StatusView">
+  <StackPanel Margin="24" Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+    <TextBlock Text="{Binding ConnectionText}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+    <TextBlock Text="{Binding Location}" FontSize="16" HorizontalAlignment="Center"/>
+    <TextBlock Text="{Binding Mode}" Opacity="0.7" HorizontalAlignment="Center"/>
+    <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
+      <TextBlock Text="{Binding RxText}"/>
+      <TextBlock Text="{Binding TxText}"/>
+    </StackPanel>
+    <Button Content="{Binding ConnectionText}" Command="{Binding ToggleCommand}"
+            IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Center" Width="180"/>
+    <Button Content="⚡ Самая быстрая" Command="{Binding FastestCommand}"
+            IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Center" Width="180"/>
+    <TextBlock Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap" MaxWidth="380"
+               IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+  </StackPanel>
+</UserControl>

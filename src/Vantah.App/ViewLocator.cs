@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using Vantah.App.ViewModels;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Vantah.App;
 
@@ -32,6 +32,6 @@ public class ViewLocator : IDataTemplate
 
     public bool Match(object? data)
     {
-        return data is ViewModelBase;
+        return data is ObservableObject;
     }
 }
