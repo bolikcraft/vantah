@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Vantah
+Comment=GUI for AdGuard VPN CLI (Linux)
+Exec=vantah
+Icon=vantah
+Terminal=false
+Categories=Network;

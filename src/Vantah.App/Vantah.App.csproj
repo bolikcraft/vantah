@@ -6,6 +6,19 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
+  <!--
+    Self-contained single-file publish (Linux). Активируется только когда задан
+    RuntimeIdentifier, поэтому обычные `dotnet build` / `dotnet run` остаются
+    framework-dependent и быстрыми. Публикация одной командой:
+      dotnet publish src/Vantah.App -c Release -r linux-x64
+    Тримминг НЕ включаем: Avalonia + XAML на рефлексии не тримятся безопасно.
+  -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
