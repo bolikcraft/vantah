@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantah.App.ViewModels"
+             x:DataType="vm:LocationsViewModel"
+             x:Class="Vantah.App.Views.LocationsView">
+  <DockPanel Margin="12">
+    <TextBox DockPanel.Dock="Top" PlaceholderText="Поиск локации…" Text="{Binding Search}" Margin="0,0,0,8"/>
+    <ListBox ItemsSource="{Binding Items}">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:LocationItemViewModel">
+          <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+            <Button Grid.Column="0" Content="{Binding Star}"
+                    Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ToggleFavoriteCommand}"
+                    CommandParameter="{Binding}" Background="Transparent" BorderThickness="0"
+                    VerticalAlignment="Center" Padding="6,2"/>
+            <TextBlock Grid.Column="1" VerticalAlignment="Center">
+              <Run Text="{Binding IsoCode}"/> <Run Text="{Binding City}"/>
+              <Run Text=" · " Foreground="Gray"/><Run Text="{Binding Country}" Foreground="Gray"/>
+            </TextBlock>
+            <TextBlock Grid.Column="2" Text="{Binding PingMs, StringFormat='{}{0} ms'}" Opacity="0.7" Margin="8,0" VerticalAlignment="Center"/>
+            <Button Grid.Column="3" Content="Подключить"
+                    Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ConnectCommand}"
+                    CommandParameter="{Binding}" VerticalAlignment="Center"/>
+          </Grid>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </DockPanel>
+</UserControl>

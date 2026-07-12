@@ -11,7 +11,7 @@
 
   <TabControl>
     <TabItem Header="Статус"><v:StatusView DataContext="{Binding Status}"/></TabItem>
-    <!-- Вкладка «Локации» подключается в Task 15 -->
+    <TabItem Header="Локации"><v:LocationsView DataContext="{Binding Locations}"/></TabItem>
   </TabControl>
 
 </Window>
