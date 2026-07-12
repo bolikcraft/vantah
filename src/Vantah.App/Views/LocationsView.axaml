@@ -3,25 +3,39 @@
              xmlns:vm="clr-namespace:Vantah.App.ViewModels"
              x:DataType="vm:LocationsViewModel"
              x:Class="Vantah.App.Views.LocationsView">
+  <UserControl.Styles>
+    <!-- Подсветка активной локации: полупрозрачный акцент, читаемый в обеих темах. -->
+    <Style Selector="Border.connected">
+      <Setter Property="Background" Value="#3300C853"/>
+      <Setter Property="BorderBrush" Value="#8000C853"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+  </UserControl.Styles>
   <DockPanel Margin="12">
     <TextBox DockPanel.Dock="Top" PlaceholderText="Поиск локации…" Text="{Binding Search}" Margin="0,0,0,8"/>
     <ListBox ItemsSource="{Binding Items}">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:LocationItemViewModel">
-          <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-            <Button Grid.Column="0" Content="{Binding Star}"
-                    Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ToggleFavoriteCommand}"
-                    CommandParameter="{Binding}" Background="Transparent" BorderThickness="0"
-                    VerticalAlignment="Center" Padding="6,2"/>
-            <TextBlock Grid.Column="1" VerticalAlignment="Center">
-              <Run Text="{Binding IsoCode}"/> <Run Text="{Binding City}"/>
-              <Run Text=" · " Foreground="Gray"/><Run Text="{Binding Country}" Foreground="Gray"/>
-            </TextBlock>
-            <TextBlock Grid.Column="2" Text="{Binding PingMs, StringFormat='{}{0} ms'}" Opacity="0.7" Margin="8,0" VerticalAlignment="Center"/>
-            <Button Grid.Column="3" Content="Подключить"
-                    Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ConnectCommand}"
-                    CommandParameter="{Binding}" VerticalAlignment="Center"/>
-          </Grid>
+          <Border Classes.connected="{Binding IsConnected}" CornerRadius="4" Padding="4,2">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
+              <Button Grid.Column="0" Content="{Binding Star}"
+                      Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ToggleFavoriteCommand}"
+                      CommandParameter="{Binding}" Background="Transparent" BorderThickness="0"
+                      VerticalAlignment="Center" Padding="6,2"/>
+              <Image Grid.Column="1" Source="{Binding Flag}" Width="24" Height="18"
+                     Margin="2,0,8,0" VerticalAlignment="Center"/>
+              <TextBlock Grid.Column="2" VerticalAlignment="Center">
+                <Run Text="{Binding IsoCode}"/> <Run Text="{Binding City}"/>
+                <Run Text=" · " Foreground="Gray"/><Run Text="{Binding Country}" Foreground="Gray"/>
+              </TextBlock>
+              <TextBlock Grid.Column="3" Text="✓ Подключено" Foreground="#00C853" FontWeight="SemiBold"
+                         Margin="8,0" VerticalAlignment="Center" IsVisible="{Binding IsConnected}"/>
+              <TextBlock Grid.Column="4" Text="{Binding PingMs, StringFormat='{}{0} ms'}" Opacity="0.7" Margin="8,0" VerticalAlignment="Center"/>
+              <Button Grid.Column="5" Content="Подключить"
+                      Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ConnectCommand}"
+                      CommandParameter="{Binding}" VerticalAlignment="Center"/>
+            </Grid>
+          </Border>
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>

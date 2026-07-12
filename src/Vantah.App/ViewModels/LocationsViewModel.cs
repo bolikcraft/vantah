@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Services;
 using Vantah.Core.Favorites;
+using Vantah.Core.Models;
 using Vantah.Core.State;
 using Vantah.Core.Vpn;
 
@@ -26,6 +28,7 @@ public partial class LocationsViewModel : ObservableObject
     public LocationsViewModel(IVpnService vpn, VpnCoordinator coordinator, FavoritesStore favorites, AppStateStore store)
     {
         _vpn = vpn; _coordinator = coordinator; _favorites = favorites; _store = store;
+        _store.Changed += (_, s) => Dispatcher.UIThread.Post(() => ApplyConnected(s));
         _ = LoadAsync();
     }
 
@@ -41,6 +44,7 @@ public partial class LocationsViewModel : ObservableObject
             foreach (var l in locs)
                 _all.Add(new LocationItemViewModel(l) { IsFavorite = favs.Contains(l.Key) });
             ApplyFilter();
+            ApplyConnected(_store.Current);
         }
         catch (Exception ex)
         {
@@ -64,6 +68,14 @@ public partial class LocationsViewModel : ObservableObject
         q = q.OrderByDescending(i => i.IsFavorite).ThenBy(i => i.PingMs);
         Items.Clear();
         foreach (var i in q) Items.Add(i);
+    }
+
+    private void ApplyConnected(AppSnapshot s)
+    {
+        var connectedCity = s.Connection == ConnectionState.Connected ? s.Location : null;
+        foreach (var item in _all)
+            item.IsConnected = connectedCity is not null &&
+                string.Equals(item.City, connectedCity, StringComparison.OrdinalIgnoreCase);
     }
 
     [RelayCommand]
