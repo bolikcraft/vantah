@@ -18,8 +18,13 @@ public sealed class ExclusionsStore
 
     public IReadOnlyList<string> Load(SiteExclusionMode mode)
     {
-        var path = FilePath(mode);
-        return File.Exists(path) ? Import(path) : Array.Empty<string>();
+        // Устойчивость: заблокированный/битый per-mode файл не должен ронять путь перезагрузки.
+        try
+        {
+            var path = FilePath(mode);
+            return File.Exists(path) ? Import(path) : Array.Empty<string>();
+        }
+        catch { return Array.Empty<string>(); }
     }
 
     public void Save(SiteExclusionMode mode, IEnumerable<string> domains)

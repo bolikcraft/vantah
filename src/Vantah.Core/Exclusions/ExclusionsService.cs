@@ -37,7 +37,9 @@ public sealed class ExclusionsService(ICliRunner cli, ExclusionsStore store) : I
         var r = await cli.RunAsync(["site-exclusions", "mode", to.ToCliArg()], QuickTimeout, ct);
         if (!r.Ok) throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, $"не удалось переключить режим на {to.ToCliArg()}"));
 
-        // 3) переприменить домены целевого режима из его файла
+        // 3) переприменить домены целевого режима из его файла.
+        // NB: цикл НЕ атомарен — если add упадёт на середине, CLI останется в целевом
+        // режиме с частичным списком; восстановимо, т.к. все домены сохранены в файле.
         foreach (var domain in store.Load(to))
             await AddAsync(domain, ct);
     }
