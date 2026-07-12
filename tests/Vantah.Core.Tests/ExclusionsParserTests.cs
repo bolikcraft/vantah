@@ -1,0 +1,53 @@
+using Vantah.Core.Exclusions;
+using Vantah.Core.Models;
+using Xunit;
+
+// Реальная фикстура (E1-0): заголовок `Exclusions for \x1b[1mGENERAL\x1b[0m mode:`
+// (режим обёрнут ANSI-жирным), далее домены по одному в строке.
+public class ExclusionsParserTests
+{
+    [Fact]
+    public void Parses_general_mode_and_domains_stripping_ansi()
+    {
+        var raw =
+            "Exclusions for \x1b[1mGENERAL\x1b[0m mode:\n" +
+            "example.com\n" +
+            "*.foo.net\n" +
+            "\n";
+        var snap = ExclusionsParser.Parse(raw);
+        Assert.Equal(SiteExclusionMode.General, snap.Mode);
+        Assert.Equal(new[] { "example.com", "*.foo.net" }, snap.Domains);
+    }
+
+    [Fact]
+    public void Parses_selective_mode_header()
+    {
+        var raw = "Exclusions for SELECTIVE mode:\nbank.example\n";
+        var snap = ExclusionsParser.Parse(raw);
+        Assert.Equal(SiteExclusionMode.Selective, snap.Mode);
+        Assert.Single(snap.Domains);
+        Assert.Equal("bank.example", snap.Domains[0]);
+    }
+
+    [Fact]
+    public void Empty_list_yields_mode_and_no_domains()
+    {
+        var snap = ExclusionsParser.Parse("Exclusions for GENERAL mode:\n");
+        Assert.Empty(snap.Domains);
+    }
+
+    [Fact]
+    public void Domains_are_normalized_and_deduped()
+    {
+        var raw = "Exclusions for GENERAL mode:\nExample.com\nexample.COM\n";
+        Assert.Single(ExclusionsParser.Parse(raw).Domains); // dedupe без регистра
+    }
+
+    [Fact]
+    public void Real_fixture_is_recognized()
+    {
+        var raw = File.ReadAllText("fixtures/site-exclusions-general.txt");
+        var snap = ExclusionsParser.Parse(raw);
+        Assert.Contains(snap.Mode, new[] { SiteExclusionMode.General, SiteExclusionMode.Selective });
+    }
+}
