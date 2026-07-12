@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Vantah.App/Vantah.App.csproj" />
+    <Project Path="src/Vantah.Core/Vantah.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Vantah.Core.Tests/Vantah.Core.Tests.csproj" />
+  </Folder>
+</Solution>

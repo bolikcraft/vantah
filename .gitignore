@@ -1,3 +1,16 @@
 
 # brainstorming visual companion artifacts
 .superpowers/
+
+# .NET build artifacts
+bin/
+obj/
+
+# Rider / Visual Studio
+.vs/
+.idea/
+*.user
+
+# NuGet
+*.nupkg
+packages/
