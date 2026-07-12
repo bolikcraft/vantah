@@ -42,7 +42,7 @@ public partial class App : Application
             desktop.MainWindow = window;
 
             // Системный трей + сворачивание окна вместо выхода.
-            _ = new TrayIconController(coordinator, store, window);
+            _ = new TrayIconController(coordinator, store, favorites, window);
             window.Closing += (_, e) =>
             {
                 e.Cancel = true;

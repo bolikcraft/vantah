@@ -6,6 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Vantah.App.Services;
+using Vantah.Core.Favorites;
 using Vantah.Core.Models;
 using Vantah.Core.State;
 
@@ -17,7 +18,7 @@ public sealed class TrayIconController
     private readonly NativeMenuItem _toggle = new("Подключить");
     private readonly VpnCoordinator _coordinator;
 
-    public TrayIconController(VpnCoordinator coordinator, AppStateStore store, Window window)
+    public TrayIconController(VpnCoordinator coordinator, AppStateStore store, FavoritesStore favorites, Window window)
     {
         _coordinator = coordinator;
         _icon = new TrayIcon
@@ -30,6 +31,8 @@ public sealed class TrayIconController
         fastest.Click += async (_, _) => await _coordinator.ConnectAsync(null, true);
         _toggle.Click += async (_, _) => await OnToggle(store);
 
+        var locations = new NativeMenuItem("Локация") { Menu = BuildFavoritesMenu(favorites) };
+
         var show = new NativeMenuItem("Показать окно");
         show.Click += (_, _) => { window.Show(); window.Activate(); };
 
@@ -40,6 +43,7 @@ public sealed class TrayIconController
         var menu = new NativeMenu();
         menu.Add(_toggle);
         menu.Add(fastest);
+        menu.Add(locations);
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(show);
         menu.Add(exit);
@@ -52,6 +56,30 @@ public sealed class TrayIconController
 
         store.Changed += (_, s) => Dispatcher.UIThread.Post(() => Apply(s));
         Apply(store.Current);
+    }
+
+    // Подменю строится один раз при старте из сохранённого избранного.
+    // Новые отмеченные звёздочкой локации появляются после перезапуска — приемлемо для MVP.
+    private NativeMenu BuildFavoritesMenu(FavoritesStore favorites)
+    {
+        var submenu = new NativeMenu();
+        var keys = favorites.Load();
+        if (keys.Count == 0)
+        {
+            submenu.Add(new NativeMenuItem("Нет избранного") { IsEnabled = false });
+            return submenu;
+        }
+
+        foreach (var key in keys)
+        {
+            // Key = "ISO|City" — берём город после разделителя.
+            var sep = key.IndexOf('|');
+            var city = sep >= 0 ? key[(sep + 1)..] : key;
+            var item = new NativeMenuItem(city);
+            item.Click += async (_, _) => await _coordinator.ConnectAsync(city, fastest: false);
+            submenu.Add(item);
+        }
+        return submenu;
     }
 
     private static WindowIcon? LoadIcon()
@@ -79,8 +107,27 @@ public sealed class TrayIconController
     {
         var connected = s.Connection == ConnectionState.Connected;
         _toggle.Header = connected ? "Отключить" : "Подключить";
-        _icon.ToolTipText = connected
-            ? $"Vantah — Подключено{(s.Location is { } l ? $": {l}" : "")}"
-            : "Vantah — Отключено";
+
+        var glyph = connected ? "🟢" : "⚪";
+        if (connected)
+        {
+            var loc = s.Location is { } l ? $": {l}" : "";
+            var tip = $"{glyph} Vantah — Подключено{loc}";
+            if (s.Traffic is { } t)
+                tip += $"\n↓ {Format(t.RxBytesPerSec)}/s ↑ {Format(t.TxBytesPerSec)}/s";
+            _icon.ToolTipText = tip;
+        }
+        else
+        {
+            _icon.ToolTipText = $"{glyph} Vantah — Отключено";
+        }
+    }
+
+    private static string Format(double bytes)
+    {
+        string[] u = { "B", "KB", "MB", "GB" };
+        double v = bytes; int i = 0;
+        while (v >= 1024 && i < u.Length - 1) { v /= 1024; i++; }
+        return $"{v:0.0} {u[i]}";
     }
 }

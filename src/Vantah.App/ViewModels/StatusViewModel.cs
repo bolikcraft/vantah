@@ -17,6 +17,8 @@ public partial class StatusViewModel : ObservableObject
     [ObservableProperty] private string? _mode;
     [ObservableProperty] private string _rxText = "↓ 0.0 B/s";
     [ObservableProperty] private string _txText = "↑ 0.0 B/s";
+    [ObservableProperty] private string _rxTotalText = "↓ 0.0 B";
+    [ObservableProperty] private string _txTotalText = "↑ 0.0 B";
     [ObservableProperty] private string? _error;
     [ObservableProperty] private bool _isConnected;
     [ObservableProperty] private bool _isBusy;
@@ -47,11 +49,15 @@ public partial class StatusViewModel : ObservableObject
         {
             RxText = "↓ " + Format(t.RxBytesPerSec) + "/s";
             TxText = "↑ " + Format(t.TxBytesPerSec) + "/s";
+            RxTotalText = "↓ " + Format(t.RxBytes);
+            TxTotalText = "↑ " + Format(t.TxBytes);
         }
         else
         {
             RxText = "↓ 0.0 B/s";
             TxText = "↑ 0.0 B/s";
+            RxTotalText = "↓ 0.0 B";
+            TxTotalText = "↑ 0.0 B";
         }
     }
 
