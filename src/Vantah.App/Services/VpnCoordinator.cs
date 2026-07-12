@@ -14,9 +14,14 @@ public sealed class VpnCoordinator(
     AppStateStore store)
 {
     private DateTime _lastPollUtc = DateTime.UtcNow;
+    private volatile bool _operationInFlight;
 
     public async Task PollOnceAsync(CancellationToken ct = default)
     {
+        // Во время connect/disconnect (CLI может работать долго) опрос
+        // не должен перетереть состояние обратно в Disconnected.
+        if (_operationInFlight) return;
+
         try
         {
             var status = await vpn.GetStatusAsync(ct);
@@ -48,6 +53,7 @@ public sealed class VpnCoordinator(
 
     public async Task ConnectAsync(string? location, bool fastest, CancellationToken ct = default)
     {
+        _operationInFlight = true;
         store.Set(s => s with { Connection = ConnectionState.Connecting, Error = null });
         try
         {
@@ -62,10 +68,15 @@ public sealed class VpnCoordinator(
         {
             store.Set(s => s with { Connection = ConnectionState.Error, Error = ex.Message });
         }
+        finally
+        {
+            _operationInFlight = false;
+        }
     }
 
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
+        _operationInFlight = true;
         store.Set(s => s with { Connection = ConnectionState.Disconnecting, Error = null });
         try
         {
@@ -76,6 +87,10 @@ public sealed class VpnCoordinator(
         catch (Exception ex)
         {
             store.Set(s => s with { Connection = ConnectionState.Error, Error = ex.Message });
+        }
+        finally
+        {
+            _operationInFlight = false;
         }
     }
 }

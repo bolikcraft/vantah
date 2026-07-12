@@ -17,6 +17,7 @@ public partial class LocationsViewModel : ObservableObject
     private readonly IVpnService _vpn;
     private readonly VpnCoordinator _coordinator;
     private readonly FavoritesStore _favorites;
+    private readonly AppStateStore _store;
     private readonly List<LocationItemViewModel> _all = new();
 
     [ObservableProperty] private string _search = "";
@@ -24,7 +25,7 @@ public partial class LocationsViewModel : ObservableObject
 
     public LocationsViewModel(IVpnService vpn, VpnCoordinator coordinator, FavoritesStore favorites, AppStateStore store)
     {
-        _vpn = vpn; _coordinator = coordinator; _favorites = favorites;
+        _vpn = vpn; _coordinator = coordinator; _favorites = favorites; _store = store;
         _ = LoadAsync();
     }
 
@@ -32,12 +33,21 @@ public partial class LocationsViewModel : ObservableObject
 
     private async Task LoadAsync()
     {
-        var favs = _favorites.Load();
-        var locs = await _vpn.GetLocationsAsync();
-        _all.Clear();
-        foreach (var l in locs)
-            _all.Add(new LocationItemViewModel(l) { IsFavorite = favs.Contains(l.Key) });
-        ApplyFilter();
+        try
+        {
+            var favs = _favorites.Load();
+            var locs = await _vpn.GetLocationsAsync();
+            _all.Clear();
+            foreach (var l in locs)
+                _all.Add(new LocationItemViewModel(l) { IsFavorite = favs.Contains(l.Key) });
+            ApplyFilter();
+        }
+        catch (Exception ex)
+        {
+            // Ошибка загрузки локаций (нет CLI / не залогинен / таймаут) —
+            // показываем в баннере на вкладке «Статус».
+            _store.Set(s => s with { Error = ex.Message });
+        }
     }
 
     private void ApplyFilter()
