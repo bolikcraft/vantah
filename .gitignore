@@ -14,3 +14,6 @@ obj/
 # NuGet
 *.nupkg
 packages/
+
+# локальная документация — не коммитим
+docs/
