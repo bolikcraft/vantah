@@ -34,6 +34,21 @@ public class TrafficMonitorTests
     }
 
     [Fact]
+    public void Switching_interface_resets_baseline()
+    {
+        var reader = new FakeReader { Next = (1000, 500) };
+        var mon = new TrafficMonitor(reader);
+        mon.Poll("tun0", 1.0);
+        reader.Next = (3000, 1500);
+        mon.Poll("tun0", 1.0);
+        // Переключение на другой интерфейс — трактуется как первый сэмпл, скорость 0.
+        reader.Next = (10, 10);
+        var s = mon.Poll("tun1", 1.0)!.Value;
+        Assert.Equal(0, s.RxBytesPerSec);
+        Assert.Equal(0, s.TxBytesPerSec);
+    }
+
+    [Fact]
     public void Missing_interface_returns_null_and_resets()
     {
         var reader = new FakeReader { Next = null };

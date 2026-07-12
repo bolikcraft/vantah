@@ -35,6 +35,9 @@ public sealed class CliRunner(string executable = "adguardvpn-cli") : ICliRunner
         catch (OperationCanceledException)
         {
             try { proc.Kill(entireProcessTree: true); } catch { /* уже мёртв */ }
+            // Если отмену запросил вызывающий — показываем настоящую OperationCanceledException,
+            // а не маскируем её таймаутом (linked cts срабатывает и на ct, и на timeout).
+            ct.ThrowIfCancellationRequested();
             throw new TimeoutException($"adguardvpn-cli {string.Join(' ', args)} превысил таймаут");
         }
 

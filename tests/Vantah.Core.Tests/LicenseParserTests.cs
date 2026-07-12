@@ -17,4 +17,15 @@ public class LicenseParserTests
         Assert.Equal(10, lic.MaxDevices);
         Assert.Equal("2028-07-08", lic.RenewalDate);
     }
+
+    [Fact]
+    public void Real_fixture_parses_all_fields()
+    {
+        var raw = File.ReadAllText("fixtures/license.txt");
+        var lic = LicenseParser.Parse(raw);
+        Assert.Equal("user@example.com", lic.Email);
+        Assert.Equal("PREMIUM", lic.Plan);
+        Assert.Equal(10, lic.MaxDevices);
+        Assert.Equal("2028-07-08", lic.RenewalDate);
+    }
 }

@@ -15,16 +15,19 @@ public sealed record AppSnapshot
 public sealed class AppStateStore
 {
     private readonly object _gate = new();
-    public AppSnapshot Current { get; private set; } = new();
+    private volatile AppSnapshot _current = new();
+    public AppSnapshot Current => _current;
     public event EventHandler<AppSnapshot>? Changed;
 
+    // Set рассчитан на единственного фонового писателя; мутация выполняется под _gate,
+    // а событие Changed поднимается уже вне блокировки.
     public void Set(Func<AppSnapshot, AppSnapshot> mutate)
     {
         AppSnapshot next;
         lock (_gate)
         {
-            next = mutate(Current);
-            Current = next;
+            next = mutate(_current);
+            _current = next;
         }
         Changed?.Invoke(this, next);
     }
