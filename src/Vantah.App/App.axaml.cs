@@ -11,6 +11,7 @@ using Vantah.App.Views;
 using Vantah.Core.Cli;
 using Vantah.Core.Exclusions;
 using Vantah.Core.Favorites;
+using Vantah.Core.History;
 using Vantah.Core.Logs;
 using Vantah.Core.State;
 using Vantah.Core.Traffic;
@@ -33,7 +34,9 @@ public partial class App : Application
             var runner = new CliRunner();
             var vpn = new VpnService(runner);
             var traffic = new TrafficMonitor(new SysfsTrafficReader());
-            var coordinator = new VpnCoordinator(vpn, traffic, store);
+            var historyStore = new ConnectionHistoryStore();
+            var history = new ConnectionHistoryTracker(historyStore);
+            var coordinator = new VpnCoordinator(vpn, traffic, store, history);
             var favorites = new FavoritesStore();
             var exclusionsStore = new ExclusionsStore();
             var exclusions = new ExclusionsService(runner, exclusionsStore);
