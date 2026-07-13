@@ -25,6 +25,14 @@
     </StackPanel>
 
     <TabControl Grid.Row="1" Margin="0,12,0,0">
+      <TabControl.Styles>
+        <!-- Заголовки вложенных вкладок (История/Лог) мельче и компактнее. -->
+        <Style Selector="TabItem">
+          <Setter Property="FontSize" Value="12"/>
+          <Setter Property="MinHeight" Value="0"/>
+          <Setter Property="Padding" Value="8,4"/>
+        </Style>
+      </TabControl.Styles>
       <TabItem Header="История">
         <Grid>
           <TextBlock Text="Пока нет записей — история появится после подключений"
