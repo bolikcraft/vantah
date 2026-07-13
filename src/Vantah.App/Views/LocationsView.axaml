@@ -10,28 +10,60 @@
       <Setter Property="BorderBrush" Value="#8000C853"/>
       <Setter Property="BorderThickness" Value="1"/>
     </Style>
+    <!-- Убираем собственный отступ строки списка, чтобы колонки строк совпали с шапкой. -->
+    <Style Selector="ListBoxItem">
+      <Setter Property="Padding" Value="0"/>
+    </Style>
+    <!-- Плоские кнопки-заголовки колонок. -->
+    <Style Selector="Button.header">
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Padding" Value="6,2"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Left"/>
+    </Style>
   </UserControl.Styles>
   <DockPanel Margin="12">
     <TextBox DockPanel.Dock="Top" PlaceholderText="Поиск локации…" Text="{Binding Search}" Margin="0,0,0,8"/>
-    <ListBox ItemsSource="{Binding Items}">
+
+    <!-- Шапка: те же ColumnDefinitions, что и у строки списка; отступ 4 слева/справа
+         компенсирует Padding="4,2" рамки внутри шаблона строки. -->
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="36,34,48,*,*,120,80,110" Margin="4,0,4,4">
+      <Button Grid.Column="0" Classes="header" Content="{Binding FavoritesHeader}"
+              Command="{Binding ToggleFavoritesFirstCommand}" ToolTip.Tip="Избранные сверху"/>
+      <Button Grid.Column="2" Classes="header" Content="{Binding IsoHeader}"
+              Command="{Binding SortByCommand}" CommandParameter="Iso"/>
+      <Button Grid.Column="3" Classes="header" Content="{Binding CityHeader}"
+              Command="{Binding SortByCommand}" CommandParameter="City"/>
+      <Button Grid.Column="4" Classes="header" Content="{Binding CountryHeader}"
+              Command="{Binding SortByCommand}" CommandParameter="Country"/>
+      <Button Grid.Column="6" Classes="header" Content="{Binding PingHeader}"
+              Command="{Binding SortByCommand}" CommandParameter="Ping"/>
+    </Grid>
+
+    <ListBox ItemsSource="{Binding Items}" Padding="0">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:LocationItemViewModel">
           <Border Classes.connected="{Binding IsConnected}" CornerRadius="4" Padding="4,2">
-            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
+            <Grid ColumnDefinitions="36,34,48,*,*,120,80,110">
               <Button Grid.Column="0" Content="{Binding Star}"
                       Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ToggleFavoriteCommand}"
                       CommandParameter="{Binding}" Background="Transparent" BorderThickness="0"
                       VerticalAlignment="Center" Padding="6,2"/>
               <Image Grid.Column="1" Source="{Binding Flag}" Width="24" Height="18"
                      Margin="2,0,8,0" VerticalAlignment="Center"/>
-              <TextBlock Grid.Column="2" VerticalAlignment="Center">
-                <Run Text="{Binding IsoCode}"/> <Run Text="{Binding City}"/>
-                <Run Text=" · " Foreground="Gray"/><Run Text="{Binding Country}" Foreground="Gray"/>
-              </TextBlock>
-              <TextBlock Grid.Column="3" Text="✓ Подключено" Foreground="#00C853" FontWeight="SemiBold"
-                         Margin="8,0" VerticalAlignment="Center" IsVisible="{Binding IsConnected}"/>
-              <TextBlock Grid.Column="4" Text="{Binding PingMs, StringFormat='{}{0} ms'}" Opacity="0.7" Margin="8,0" VerticalAlignment="Center"/>
-              <Button Grid.Column="5" Content="Подключить"
+              <TextBlock Grid.Column="2" Text="{Binding IsoCode}" Margin="6,0"
+                         VerticalAlignment="Center"/>
+              <TextBlock Grid.Column="3" Text="{Binding City}" Margin="6,0"
+                         VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+              <TextBlock Grid.Column="4" Text="{Binding Country}" Foreground="Gray" Margin="6,0"
+                         VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+              <TextBlock Grid.Column="5" Text="✓ Подключено" Foreground="#00C853" FontWeight="SemiBold"
+                         Margin="6,0" VerticalAlignment="Center" IsVisible="{Binding IsConnected}"/>
+              <TextBlock Grid.Column="6" Text="{Binding PingMs}" Opacity="0.7" Margin="6,0"
+                         VerticalAlignment="Center"/>
+              <Button Grid.Column="7" Content="Подключить"
                       Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ConnectCommand}"
                       CommandParameter="{Binding}" VerticalAlignment="Center"/>
             </Grid>
