@@ -14,6 +14,7 @@
     <TabItem Header="Статус"><v:StatusView DataContext="{Binding Status}"/></TabItem>
     <TabItem Header="Локации"><v:LocationsView DataContext="{Binding Locations}"/></TabItem>
     <TabItem Header="Домены"><v:DomainsView DataContext="{Binding Domains}"/></TabItem>
+    <TabItem Header="История"><v:HistoryView DataContext="{Binding History}"/></TabItem>
   </TabControl>
 
 </Window>

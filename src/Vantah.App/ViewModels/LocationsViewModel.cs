@@ -43,6 +43,7 @@ public partial class LocationsViewModel : ObservableObject
             _all.Clear();
             foreach (var l in locs)
                 _all.Add(new LocationItemViewModel(l) { IsFavorite = favs.Contains(l.Key) });
+            _coordinator.UpdateKnownLocations(locs);
             ApplyFilter();
             ApplyConnected(_store.Current);
         }
