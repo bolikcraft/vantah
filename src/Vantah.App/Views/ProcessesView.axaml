@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:Vantah.App.ViewModels"
+             xmlns:loc="clr-namespace:Vantah.App.Localization"
              x:DataType="vm:ProcessesViewModel"
              x:Class="Vantah.App.Views.ProcessesView">
   <UserControl.Styles>
@@ -19,18 +20,24 @@
     <!-- Шапка: те же ColumnDefinitions, что и у строки списка; отступ 4 слева/справа
          компенсирует Padding="4,2" строки шаблона. -->
     <Grid DockPanel.Dock="Top" ColumnDefinitions="80,*,90,70" Margin="4,0,4,4">
-      <TextBlock Grid.Column="0" Classes="header" Text="PID"/>
-      <TextBlock Grid.Column="1" Classes="header" Text="Команда"/>
-      <TextBlock Grid.Column="2" Classes="header" Text="Запущен"/>
+      <TextBlock Grid.Column="0" Classes="header"
+                 Text="{Binding [Processes_Col_Pid], Source={x:Static loc:Localizer.Instance}}"/>
+      <TextBlock Grid.Column="1" Classes="header"
+                 Text="{Binding [Processes_Col_Command], Source={x:Static loc:Localizer.Instance}}"/>
+      <TextBlock Grid.Column="2" Classes="header"
+                 Text="{Binding [Processes_Col_Started], Source={x:Static loc:Localizer.Instance}}"/>
     </Grid>
 
     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
-      <Button Content="Убить все" IsEnabled="{Binding !IsEmpty}">
+      <Button Content="{Binding [Processes_KillAll], Source={x:Static loc:Localizer.Instance}}"
+              IsEnabled="{Binding !IsEmpty}">
         <Button.Flyout>
           <Flyout>
             <StackPanel Spacing="8" MaxWidth="260">
-              <TextBlock Text="Завершить все запущенные процессы?" TextWrapping="Wrap"/>
-              <Button Content="Убить все" HorizontalAlignment="Right"
+              <TextBlock TextWrapping="Wrap"
+                         Text="{Binding [Processes_KillAllConfirm], Source={x:Static loc:Localizer.Instance}}"/>
+              <Button Content="{Binding [Processes_KillAll], Source={x:Static loc:Localizer.Instance}}"
+                      HorizontalAlignment="Right"
                       Command="{Binding KillAllCommand}" Click="OnConfirmClick"/>
             </StackPanel>
           </Flyout>
@@ -38,7 +45,8 @@
       </Button>
     </StackPanel>
 
-    <TextBlock DockPanel.Dock="Bottom" Text="Нет запущенных процессов" Opacity="0.6"
+    <TextBlock DockPanel.Dock="Bottom" Opacity="0.6"
+               Text="{Binding [Processes_Empty], Source={x:Static loc:Localizer.Instance}}"
                Margin="6,8,0,0" IsVisible="{Binding IsEmpty}"/>
 
     <ListBox ItemsSource="{Binding Processes}" Padding="0">
@@ -50,14 +58,15 @@
                        TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding CommandLine}"/>
             <TextBlock Grid.Column="2" Text="{Binding StartedAtText}" Opacity="0.7" Margin="6,0"
                        VerticalAlignment="Center"/>
-            <Button Grid.Column="3" Content="Kill" VerticalAlignment="Center"
+            <Button Grid.Column="3" VerticalAlignment="Center"
+                    Content="{Binding [Processes_Kill], Source={x:Static loc:Localizer.Instance}}"
                     Padding="8,2" MinHeight="0">
               <Button.Flyout>
                 <Flyout>
                   <StackPanel Spacing="8" MaxWidth="260">
-                    <TextBlock Text="{Binding Pid, StringFormat='Завершить процесс PID {0}?'}"
-                               TextWrapping="Wrap"/>
-                    <Button Content="Завершить" HorizontalAlignment="Right"
+                    <TextBlock Text="{Binding KillConfirmText}" TextWrapping="Wrap"/>
+                    <Button Content="{Binding [Processes_KillConfirmAction], Source={x:Static loc:Localizer.Instance}}"
+                            HorizontalAlignment="Right"
                             Command="{Binding KillCommand}" Click="OnConfirmClick"/>
                   </StackPanel>
                 </Flyout>

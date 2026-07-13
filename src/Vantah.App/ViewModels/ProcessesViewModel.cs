@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Vantah.App.Localization;
 using Vantah.Core.Cli;
 
 namespace Vantah.App.ViewModels;
@@ -22,6 +23,13 @@ public partial class ProcessesViewModel : ObservableObject
         // Changed приходит из произвольного потока (в т.ч. из пула при завершении процесса) —
         // обновление коллекции обязательно маршалим в UI-поток.
         _monitor.Changed += (_, _) => Dispatcher.UIThread.Post(Refresh);
+        // Строки уже открытых Flyout сами не перечитываются — после смены языка
+        // просим каждую строку обновить свой текст подтверждения.
+        Localizer.Instance.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(() =>
+        {
+            foreach (var row in Processes)
+                row.RefreshLocalization();
+        });
         Refresh();
     }
 

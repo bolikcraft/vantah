@@ -1,17 +1,22 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:Vantah.App.ViewModels"
+             xmlns:loc="clr-namespace:Vantah.App.Localization"
              x:DataType="vm:LicenseViewModel"
              x:Class="Vantah.App.Views.LicenseView">
   <StackPanel Margin="16" Spacing="10">
     <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
-      <TextBlock Grid.Row="0" Grid.Column="0" Text="Аккаунт:" Opacity="0.7"/>
+      <TextBlock Grid.Row="0" Grid.Column="0" Opacity="0.7"
+                 Text="{Binding [License_Account], Source={x:Static loc:Localizer.Instance}}"/>
       <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Email}" TextWrapping="Wrap"/>
-      <TextBlock Grid.Row="1" Grid.Column="0" Text="Тариф:" Opacity="0.7"/>
+      <TextBlock Grid.Row="1" Grid.Column="0" Opacity="0.7"
+                 Text="{Binding [License_Plan], Source={x:Static loc:Localizer.Instance}}"/>
       <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Plan}" TextWrapping="Wrap"/>
-      <TextBlock Grid.Row="2" Grid.Column="0" Text="Устройств:" Opacity="0.7"/>
+      <TextBlock Grid.Row="2" Grid.Column="0" Opacity="0.7"
+                 Text="{Binding [License_Devices], Source={x:Static loc:Localizer.Instance}}"/>
       <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Devices}"/>
-      <TextBlock Grid.Row="3" Grid.Column="0" Text="Продление:" Opacity="0.7"/>
+      <TextBlock Grid.Row="3" Grid.Column="0" Opacity="0.7"
+                 Text="{Binding [License_Renewal], Source={x:Static loc:Localizer.Instance}}"/>
       <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Renewal}"/>
     </Grid>
 
@@ -21,7 +26,8 @@
     <TextBlock Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap"
                IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
-    <Button Content="Обновить" Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}"
+    <Button Content="{Binding [Common_Refresh], Source={x:Static loc:Localizer.Instance}}"
+            Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}"
             HorizontalAlignment="Left" Width="140"/>
   </StackPanel>
 </UserControl>

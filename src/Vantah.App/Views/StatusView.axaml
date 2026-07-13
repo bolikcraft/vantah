@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:Vantah.App.ViewModels"
+             xmlns:loc="clr-namespace:Vantah.App.Localization"
              x:DataType="vm:StatusViewModel"
              x:Class="Vantah.App.Views.StatusView">
   <Grid Margin="16" RowDefinitions="Auto,*">
@@ -10,12 +11,12 @@
       <TextBlock Text="{Binding Mode}" Opacity="0.7" HorizontalAlignment="Center"/>
       <TextBlock Text="{Binding ExclusionsText}" Opacity="0.7" HorizontalAlignment="Center"/>
       <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-        <TextBlock Text="Скорость:" Opacity="0.7"/>
+        <TextBlock Text="{Binding [Status_SpeedLabel], Source={x:Static loc:Localizer.Instance}}" Opacity="0.7"/>
         <TextBlock Text="{Binding RxText}"/>
         <TextBlock Text="{Binding TxText}"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
-        <TextBlock Text="За сессию:" Opacity="0.7"/>
+        <TextBlock Text="{Binding [Status_SessionLabel], Source={x:Static loc:Localizer.Instance}}" Opacity="0.7"/>
         <TextBlock Text="{Binding RxTotalText}"/>
         <TextBlock Text="{Binding TxTotalText}"/>
       </StackPanel>
@@ -34,9 +35,9 @@
           <Setter Property="Padding" Value="8,4"/>
         </Style>
       </TabControl.Styles>
-      <TabItem Header="История">
+      <TabItem Header="{Binding [Status_SubTab_History], Source={x:Static loc:Localizer.Instance}}">
         <Grid>
-          <TextBlock Text="Пока нет записей — история появится после подключений"
+          <TextBlock Text="{Binding [Status_HistoryEmpty], Source={x:Static loc:Localizer.Instance}}"
                      Opacity="0.6" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"
                      IsVisible="{Binding !History.HasHistory}"/>
           <ScrollViewer IsVisible="{Binding History.HasHistory}">
@@ -50,7 +51,7 @@
           </ScrollViewer>
         </Grid>
       </TabItem>
-      <TabItem Header="Лог">
+      <TabItem Header="{Binding [Status_SubTab_Log], Source={x:Static loc:Localizer.Instance}}">
         <TextBox Text="{Binding Log}" IsReadOnly="True" AcceptsReturn="True"
                  TextWrapping="Wrap" FontFamily="monospace" FontSize="10"
                  BorderThickness="0" Background="Transparent" Padding="0"

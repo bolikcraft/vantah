@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:Vantah.App.ViewModels"
         xmlns:v="clr-namespace:Vantah.App.Views"
+        xmlns:loc="clr-namespace:Vantah.App.Localization"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="520" d:DesignHeight="640"
@@ -11,12 +12,24 @@
         Title="Vantah" Width="800" Height="800">
 
   <TabControl SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
-    <TabItem Header="Статус"><v:StatusView DataContext="{Binding Status}"/></TabItem>
-    <TabItem Header="Локации"><v:LocationsView DataContext="{Binding Locations}"/></TabItem>
-    <TabItem Header="Домены"><v:DomainsView DataContext="{Binding Domains}"/></TabItem>
-    <TabItem Header="Лицензия"><v:LicenseView DataContext="{Binding License}"/></TabItem>
-    <TabItem Header="О программе"><v:AboutView DataContext="{Binding About}"/></TabItem>
-    <TabItem Header="Процессы"><v:ProcessesView DataContext="{Binding Processes}"/></TabItem>
+    <TabItem Header="{Binding [Tab_Status], Source={x:Static loc:Localizer.Instance}}">
+      <v:StatusView DataContext="{Binding Status}"/>
+    </TabItem>
+    <TabItem Header="{Binding [Tab_Locations], Source={x:Static loc:Localizer.Instance}}">
+      <v:LocationsView DataContext="{Binding Locations}"/>
+    </TabItem>
+    <TabItem Header="{Binding [Tab_Domains], Source={x:Static loc:Localizer.Instance}}">
+      <v:DomainsView DataContext="{Binding Domains}"/>
+    </TabItem>
+    <TabItem Header="{Binding [Tab_License], Source={x:Static loc:Localizer.Instance}}">
+      <v:LicenseView DataContext="{Binding License}"/>
+    </TabItem>
+    <TabItem Header="{Binding [Tab_About], Source={x:Static loc:Localizer.Instance}}">
+      <v:AboutView DataContext="{Binding About}"/>
+    </TabItem>
+    <TabItem Header="{Binding [Tab_Processes], Source={x:Static loc:Localizer.Instance}}">
+      <v:ProcessesView DataContext="{Binding Processes}"/>
+    </TabItem>
   </TabControl>
 
 </Window>

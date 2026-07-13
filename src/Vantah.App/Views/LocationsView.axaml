@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:Vantah.App.ViewModels"
+             xmlns:loc="clr-namespace:Vantah.App.Localization"
              x:DataType="vm:LocationsViewModel"
              x:Class="Vantah.App.Views.LocationsView">
   <UserControl.Styles>
@@ -25,25 +26,28 @@
     </Style>
   </UserControl.Styles>
   <DockPanel Margin="12">
-    <TextBox DockPanel.Dock="Top" PlaceholderText="Поиск локации…" Text="{Binding Search}" Margin="0,0,0,8"/>
+    <TextBox DockPanel.Dock="Top" Text="{Binding Search}" Margin="0,0,0,8"
+             PlaceholderText="{Binding [Locations_SearchPlaceholder], Source={x:Static loc:Localizer.Instance}}"/>
 
     <!-- Шапка: те же ColumnDefinitions, что и у строки списка; отступ 4 слева/справа
          компенсирует Padding="4,2" рамки внутри шаблона строки. -->
     <Grid DockPanel.Dock="Top" ColumnDefinitions="36,34,48,*,*,120,120,110" Margin="4,0,4,4">
       <Button Grid.Column="0" Classes="header" Content="{Binding FavoritesHeader}"
-              Command="{Binding ToggleFavoritesFirstCommand}" ToolTip.Tip="Избранные сверху"/>
+              Command="{Binding ToggleFavoritesFirstCommand}"
+              ToolTip.Tip="{Binding [Locations_Tooltip_FavoritesFirst], Source={x:Static loc:Localizer.Instance}}"/>
       <Button Grid.Column="2" Classes="header" Content="{Binding IsoHeader}"
               Command="{Binding SortByCommand}" CommandParameter="Iso"
-              ToolTip.Tip="Сортировать по коду страны"/>
+              ToolTip.Tip="{Binding [Locations_Tooltip_SortByIso], Source={x:Static loc:Localizer.Instance}}"/>
       <Button Grid.Column="3" Classes="header" Content="{Binding CityHeader}"
               Command="{Binding SortByCommand}" CommandParameter="City"
-              ToolTip.Tip="Сортировать по городу"/>
+              ToolTip.Tip="{Binding [Locations_Tooltip_SortByCity], Source={x:Static loc:Localizer.Instance}}"/>
       <Button Grid.Column="4" Classes="header" Content="{Binding CountryHeader}"
               Command="{Binding SortByCommand}" CommandParameter="Country"
-              ToolTip.Tip="Сортировать по стране"/>
+              ToolTip.Tip="{Binding [Locations_Tooltip_SortByCountry], Source={x:Static loc:Localizer.Instance}}"/>
       <Button Grid.Column="6" Classes="header" Content="{Binding PingHeader}"
               Command="{Binding SortByCommand}" CommandParameter="Ping"
-              HorizontalContentAlignment="Right" ToolTip.Tip="Сортировать по пингу"/>
+              HorizontalContentAlignment="Right"
+              ToolTip.Tip="{Binding [Locations_Tooltip_SortByPing], Source={x:Static loc:Localizer.Instance}}"/>
     </Grid>
 
     <ListBox ItemsSource="{Binding Items}" Padding="0">
@@ -63,11 +67,13 @@
                          VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
               <TextBlock Grid.Column="4" Text="{Binding Country}" Foreground="Gray" Margin="6,0"
                          VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-              <TextBlock Grid.Column="5" Text="✓ Подключено" Foreground="#00C853" FontWeight="SemiBold"
+              <TextBlock Grid.Column="5" Foreground="#00C853" FontWeight="SemiBold"
+                         Text="{Binding [Locations_ConnectedBadge], Source={x:Static loc:Localizer.Instance}}"
                          Margin="6,0" VerticalAlignment="Center" IsVisible="{Binding IsConnected}"/>
               <TextBlock Grid.Column="6" Text="{Binding PingMs}" Opacity="0.7" Margin="6,0"
                          HorizontalAlignment="Right" VerticalAlignment="Center"/>
-              <Button Grid.Column="7" Content="Подключить"
+              <Button Grid.Column="7"
+                      Content="{Binding [Common_Connect], Source={x:Static loc:Localizer.Instance}}"
                       Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ConnectCommand}"
                       CommandParameter="{Binding}" VerticalAlignment="Center"/>
             </Grid>
