@@ -47,7 +47,8 @@ public partial class App : Application
                 new LocationsViewModel(vpn, coordinator, favorites, store),
                 new DomainsViewModel(exclusions, exclusionsStore, store),
                 new LicenseViewModel(vpn),
-                new AboutViewModel(vpn));
+                new AboutViewModel(vpn),
+                new ProcessesViewModel(runner)); // тот же CliRunner, что исполняет команды, — он же IProcessMonitor
 
             var window = new MainWindow { DataContext = mainVm };
             desktop.MainWindow = window;
