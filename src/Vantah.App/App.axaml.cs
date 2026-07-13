@@ -9,6 +9,7 @@ using Vantah.App.Tray;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
 using Vantah.Core.Cli;
+using Vantah.Core.Config;
 using Vantah.Core.Exclusions;
 using Vantah.Core.Favorites;
 using Vantah.Core.History;
@@ -31,7 +32,13 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             var store = new AppStateStore();
-            var runner = new CliRunner();
+
+            // Путь к CLI и команда убийства настраиваются: ~/.config/vantah/vantah.conf, затем env,
+            // затем дефолт «adguardvpn-cli» из PATH.
+            var cliOptions = CliOptionsResolver.Resolve(
+                IniConfig.Load(VantahPaths.ConfigFile),
+                Environment.GetEnvironmentVariable);
+            var runner = new CliRunner(cliOptions.Executable, new PosixProcessKiller(cliOptions.KillCommand));
             var vpn = new VpnService(runner);
             var traffic = new TrafficMonitor(new SysfsTrafficReader());
             var historyStore = new ConnectionHistoryStore();
