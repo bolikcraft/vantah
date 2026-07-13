@@ -4,16 +4,24 @@ using System.Runtime.InteropServices;
 namespace Vantah.Core.Cli;
 
 /// <summary>
-/// POSIX-убийца: SIGTERM, через <see cref="GraceMs"/> — SIGKILL, если процесс ещё жив.
-/// Опционально вместо kill(2) запускается внешняя команда (например «pkexec kill»),
-/// когда прав текущего пользователя не хватает; PID дописывается последним аргументом.
+/// POSIX-убийца: SIGTERM, затем SIGKILL, если процесс не умер за <see cref="GraceMs"/>.
+/// Ожидание смерти — короткий poll живости, а не глухая пауза: иначе всё окно ожидания
+/// ядро может переиспользовать PID и SIGKILL прилетит невиновному процессу.
 /// </summary>
+/// <param name="killCommand">
+/// Необязательный шаблон внешней команды убийства (например «pkexec kill») — запускается
+/// вместо kill(2), когда прав текущего пользователя не хватает; PID дописывается последним
+/// аргументом, результат = <c>ExitCode == 0</c>. Шаблон разбирается простым разбиением по
+/// пробелам: кавычки и пути с пробелами НЕ поддерживаются.
+/// </param>
 public sealed partial class PosixProcessKiller(string? killCommand = null) : IProcessKiller
 {
     private const int Sigterm = 15;
     private const int Sigkill = 9;
     private const int GraceMs = 500;
+    private const int PollMs = 20;
 
+    /// <inheritdoc />
     public async Task<bool> KillAsync(int pid, CancellationToken ct = default)
     {
         if (!string.IsNullOrWhiteSpace(killCommand))
@@ -22,11 +30,23 @@ public sealed partial class PosixProcessKiller(string? killCommand = null) : IPr
         if (kill(pid, Sigterm) != 0)
             return false; // процесса нет или нет прав
 
-        try { await Task.Delay(GraceMs, ct); }
-        catch (OperationCanceledException) { return true; } // сигнал уже подан
+        // Сигнал подан — дальше отмена лишь укорачивает ожидание, наружу не пробрасывается.
+        if (!await WaitForDeathAsync(pid, ct) && IsAlive(pid))
+            kill(pid, Sigkill);
 
-        if (IsAlive(pid)) kill(pid, Sigkill);
         return true;
+    }
+
+    /// <summary>Ждёт смерти процесса до <see cref="GraceMs"/>. true — умер; false — время вышло или отмена.</summary>
+    private static async Task<bool> WaitForDeathAsync(int pid, CancellationToken ct)
+    {
+        for (var waited = 0; waited < GraceMs; waited += PollMs)
+        {
+            if (!IsAlive(pid)) return true;
+            try { await Task.Delay(PollMs, ct); }
+            catch (OperationCanceledException) { return false; }
+        }
+        return !IsAlive(pid);
     }
 
     private static async Task<bool> RunKillCommandAsync(string killCommand, int pid, CancellationToken ct)
@@ -48,12 +68,24 @@ public sealed partial class PosixProcessKiller(string? killCommand = null) : IPr
         {
             using var proc = Process.Start(psi);
             if (proc is null) return false;
+
+            // Пайпы обязательно вычитываем: болтливый pkexec/polkit иначе заблокируется на записи.
+            var stdout = proc.StandardOutput.ReadToEndAsync(ct);
+            var stderr = proc.StandardError.ReadToEndAsync(ct);
             await proc.WaitForExitAsync(ct);
+            await Task.WhenAll(stdout, stderr);
+
             return proc.ExitCode == 0;
         }
-        catch (Exception e) when (e is not OperationCanceledException)
+        catch (OperationCanceledException)
         {
-            return false;
+            // Команда уже запущена и доработает сама. Семантика та же, что у kill(2):
+            // отмена наружу не пробрасывается, «команда подана» → true.
+            return true;
+        }
+        catch
+        {
+            return false; // нет бинаря, не хватает прав на запуск и т.п.
         }
     }
 
