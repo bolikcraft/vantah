@@ -14,6 +14,7 @@ public static class LocKeys
     public const string Tab_License = "Tab_License";
     public const string Tab_About = "Tab_About";
     public const string Tab_Processes = "Tab_Processes";
+    public const string Tab_Settings = "Tab_Settings";
 
     // Общие подписи кнопок и состояний
     public const string Common_Connect = "Common_Connect";
@@ -26,6 +27,9 @@ public static class LocKeys
     public const string Common_Export = "Common_Export";
     public const string Common_Loading = "Common_Loading";
     public const string Common_NotAvailable = "Common_NotAvailable";
+    public const string Common_Apply = "Common_Apply";
+    public const string Common_Reset = "Common_Reset";
+    public const string Common_Saved = "Common_Saved";
 
     // Вкладка «Статус»
     public const string Status_Connected = "Status_Connected";
@@ -104,6 +108,28 @@ public static class LocKeys
     public const string Tray_Tooltip_DomainsFormat = "Tray_Tooltip_DomainsFormat";
     public const string Tray_Tooltip_ErrorFormat = "Tray_Tooltip_ErrorFormat";
     public const string Tray_StatusConnectedFormat = "Tray_StatusConnectedFormat";
+
+    // Вкладка «Настройки»
+    public const string Settings_ConnectedWarning = "Settings_ConnectedWarning";
+    public const string Settings_Mode = "Settings_Mode";
+    public const string Settings_SocksSection = "Settings_SocksSection";
+    public const string Settings_SocksPort = "Settings_SocksPort";
+    public const string Settings_SocksHost = "Settings_SocksHost";
+    public const string Settings_SocksUsername = "Settings_SocksUsername";
+    public const string Settings_SocksPassword = "Settings_SocksPassword";
+    public const string Settings_SaveAuth = "Settings_SaveAuth";
+    public const string Settings_ClearAuth = "Settings_ClearAuth";
+    public const string Settings_Dns = "Settings_Dns";
+    public const string Settings_DnsPlaceholder = "Settings_DnsPlaceholder";
+    public const string Settings_Protocol = "Settings_Protocol";
+    public const string Settings_Channel = "Settings_Channel";
+    public const string Settings_Routing = "Settings_Routing";
+    public const string Settings_ChangeSystemDns = "Settings_ChangeSystemDns";
+    public const string Settings_PostQuantum = "Settings_PostQuantum";
+    public const string Settings_ShowNotifications = "Settings_ShowNotifications";
+    public const string Settings_DebugLogging = "Settings_DebugLogging";
+    public const string Settings_ErrorInvalidPort = "Settings_ErrorInvalidPort";
+    public const string Settings_ErrorEmptyHost = "Settings_ErrorEmptyHost";
 
     // Выбор языка
     public const string Lang_Label = "Lang_Label";

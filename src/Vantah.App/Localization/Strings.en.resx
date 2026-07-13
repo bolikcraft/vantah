@@ -79,6 +79,9 @@
   <data name="Tab_Processes" xml:space="preserve">
     <value>Processes</value>
   </data>
+  <data name="Tab_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
 
   <!-- Общие подписи кнопок и состояний -->
   <data name="Common_Connect" xml:space="preserve">
@@ -110,6 +113,15 @@
   </data>
   <data name="Common_NotAvailable" xml:space="preserve">
     <value>unavailable</value>
+  </data>
+  <data name="Common_Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="Common_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Common_Saved" xml:space="preserve">
+    <value>Saved</value>
   </data>
 
   <!-- Вкладка «Статус» -->
@@ -327,6 +339,68 @@
   <data name="Tray_StatusConnectedFormat" xml:space="preserve">
     <value>{0} {1}{2}</value>
     <comment>{0} — глиф состояния, {1} — локация, {2} — « · Режим» либо пусто.</comment>
+  </data>
+
+  <!-- Вкладка «Настройки» -->
+  <data name="Settings_ConnectedWarning" xml:space="preserve">
+    <value>The VPN is connected. Changing settings may require reconnecting to take effect.</value>
+  </data>
+  <data name="Settings_Mode" xml:space="preserve">
+    <value>Operating mode</value>
+  </data>
+  <data name="Settings_SocksSection" xml:space="preserve">
+    <value>SOCKS settings</value>
+  </data>
+  <data name="Settings_SocksPort" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="Settings_SocksHost" xml:space="preserve">
+    <value>Host</value>
+  </data>
+  <data name="Settings_SocksUsername" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="Settings_SocksPassword" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Settings_SaveAuth" xml:space="preserve">
+    <value>Save username and password</value>
+  </data>
+  <data name="Settings_ClearAuth" xml:space="preserve">
+    <value>Clear authentication</value>
+  </data>
+  <data name="Settings_Dns" xml:space="preserve">
+    <value>DNS upstream</value>
+  </data>
+  <data name="Settings_DnsPlaceholder" xml:space="preserve">
+    <value>Empty — default AdGuard servers</value>
+  </data>
+  <data name="Settings_Protocol" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="Settings_Channel" xml:space="preserve">
+    <value>Update channel</value>
+  </data>
+  <data name="Settings_Routing" xml:space="preserve">
+    <value>TUN routing mode</value>
+  </data>
+  <data name="Settings_ChangeSystemDns" xml:space="preserve">
+    <value>Change system DNS</value>
+  </data>
+  <data name="Settings_PostQuantum" xml:space="preserve">
+    <value>Post-quantum cryptography</value>
+  </data>
+  <data name="Settings_ShowNotifications" xml:space="preserve">
+    <value>Show notifications</value>
+  </data>
+  <data name="Settings_DebugLogging" xml:space="preserve">
+    <value>Debug logging</value>
+  </data>
+  <data name="Settings_ErrorInvalidPort" xml:space="preserve">
+    <value>The SOCKS port must be a number between 1 and 65535</value>
+  </data>
+  <data name="Settings_ErrorEmptyHost" xml:space="preserve">
+    <value>Enter a SOCKS host</value>
   </data>
 
   <!-- Выбор языка -->
