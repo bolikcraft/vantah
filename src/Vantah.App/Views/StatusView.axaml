@@ -28,7 +28,7 @@
       <TabControl.Styles>
         <!-- Заголовки вложенных вкладок (История/Лог) мельче и компактнее. -->
         <Style Selector="TabItem">
-          <Setter Property="FontSize" Value="12"/>
+          <Setter Property="FontSize" Value="20"/>
           <Setter Property="MinHeight" Value="0"/>
           <Setter Property="Padding" Value="8,4"/>
         </Style>
