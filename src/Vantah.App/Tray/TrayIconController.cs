@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using Vantah.App.Localization;
 using Vantah.App.Services;
 using Vantah.App.ViewModels;
 using Vantah.Core.Favorites;
@@ -17,9 +18,19 @@ public sealed class TrayIconController
 {
     private const int DomainsTabIndex = 2;
     private readonly TrayIcon _icon;
-    private readonly NativeMenuItem _statusItem = new("Отключено") { IsEnabled = false };
-    private readonly NativeMenuItem _toggle = new("Подключить");
-    private readonly NativeMenuItem _domainsItem = new("Домены (0)");
+
+    // Пункты со статичными подписями — их обновляет ApplyLabels() при смене языка.
+    private readonly NativeMenuItem _fastest = new();
+    private readonly NativeMenuItem _locations = new();
+    private readonly NativeMenuItem _show = new();
+    private readonly NativeMenuItem _exit = new();
+    private readonly NativeMenuItem? _noFavorites;
+
+    // Пункты, чья подпись зависит от состояния, — их ставит Apply(snapshot).
+    private readonly NativeMenuItem _statusItem = new() { IsEnabled = false };
+    private readonly NativeMenuItem _toggle = new();
+    private readonly NativeMenuItem _domainsItem = new();
+
     private readonly VpnCoordinator _coordinator;
 
     public TrayIconController(VpnCoordinator coordinator, AppStateStore store, FavoritesStore favorites, Window window)
@@ -31,30 +42,27 @@ public sealed class TrayIconController
             Icon = LoadIcon(),
         };
 
-        var fastest = new NativeMenuItem("⚡ Самая быстрая");
-        fastest.Click += async (_, _) => await _coordinator.ConnectAsync(null, true);
+        _fastest.Click += async (_, _) => await _coordinator.ConnectAsync(null, true);
         _toggle.Click += async (_, _) => await OnToggle(store);
 
-        var locations = new NativeMenuItem("Локация") { Menu = BuildFavoritesMenu(favorites) };
+        _locations.Menu = BuildFavoritesMenu(favorites, out _noFavorites);
 
         _domainsItem.Click += (_, _) => ShowDomains(window);
 
-        var show = new NativeMenuItem("Показать окно");
-        show.Click += (_, _) => { window.Show(); window.Activate(); };
+        _show.Click += (_, _) => { window.Show(); window.Activate(); };
 
-        var exit = new NativeMenuItem("Выход");
-        exit.Click += (_, _) => (Application.Current!.ApplicationLifetime
+        _exit.Click += (_, _) => (Application.Current!.ApplicationLifetime
             as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 
         var menu = new NativeMenu();
         menu.Add(_statusItem);          // статус вверху
-        menu.Add(fastest);
-        menu.Add(locations);
+        menu.Add(_fastest);
+        menu.Add(_locations);
         menu.Add(_domainsItem);         // кликабельно → окно на вкладке «Домены»
-        menu.Add(show);
+        menu.Add(_show);
         menu.Add(_toggle);              // Отключить/Подключить — внизу, перед выходом
         menu.Add(new NativeMenuItemSeparator());  // единственная отбивка — у выхода
-        menu.Add(exit);
+        menu.Add(_exit);
         _icon.Menu = menu;
 
         _icon.Clicked += (_, _) => { window.Show(); window.Activate(); };
@@ -62,22 +70,34 @@ public sealed class TrayIconController
         // Регистрируем иконку в приложении, чтобы она отобразилась в трее.
         TrayIcon.SetIcons(Application.Current!, new TrayIcons { _icon });
 
+        ApplyLabels();
         store.Changed += (_, s) => Dispatcher.UIThread.Post(() => Apply(s));
         Apply(store.Current);
+
+        // Меню трея живёт всё время работы приложения и само не перечитывается —
+        // после смены языка переставляем и статичные подписи, и зависящие от состояния.
+        Localizer.Instance.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(() =>
+        {
+            ApplyLabels();
+            Apply(store.Current);
+        });
     }
 
     // Подменю строится один раз при старте из сохранённого избранного.
     // Новые отмеченные звёздочкой локации появляются после перезапуска — приемлемо для MVP.
-    private NativeMenu BuildFavoritesMenu(FavoritesStore favorites)
+    private NativeMenu BuildFavoritesMenu(FavoritesStore favorites, out NativeMenuItem? placeholder)
     {
         var submenu = new NativeMenu();
         var keys = favorites.Load();
         if (keys.Count == 0)
         {
-            submenu.Add(new NativeMenuItem("Нет избранного") { IsEnabled = false });
+            // Подпись-заглушка локализуется вместе с остальными статичными пунктами.
+            placeholder = new NativeMenuItem { IsEnabled = false };
+            submenu.Add(placeholder);
             return submenu;
         }
 
+        placeholder = null;
         foreach (var key in keys)
         {
             // Key = "ISO|City" — берём город после разделителя.
@@ -119,34 +139,47 @@ public sealed class TrayIconController
         window.Activate();
     }
 
+    /// <summary>Подписи пунктов, не зависящих от состояния VPN.</summary>
+    private void ApplyLabels()
+    {
+        var loc = Localizer.Instance;
+        _fastest.Header = loc[LocKeys.Tray_Fastest];
+        _locations.Header = loc[LocKeys.Tray_Location];
+        _show.Header = loc[LocKeys.Tray_ShowWindow];
+        _exit.Header = loc[LocKeys.Tray_Exit];
+        if (_noFavorites is { } item) item.Header = loc[LocKeys.Tray_NoFavorites];
+    }
+
     private void Apply(AppSnapshot s)
     {
+        var loc = Localizer.Instance;
         var connected = s.Connection == ConnectionState.Connected;
-        _toggle.Header = connected ? "Отключить" : "Подключить";
+        _toggle.Header = loc[connected ? LocKeys.Common_Disconnect : LocKeys.Common_Connect];
 
         var glyph = connected ? "🟢" : "⚪";
         if (connected)
         {
             // Статус вверху меню: к чему и в каком режиме подключено.
             var mode = s.Mode is { } m ? $" · {m}" : "";
-            _statusItem.Header = $"{glyph} {s.Location}{mode}".Trim();
+            _statusItem.Header = loc.Format(LocKeys.Tray_StatusConnectedFormat, glyph, s.Location ?? "", mode).Trim();
 
-            var loc = s.Location is { } l ? $": {l}" : "";
-            var tip = $"{glyph} Vantah — Подключено{loc}";
+            var city = s.Location is { } l ? $": {l}" : "";
+            var tip = loc.Format(LocKeys.Tray_Tooltip_ConnectedFormat, glyph, city);
             if (s.Traffic is { } t)
-                tip += $"\n↓ {Format(t.RxBytesPerSec)}/s ↑ {Format(t.TxBytesPerSec)}/s";
+                tip += "\n" + loc.Format(
+                    LocKeys.Tray_Tooltip_TrafficFormat, Format(t.RxBytesPerSec), Format(t.TxBytesPerSec));
             _icon.ToolTipText = tip;
         }
         else
         {
-            _statusItem.Header = $"{glyph} Отключено";
-            _icon.ToolTipText = $"{glyph} Vantah — Отключено";
+            _statusItem.Header = $"{glyph} {loc[LocKeys.Status_Disconnected]}";
+            _icon.ToolTipText = loc.Format(LocKeys.Tray_Tooltip_DisconnectedFormat, glyph);
         }
 
         // Счётчик доменов-исключений: пункт меню + строка в подсказке.
         // Дописывается в самом конце, чтобы не накапливаться поверх базового текста.
-        _domainsItem.Header = $"Домены ({s.ExclusionsCount})";
-        _icon.ToolTipText += $"\nДомены: {s.ExclusionsCount}";
+        _domainsItem.Header = loc.Format(LocKeys.Tray_DomainsFormat, s.ExclusionsCount);
+        _icon.ToolTipText += "\n" + loc.Format(LocKeys.Tray_Tooltip_DomainsFormat, s.ExclusionsCount);
     }
 
     private static string Format(double bytes)

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Vantah.App.Localization;
 using Vantah.App.Services;
 using Vantah.Core.History;
 using Vantah.Core.State;
@@ -21,6 +22,8 @@ public partial class HistoryViewModel : ObservableObject
         // Любое изменение состояния (подключение/отключение/смена локации) может
         // завершить сессию — перечитываем историю. Маршалим в UI-поток, как в StatusViewModel.
         store.Changed += (_, _) => Dispatcher.UIThread.Post(Refresh);
+        // Строки истории собираются в коде — после смены языка пересобираем их.
+        Localizer.Instance.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(Refresh);
         Refresh();
     }
 
@@ -41,6 +44,6 @@ public partial class HistoryViewModel : ObservableObject
         var location = string.IsNullOrEmpty(e.Country) ? e.City : $"{e.City}, {e.Country}";
         var started = e.StartedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
         var ended = e.EndedAt is { } x ? x.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "—";
-        return $"{location} — {started} → {ended}";
+        return Localizer.Instance.Format(LocKeys.Status_HistoryEntryFormat, location, started, ended);
     }
 }

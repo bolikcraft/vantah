@@ -5,6 +5,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
 using Avalonia.Platform.Storage;
+using Vantah.App.Localization;
 using Vantah.App.ViewModels;
 
 namespace Vantah.App.Views;
@@ -28,7 +29,7 @@ public partial class DomainsView : UserControl
         if (top is null || Vm is null) return;
         var file = await top.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
         {
-            Title = "Экспорт доменов",
+            Title = Localizer.Instance[LocKeys.Domains_ExportDialogTitle],
             SuggestedFileName = "exclusions.vantah",
             DefaultExtension = "vantah",
         });
@@ -41,7 +42,7 @@ public partial class DomainsView : UserControl
         if (top is null || Vm is null) return;
         var files = await top.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
-            Title = "Импорт доменов",
+            Title = Localizer.Instance[LocKeys.Domains_ImportDialogTitle],
             AllowMultiple = false,
         });
         if (files.Count > 0 && files[0].TryGetLocalPath() is { } path) await Vm.ImportAsync(path);
@@ -50,7 +51,8 @@ public partial class DomainsView : UserControl
     private async void OnClearClick(object? sender, RoutedEventArgs e)
     {
         if (Vm is null) return;
-        if (await ConfirmAsync("Очистить исключения", "Удалить все домены текущего режима?"))
+        var loc = Localizer.Instance;
+        if (await ConfirmAsync(loc[LocKeys.Domains_ClearConfirmTitle], loc[LocKeys.Domains_ClearConfirmMessage]))
             await Vm.ClearCommand.ExecuteAsync(null);
     }
 
@@ -69,8 +71,8 @@ public partial class DomainsView : UserControl
             CanResize = false,
         };
 
-        var ok = new Button { Content = "Очистить", IsDefault = true };
-        var cancel = new Button { Content = "Отмена", IsCancel = true };
+        var ok = new Button { Content = Localizer.Instance[LocKeys.Common_Clear], IsDefault = true };
+        var cancel = new Button { Content = Localizer.Instance[LocKeys.Common_Cancel], IsCancel = true };
         ok.Click += (_, _) => { result = true; dialog.Close(); };
         cancel.Click += (_, _) => { result = false; dialog.Close(); };
 

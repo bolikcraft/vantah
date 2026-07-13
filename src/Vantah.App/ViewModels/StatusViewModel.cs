@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Vantah.App.Localization;
 using Vantah.App.Services;
 using Vantah.Core.Logs;
 using Vantah.Core.Models;
@@ -14,8 +15,9 @@ public partial class StatusViewModel : ObservableObject
 {
     private readonly VpnCoordinator _coordinator;
     private readonly VpnLogReader _logReader;
+    private readonly AppStateStore _store;
 
-    [ObservableProperty] private string _connectionText = "Отключено";
+    [ObservableProperty] private string _connectionText = Localizer.Instance[LocKeys.Status_Disconnected];
     [ObservableProperty] private string? _location;
     [ObservableProperty] private string? _mode;
     [ObservableProperty] private string _rxText = "↓ 0.0 B/s";
@@ -31,7 +33,7 @@ public partial class StatusViewModel : ObservableObject
     [ObservableProperty] private string _log = "";
 
     // Подпись кнопки = действие, которое она выполнит (не статус).
-    public string ToggleText => IsConnected ? "Отключить" : "Подключить";
+    public string ToggleText => Localizer.Instance[IsConnected ? LocKeys.Common_Disconnect : LocKeys.Common_Connect];
 
     // История подключений — под-панель на вкладке Статус.
     public HistoryViewModel History { get; }
@@ -40,9 +42,18 @@ public partial class StatusViewModel : ObservableObject
     {
         _coordinator = coordinator;
         _logReader = logReader;
+        _store = store;
         History = history;
         store.Changed += (_, s) => Dispatcher.UIThread.Post(() => Apply(s));
         Apply(store.Current);
+
+        // Тексты статуса собираются в коде, поэтому после смены языка их надо пересобрать
+        // из последнего снимка состояния — иначе они останутся на прежнем языке до перезапуска.
+        Localizer.Instance.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(() =>
+        {
+            Apply(_store.Current);
+            OnPropertyChanged(nameof(ToggleText));
+        });
 
         // Периодически подтягиваем хвост VPN-лога в текст-поле.
         RefreshLog();
@@ -55,19 +66,20 @@ public partial class StatusViewModel : ObservableObject
 
     private void Apply(AppSnapshot s)
     {
-        ConnectionText = s.Connection switch
+        var loc = Localizer.Instance;
+        ConnectionText = loc[s.Connection switch
         {
-            ConnectionState.Connected     => "Подключено",
-            ConnectionState.Connecting    => "Подключаюсь…",
-            ConnectionState.Disconnecting => "Отключаюсь…",
-            ConnectionState.Error         => "Ошибка",
-            _                             => "Отключено",
-        };
+            ConnectionState.Connected     => LocKeys.Status_Connected,
+            ConnectionState.Connecting    => LocKeys.Status_Connecting,
+            ConnectionState.Disconnecting => LocKeys.Status_Disconnecting,
+            ConnectionState.Error         => LocKeys.Status_Error,
+            _                             => LocKeys.Status_Disconnected,
+        }];
         Location = s.LocationDisplay ?? s.Location;                  // полная локация: «Amsterdam, Netherlands»
-        Mode = s.Mode is { } m ? $"Режим: {m}" : null;               // «Режим: TUN»
-        ExclusionsText = s.ExclusionsMode == SiteExclusionMode.Selective
-            ? "Исключения: Выборочный (selective)"
-            : "Исключения: Общий (general)";
+        Mode = s.Mode is { } m ? loc.Format(LocKeys.Status_ModeFormat, m) : null;   // «Режим: TUN»
+        ExclusionsText = loc[s.ExclusionsMode == SiteExclusionMode.Selective
+            ? LocKeys.Status_Exclusions_Selective
+            : LocKeys.Status_Exclusions_General];
         Error = s.Error;
         IsConnected = s.Connection == ConnectionState.Connected;
         IsBusy = s.Connection is ConnectionState.Connecting or ConnectionState.Disconnecting;

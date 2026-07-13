@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Vantah.App.Localization;
 using Vantah.App.Services;
 using Vantah.Core.Favorites;
 using Vantah.Core.Locations;
@@ -35,19 +36,26 @@ public partial class LocationsViewModel : ObservableObject
 
     public ObservableCollection<LocationItemViewModel> Items { get; } = new();
 
-    public string IsoHeader => Header("ISO", LocationSortKey.Iso);
-    public string CityHeader => Header("Город", LocationSortKey.City);
-    public string CountryHeader => Header("Страна", LocationSortKey.Country);
-    public string PingHeader => Header("Пинг (мс)", LocationSortKey.Ping);
+    public string IsoHeader => Header(LocKeys.Locations_Col_Iso, LocationSortKey.Iso);
+    public string CityHeader => Header(LocKeys.Locations_Col_City, LocationSortKey.City);
+    public string CountryHeader => Header(LocKeys.Locations_Col_Country, LocationSortKey.Country);
+    public string PingHeader => Header(LocKeys.Locations_Col_Ping, LocationSortKey.Ping);
     public string FavoritesHeader => FavoritesFirst ? "★ ▲" : "★";
 
-    private string Header(string text, LocationSortKey key) =>
-        SortKey == key ? text + (SortAscending ? " ▲" : " ▼") : text;
+    // Стрелка направления приклеивается к локализованному названию колонки.
+    private string Header(string key, LocationSortKey sortKey)
+    {
+        var text = Localizer.Instance[key];
+        return SortKey == sortKey ? text + (SortAscending ? " ▲" : " ▼") : text;
+    }
 
     public LocationsViewModel(IVpnService vpn, VpnCoordinator coordinator, FavoritesStore favorites, AppStateStore store)
     {
         _vpn = vpn; _coordinator = coordinator; _favorites = favorites; _store = store;
         _store.Changed += (_, s) => Dispatcher.UIThread.Post(() => ApplyConnected(s));
+        // Заголовки колонок собираются в коде (название + стрелка сортировки) — после
+        // смены языка просим их перечитать себя.
+        Localizer.Instance.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(RaiseHeadersChanged);
         _ = LoadAsync();
     }
 
