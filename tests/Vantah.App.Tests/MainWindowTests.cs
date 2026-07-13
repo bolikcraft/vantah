@@ -1,6 +1,8 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
-using Avalonia.Interactivity;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Vantah.App.Localization;
@@ -83,14 +85,29 @@ public class MainWindowTests
         MenuItems(window).Single(i => (i.Header as string) == Localizer.Instance[headerKey]);
 
     /// <summary>
-    /// Клик по пункту меню — именно RaiseEvent, а не вызов обработчика рефлексией: проверяем,
-    /// что Click в разметке действительно привязан к обработчику окна.
+    /// Клик по пункту меню — как у пользователя: раскрываем флайаут и жмём мышью по пункту.
+    /// Голый <c>RaiseEvent(ClickEvent)</c> на нераскрытом меню не годится: он идёт мимо
+    /// DefaultMenuInteractionHandler, флайаут при этом даже не закрывается — то есть проверялась бы
+    /// не та последовательность, что происходит на самом деле.
     /// </summary>
-    private static void Click(MenuItem item)
+    private static void Click(MainWindow window, string headerKey)
     {
-        item.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
-        // Открытие окна отложено на следующий такт диспетчера (MenuFlyout закрывается прямо в Click).
+        var button = window.GetVisualDescendants().OfType<Button>().Single(b => b.Flyout is MenuFlyout);
+        var flyout = (MenuFlyout)button.Flyout!;
+        flyout.ShowAt(button);
         Dispatcher.UIThread.RunJobs();
+        Assert.True(flyout.IsOpen);
+
+        var item = Item(window, headerKey);
+        var center = item.TranslatePoint(new Point(item.Bounds.Width / 2, item.Bounds.Height / 2), window);
+        Assert.NotNull(center);   // пункт раскрытого меню обязан быть на экране, а не схлопнут в ноль
+
+        window.MouseMove(center!.Value);
+        window.MouseDown(center.Value, MouseButton.Left);
+        window.MouseUp(center.Value, MouseButton.Left);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.False(flyout.IsOpen);   // настоящий клик по пункту меню флайаут закрывает
     }
 
     private static Window Dialog<TView>(MainWindow window) =>
@@ -154,10 +171,10 @@ public class MainWindowTests
     {
         var window = Show();
 
-        Click(Item(window, LocKeys.Menu_Processes));
-        Click(Item(window, LocKeys.Menu_Settings));
-        Click(Item(window, LocKeys.Menu_License));
-        Click(Item(window, LocKeys.Menu_About));
+        Click(window, LocKeys.Menu_Processes);
+        Click(window, LocKeys.Menu_Settings);
+        Click(window, LocKeys.Menu_License);
+        Click(window, LocKeys.Menu_About);
 
         Assert.True(Dialog<ProcessesView>(window).IsVisible);
         Assert.True(Dialog<ConfigView>(window).IsVisible);
@@ -171,7 +188,7 @@ public class MainWindowTests
     {
         var window = Show();
 
-        Click(Item(window, LocKeys.Menu_Settings));
+        Click(window, LocKeys.Menu_Settings);
 
         var expected = Localizer.Instance[LocKeys.Menu_Settings].TrimEnd('…');
         Assert.Equal(expected, Dialog<ConfigView>(window).Title);
@@ -185,10 +202,10 @@ public class MainWindowTests
         var window = Show();
         var vm = (MainWindowViewModel)window.DataContext!;
 
-        Click(Item(window, LocKeys.Menu_Processes));
+        Click(window, LocKeys.Menu_Processes);
         var first = Dialog<ProcessesView>(window);
         first.Close();
-        Click(Item(window, LocKeys.Menu_Processes));
+        Click(window, LocKeys.Menu_Processes);
 
         Assert.Same(first, Dialog<ProcessesView>(window));
         Assert.Same(vm.Processes, ((ProcessesView)first.Content!).DataContext);

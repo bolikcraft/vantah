@@ -222,6 +222,36 @@ public class ConfigViewTests
         }
     }
 
+    /// <summary>
+    /// Выбор языка обязан пережить перезапуск: комбобокс не только переключает язык на лету,
+    /// но и пишет код в LanguageStore, откуда его читает следующий старт приложения.
+    /// </summary>
+    [AvaloniaFact]
+    public void Choosing_a_language_saves_it_for_the_next_launch()
+    {
+        // Свой путь, а не ~/.config/vantah/language: прогон тестов не должен трогать настоящий выбор.
+        var path = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "language");
+        var vm = new ConfigViewModel(new FakeConfigService(), new AppStateStore(), new LanguageStore(path));
+        var window = Show(vm);
+
+        var combo = window.GetVisualDescendants().OfType<ComboBox>()
+            .Single(c => c.ItemsSource is IEnumerable<LanguageOption>);
+
+        try
+        {
+            combo.SelectedItem = vm.Languages.Single(l => l.Code == "en");
+
+            Assert.True(File.Exists(path));
+            Assert.Equal("en", File.ReadAllText(path).Trim());
+            Assert.Equal("en", new LanguageStore(path).Load());
+        }
+        finally
+        {
+            Localizer.Instance.SetLanguage("ru");
+            File.Delete(path);
+        }
+    }
+
     [AvaloniaFact]
     public void Warning_banner_appears_only_while_connected()
     {
