@@ -18,6 +18,14 @@
       <Setter Property="Padding" Value="10,4"/>
       <Setter Property="MinHeight" Value="0"/>
     </Style>
+
+    <!-- Акцентная полоса под выбранной вкладкой (PART_SelectedPipe во FluentTheme) убрана.
+         Выбранная вкладка и так отличается цветом текста от остальных.
+         Гасим именно Opacity: IsVisible/Height/Background у этой части заданы в шаблоне
+         локально, а локальное значение сильнее стиля — такие сеттеры молча не сработают. -->
+    <Style Selector="TabItem /template/ Border#PART_SelectedPipe">
+      <Setter Property="Opacity" Value="0"/>
+    </Style>
   </Window.Styles>
 
   <!-- ComboBox языка лежит поверх полосы вкладок TabControl, прижат вправо: одна визуальная строка с меню. -->
