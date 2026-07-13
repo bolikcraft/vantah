@@ -1,15 +1,33 @@
+using System.Collections.Generic;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Vantah.App.Localization;
+using Vantah.Core.Localization;
 
 namespace Vantah.App.ViewModels;
 
+/// <summary>Язык интерфейса в выпадающем списке. Display — самоназвание, не переводится.</summary>
+public sealed record LanguageOption(string Code, string Display);
+
 public partial class MainWindowViewModel : ObservableObject
 {
+    private readonly LanguageStore _languageStore;
+
     public StatusViewModel Status { get; }
     public LocationsViewModel Locations { get; }
     public DomainsViewModel Domains { get; }
     public LicenseViewModel License { get; }
     public AboutViewModel About { get; }
     public ProcessesViewModel Processes { get; }
+
+    /// <summary>Языки интерфейса. Название каждого — на нём самом, поэтому не переводится.</summary>
+    public IReadOnlyList<LanguageOption> Languages { get; } = new[]
+    {
+        new LanguageOption("ru", "Русский"),
+        new LanguageOption("en", "English"),
+    };
+
+    [ObservableProperty] private LanguageOption _selectedLanguage;
 
     // Индекс активной вкладки (Статус=0, Локации=1, Домены=2, Лицензия=3, О программе=4, Процессы=5) —
     // двусторонняя привязка к TabControl; на индексы завязано меню трея.
@@ -21,7 +39,8 @@ public partial class MainWindowViewModel : ObservableObject
         DomainsViewModel domains,
         LicenseViewModel license,
         AboutViewModel about,
-        ProcessesViewModel processes)
+        ProcessesViewModel processes,
+        LanguageStore languageStore)
     {
         Status = status;
         Locations = locations;
@@ -29,5 +48,18 @@ public partial class MainWindowViewModel : ObservableObject
         License = license;
         About = about;
         Processes = processes;
+        _languageStore = languageStore;
+
+        // Пишем в backing-поле, а не в свойство: стартовый язык — не выбор пользователя,
+        // сохранять его в ~/.config/vantah/language незачем.
+        var current = Localizer.Instance.Language;
+        _selectedLanguage = Languages.FirstOrDefault(l => l.Code == current) ?? Languages[0];
+    }
+
+    // Выбор языка в UI: переключаем на лету и запоминаем на следующий запуск.
+    partial void OnSelectedLanguageChanged(LanguageOption value)
+    {
+        Localizer.Instance.SetLanguage(value.Code);
+        _languageStore.Save(value.Code);
     }
 }

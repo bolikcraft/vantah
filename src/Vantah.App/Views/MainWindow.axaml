@@ -11,25 +11,44 @@
         Icon="/Assets/tray.ico"
         Title="Vantah" Width="800" Height="800">
 
-  <TabControl SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
-    <TabItem Header="{Binding [Tab_Status], Source={x:Static loc:Localizer.Instance}}">
-      <v:StatusView DataContext="{Binding Status}"/>
-    </TabItem>
-    <TabItem Header="{Binding [Tab_Locations], Source={x:Static loc:Localizer.Instance}}">
-      <v:LocationsView DataContext="{Binding Locations}"/>
-    </TabItem>
-    <TabItem Header="{Binding [Tab_Domains], Source={x:Static loc:Localizer.Instance}}">
-      <v:DomainsView DataContext="{Binding Domains}"/>
-    </TabItem>
-    <TabItem Header="{Binding [Tab_License], Source={x:Static loc:Localizer.Instance}}">
-      <v:LicenseView DataContext="{Binding License}"/>
-    </TabItem>
-    <TabItem Header="{Binding [Tab_About], Source={x:Static loc:Localizer.Instance}}">
-      <v:AboutView DataContext="{Binding About}"/>
-    </TabItem>
-    <TabItem Header="{Binding [Tab_Processes], Source={x:Static loc:Localizer.Instance}}">
-      <v:ProcessesView DataContext="{Binding Processes}"/>
-    </TabItem>
-  </TabControl>
+  <Grid RowDefinitions="Auto,*">
+
+    <!-- Выбор языка интерфейса: применяется на лету и запоминается на следующий запуск. -->
+    <ComboBox Grid.Row="0"
+              Margin="0,8,12,0"
+              MinWidth="120"
+              HorizontalAlignment="Right"
+              ItemsSource="{Binding Languages}"
+              SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+              ToolTip.Tip="{Binding [Lang_Label], Source={x:Static loc:Localizer.Instance}}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:LanguageOption">
+          <TextBlock Text="{Binding Display}"/>
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+
+    <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
+      <TabItem Header="{Binding [Tab_Status], Source={x:Static loc:Localizer.Instance}}">
+        <v:StatusView DataContext="{Binding Status}"/>
+      </TabItem>
+      <TabItem Header="{Binding [Tab_Locations], Source={x:Static loc:Localizer.Instance}}">
+        <v:LocationsView DataContext="{Binding Locations}"/>
+      </TabItem>
+      <TabItem Header="{Binding [Tab_Domains], Source={x:Static loc:Localizer.Instance}}">
+        <v:DomainsView DataContext="{Binding Domains}"/>
+      </TabItem>
+      <TabItem Header="{Binding [Tab_License], Source={x:Static loc:Localizer.Instance}}">
+        <v:LicenseView DataContext="{Binding License}"/>
+      </TabItem>
+      <TabItem Header="{Binding [Tab_About], Source={x:Static loc:Localizer.Instance}}">
+        <v:AboutView DataContext="{Binding About}"/>
+      </TabItem>
+      <TabItem Header="{Binding [Tab_Processes], Source={x:Static loc:Localizer.Instance}}">
+        <v:ProcessesView DataContext="{Binding Processes}"/>
+      </TabItem>
+    </TabControl>
+
+  </Grid>
 
 </Window>

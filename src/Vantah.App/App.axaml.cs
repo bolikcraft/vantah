@@ -1,9 +1,11 @@
 using System;
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using Vantah.App.Localization;
 using Vantah.App.Services;
 using Vantah.App.Tray;
 using Vantah.App.ViewModels;
@@ -13,6 +15,7 @@ using Vantah.Core.Config;
 using Vantah.Core.Exclusions;
 using Vantah.Core.Favorites;
 using Vantah.Core.History;
+using Vantah.Core.Localization;
 using Vantah.Core.Logs;
 using Vantah.Core.State;
 using Vantah.Core.Traffic;
@@ -31,6 +34,11 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            // Язык ставим до создания вьюмоделей: часть строк собирается в их конструкторах.
+            var languageStore = new LanguageStore();
+            Localizer.Instance.SetLanguage(
+                CultureSelector.Resolve(languageStore.Load(), CultureInfo.CurrentUICulture));
+
             var store = new AppStateStore();
 
             // Путь к CLI и команда убийства настраиваются: ~/.config/vantah/vantah.conf, затем env,
@@ -55,7 +63,8 @@ public partial class App : Application
                 new DomainsViewModel(exclusions, exclusionsStore, store),
                 new LicenseViewModel(vpn),
                 new AboutViewModel(vpn),
-                new ProcessesViewModel(runner)); // тот же CliRunner, что исполняет команды, — он же IProcessMonitor
+                new ProcessesViewModel(runner), // тот же CliRunner, что исполняет команды, — он же IProcessMonitor
+                languageStore);
 
             var window = new MainWindow { DataContext = mainVm };
             desktop.MainWindow = window;
