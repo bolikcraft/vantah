@@ -67,6 +67,38 @@ public class TrayIconControllerTests
     }
 
     /// <summary>
+    /// Смена системной темы на ходу: комплект меняется, и новая иконка обязана доехать
+    /// до самого TrayIcon, а не просто лечь в приватное поле контроллера. Без вызова
+    /// Apply() внутри UseIcons() в панели до ближайшей смены состояния VPN (а её можно
+    /// ждать часами) остаётся знак старой полярности — почти невидимый на новом фоне.
+    /// </summary>
+    [AvaloniaFact]
+    public void Swapping_icon_set_retints_icon_of_current_state()
+    {
+        var store = new AppStateStore();
+        var dark = new TrayIconSet(TrayIconPolarity.Dark);
+        var light = new TrayIconSet(TrayIconPolarity.Light);
+        var controller = NewController(store, dark);
+        var trayIcon = TrayIconOf(controller);
+
+        // Уводим состояние от стартового: перекрасить надо именно текущее, любое.
+        store.Set(s => s with { Connection = ConnectionState.Connected });
+        Dispatcher.UIThread.RunJobs();
+        Assert.Same(dark.For(ConnectionState.Connected), trayIcon.Icon);
+
+        controller.UseIcons(light);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Same(light.For(ConnectionState.Connected), trayIcon.Icon);
+
+        // И дальше трей живёт уже новым комплектом, а не откатывается к старому.
+        store.Set(s => s with { Connection = ConnectionState.Disconnected });
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Same(light.For(ConnectionState.Disconnected), trayIcon.Icon);
+    }
+
+    /// <summary>
     /// Состояние Error намеренно рисуется тем же глифом, что и Disconnected (туннеля нет —
     /// трафик не защищён), поэтому причина ошибки обязана быть в подсказке: это единственное
     /// место, где пользователь увидит её, не открывая окно.

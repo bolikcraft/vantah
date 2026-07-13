@@ -71,12 +71,27 @@ public partial class App : Application
 
             // Комплект иконок трея: панель растровую иконку не перекрашивает, поэтому
             // цвет знака выбираем сами — по теме приложения, с переопределением в vantah.conf.
-            var polarity = TrayIconResolver.ResolvePolarity(
-                config.Get(TrayIconResolver.PolarityKey),
-                appThemeIsDark: ActualThemeVariant == ThemeVariant.Dark);
+            var configuredPolarity = config.Get(TrayIconResolver.PolarityKey);
+            var polarity = ResolveTrayPolarity(configuredPolarity);
 
             // Системный трей + сворачивание окна вместо выхода.
-            _ = new TrayIconController(coordinator, store, favorites, window, new TrayIconSet(polarity));
+            var tray = new TrayIconController(coordinator, store, favorites, window, new TrayIconSet(polarity));
+
+            // RequestedThemeVariant=Default → тема приложения следует за системной, а трей живёт
+            // сутками и переживает переключение день→ночь. Пересобираем комплект на лету, иначе
+            // после смены темы в панели остаётся почти невидимый знак — до перезапуска.
+            ActualThemeVariantChanged += (_, _) =>
+            {
+                var next = ResolveTrayPolarity(configuredPolarity);
+                // Явный tray_icon=light|dark даёт ту же полярность при любой теме, поэтому
+                // отдельной проверки «не закреплено ли» не нужно: сравнение само её поглощает.
+                // Заодно не дёргаем трей на сменах темы, не переворачивающих светлое/тёмное.
+                if (next == polarity) return;
+
+                polarity = next;
+                tray.UseIcons(new TrayIconSet(polarity));
+            };
+
             window.Closing += (_, e) =>
             {
                 e.Cancel = true;
@@ -93,4 +108,7 @@ public partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
     }
+
+    private TrayIconPolarity ResolveTrayPolarity(string? configured) =>
+        TrayIconResolver.ResolvePolarity(configured, appThemeIsDark: ActualThemeVariant == ThemeVariant.Dark);
 }
