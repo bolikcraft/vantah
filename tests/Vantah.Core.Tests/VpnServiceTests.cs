@@ -50,6 +50,37 @@ public class VpnServiceTests
     }
 
     [Fact]
+    public async Task GetLicense_parses_output()
+    {
+        var cli = new FakeCliRunner().Enqueue(
+            "Logged in as user@example.com\n" +
+            "You are using the PREMIUM version\n" +
+            "Up to 10 devices simultaneously\n" +
+            "Your subscription will be renewed on 2028-07-08\n");
+        var svc = new VpnService(cli);
+
+        var license = await svc.GetLicenseAsync();
+
+        Assert.Equal(new[] { "license" }, cli.Calls[0]);
+        Assert.Equal("user@example.com", license.Email);
+        Assert.Equal("PREMIUM", license.Plan);
+        Assert.Equal(10, license.MaxDevices);
+        Assert.Equal("2028-07-08", license.RenewalDate);
+    }
+
+    [Fact]
+    public async Task GetLicense_failure_throws_with_stderr()
+    {
+        // Иначе парсер вернёт License("", "UNKNOWN", 0, null) и сбой (например, не выполнен
+        // вход) выглядел бы в UI как успешно загруженная лицензия.
+        var cli = new FakeCliRunner().Enqueue(new Vantah.Core.Cli.CliResult(1, "", "You are not logged in"));
+        var svc = new VpnService(cli);
+
+        var ex = await Assert.ThrowsAsync<VpnCommandException>(() => svc.GetLicenseAsync());
+        Assert.Contains("You are not logged in", ex.Message);
+    }
+
+    [Fact]
     public async Task GetCliVersion_calls_version_flag_and_strips_ansi()
     {
         var cli = new FakeCliRunner().Enqueue("AdGuard VPN CLI [1mv1.7.12[0m\n");

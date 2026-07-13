@@ -15,21 +15,11 @@
       <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Renewal}"/>
     </Grid>
 
-    <!-- Одна строка на загрузку и ошибку: ошибка выделяется классом .error (локальное
-         значение Opacity перебило бы сеттер стиля, поэтому базовая прозрачность тоже в стиле). -->
-    <TextBlock Text="{Binding Status}" TextWrapping="Wrap"
-               Classes.error="{Binding IsError}"
-               IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-      <TextBlock.Styles>
-        <Style Selector="TextBlock">
-          <Setter Property="Opacity" Value="0.7"/>
-        </Style>
-        <Style Selector="TextBlock.error">
-          <Setter Property="Foreground" Value="IndianRed"/>
-          <Setter Property="Opacity" Value="1"/>
-        </Style>
-      </TextBlock.Styles>
-    </TextBlock>
+    <TextBlock Text="{Binding Status}" Opacity="0.7" TextWrapping="Wrap"
+               IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+    <TextBlock Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap"
+               IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
     <Button Content="Обновить" Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}"
             HorizontalAlignment="Left" Width="140"/>

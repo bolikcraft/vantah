@@ -47,6 +47,10 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
     public async Task<License> GetLicenseAsync(CancellationToken ct = default)
     {
         var r = await cli.RunAsync(["license"], QuickTimeout, ct);
+        // Парсер на нераспарсенном выводе молча вернёт License("", "UNKNOWN", 0, null),
+        // поэтому сбой (частый случай — не выполнен вход) ловим по коду возврата.
+        if (!r.Ok)
+            throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, "license завершился с ошибкой"));
         return LicenseParser.Parse(r.Stdout);
     }
 
