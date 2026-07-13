@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;
+using Vantah.App.Tests.Fakes;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
 using Vantah.Core.Cli;
@@ -12,31 +13,6 @@ using Xunit;
 /// </summary>
 public class ProcessesViewTests
 {
-    /// <summary>Монитор-обманка: отдаёт заданный набор процессов и запоминает, кого просили убить.</summary>
-    private sealed class StubMonitor(params RunningProcess[] processes) : IProcessMonitor
-    {
-        public List<long> Killed { get; } = [];
-
-        public IReadOnlyList<RunningProcess> Snapshot() => processes;
-
-        public event EventHandler? Changed
-        {
-            add { } remove { }
-        }
-
-        public Task<bool> KillAsync(long id, CancellationToken ct = default)
-        {
-            Killed.Add(id);
-            return Task.FromResult(true);
-        }
-
-        public Task KillAllAsync(CancellationToken ct = default)
-        {
-            Killed.AddRange(processes.Select(p => p.Id));
-            return Task.CompletedTask;
-        }
-    }
-
     private const string Exe = "/opt/adguardvpn_cli/adguardvpn-cli";
 
     /// <summary>Реальный расклад: туннель под двумя обёртками sudo — ровно то, что даёт «sudo -b» у CLI.</summary>

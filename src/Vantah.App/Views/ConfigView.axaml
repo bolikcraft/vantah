@@ -7,6 +7,20 @@
   <ScrollViewer>
     <StackPanel Margin="20" Spacing="14" MaxWidth="460" HorizontalAlignment="Center">
 
+      <StackPanel Spacing="4">
+        <TextBlock FontWeight="SemiBold"
+                   Text="{Binding [Lang_Label], Source={x:Static loc:Localizer.Instance}}"/>
+        <ComboBox Width="200"
+                  ItemsSource="{Binding Languages}"
+                  SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}">
+          <ComboBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:LanguageOption">
+              <TextBlock Text="{Binding Display}"/>
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+
       <!-- Смена настроек на живом туннеле применяется, но подхватывается лишь при следующем подключении. -->
       <Border Background="#33F59E0B" CornerRadius="6" Padding="10"
               IsVisible="{Binding IsConnectedWarningVisible}">

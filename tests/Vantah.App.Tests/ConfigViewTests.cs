@@ -3,8 +3,10 @@ using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Localization;
+using Vantah.App.Tests.Fakes;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
+using Vantah.Core.Localization;
 using Vantah.Core.Models;
 using Vantah.Core.Settings;
 using Vantah.Core.State;
@@ -16,71 +18,6 @@ using Xunit;
 /// </summary>
 public class ConfigViewTests
 {
-    /// <summary>Сервис-обманка: отдаёт заданный конфиг и записывает, что у него просили.</summary>
-    private sealed class FakeConfigService(VpnConfig? current = null) : IConfigService
-    {
-        private VpnConfig _current = current ?? new VpnConfig();
-
-        /// <summary>Имена вызванных операций по порядку: «get», «set-mode:socks», …</summary>
-        public List<string> Calls { get; } = [];
-
-        private Task<VpnConfig> Record(string call)
-        {
-            Calls.Add(call);
-            return Task.FromResult(_current);
-        }
-
-        public Task<VpnConfig> GetAsync(CancellationToken ct = default) => Record("get");
-
-        public Task<VpnConfig> SetModeAsync(VpnMode mode, CancellationToken ct = default)
-        {
-            _current = _current with { Mode = mode };
-            return Record($"set-mode:{mode}");
-        }
-
-        public Task<VpnConfig> SetSocksPortAsync(int port, CancellationToken ct = default) =>
-            Record($"set-socks-port:{port}");
-
-        public Task<VpnConfig> SetSocksHostAsync(string host, CancellationToken ct = default) =>
-            Record($"set-socks-host:{host}");
-
-        public Task<VpnConfig> SetSocksUsernameAsync(string username, CancellationToken ct = default) =>
-            Record($"set-socks-username:{username}");
-
-        public Task<VpnConfig> SetSocksPasswordAsync(string password, CancellationToken ct = default) =>
-            Record($"set-socks-password:{password}");
-
-        public Task<VpnConfig> ClearSocksAuthAsync(CancellationToken ct = default) =>
-            Record("clear-socks-auth");
-
-        public Task<VpnConfig> SetDnsAsync(string upstream, CancellationToken ct = default) =>
-            Record($"set-dns:{upstream}");
-
-        public Task<VpnConfig> ResetDnsAsync(CancellationToken ct = default) =>
-            Record("reset-dns");
-
-        public Task<VpnConfig> SetChangeSystemDnsAsync(bool on, CancellationToken ct = default) =>
-            Record($"set-change-system-dns:{on}");
-
-        public Task<VpnConfig> SetTunRoutingModeAsync(TunnelRoutingMode mode, CancellationToken ct = default) =>
-            Record($"set-tun-routing-mode:{mode}");
-
-        public Task<VpnConfig> SetProtocolAsync(VpnProtocol protocol, CancellationToken ct = default) =>
-            Record($"set-protocol:{protocol}");
-
-        public Task<VpnConfig> SetPostQuantumAsync(bool on, CancellationToken ct = default) =>
-            Record($"set-post-quantum:{on}");
-
-        public Task<VpnConfig> SetUpdateChannelAsync(UpdateChannel channel, CancellationToken ct = default) =>
-            Record($"set-update-channel:{channel}");
-
-        public Task<VpnConfig> SetShowNotificationsAsync(bool on, CancellationToken ct = default) =>
-            Record($"set-show-notifications:{on}");
-
-        public Task<VpnConfig> SetDebugLoggingAsync(bool on, CancellationToken ct = default) =>
-            Record($"set-debug-logging:{on}");
-    }
-
     private static Window Show(ConfigViewModel vm)
     {
         var window = new Window { Content = new ConfigView { DataContext = vm }, Width = 600, Height = 900 };
@@ -88,8 +25,13 @@ public class ConfigViewTests
         return window;
     }
 
+    // LanguageStore пишет в ~/.config/vantah/language — путь уводим в temp,
+    // иначе прогон тестов перезаписал бы настоящий выбор языка пользователя.
     private static ConfigViewModel Vm(FakeConfigService svc, AppStateStore? store = null) =>
-        new(svc, store ?? new AppStateStore());
+        new(svc,
+            store ?? new AppStateStore(),
+            new LanguageStore(Path.Combine(
+                Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "language")));
 
     /// <summary>Кнопки самой формы: ровно <see cref="Button"/>, без ToggleButton/RepeatButton из шаблонов.</summary>
     private static Button[] OwnButtons(Window window) =>
@@ -250,6 +192,64 @@ public class ConfigViewTests
         await ClickAsync(window, LocKeys.Common_Apply);
 
         Assert.Contains("set-dns:94.140.14.14", svc.Calls);
+    }
+
+    /// <summary>
+    /// Язык интерфейса — поле формы настроек, а не элемент полосы вкладок. Выбор в комбобоксе
+    /// обязан переключать язык на лету: проверяем через сам ComboBox, а не через вьюмодель,
+    /// иначе отвязанный SelectedItem остался бы незамеченным.
+    /// </summary>
+    [AvaloniaFact]
+    public void Choosing_a_language_switches_the_ui_language()
+    {
+        var vm = Vm(new FakeConfigService());
+        var window = Show(vm);
+
+        var combo = window.GetVisualDescendants().OfType<ComboBox>()
+            .Single(c => c.ItemsSource is IEnumerable<LanguageOption>);
+
+        try
+        {
+            combo.SelectedItem = vm.Languages.Single(l => l.Code == "en");
+
+            Assert.Equal("en", Localizer.Instance.Language);
+            Assert.Equal("en", vm.SelectedLanguage.Code);
+        }
+        finally
+        {
+            // Localizer.Instance — синглтон на весь тест-хост: не вернём «ru» — протечёт в другие тесты.
+            Localizer.Instance.SetLanguage("ru");
+        }
+    }
+
+    /// <summary>
+    /// Выбор языка обязан пережить перезапуск: комбобокс не только переключает язык на лету,
+    /// но и пишет код в LanguageStore, откуда его читает следующий старт приложения.
+    /// </summary>
+    [AvaloniaFact]
+    public void Choosing_a_language_saves_it_for_the_next_launch()
+    {
+        // Свой путь, а не ~/.config/vantah/language: прогон тестов не должен трогать настоящий выбор.
+        var path = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "language");
+        var vm = new ConfigViewModel(new FakeConfigService(), new AppStateStore(), new LanguageStore(path));
+        var window = Show(vm);
+
+        var combo = window.GetVisualDescendants().OfType<ComboBox>()
+            .Single(c => c.ItemsSource is IEnumerable<LanguageOption>);
+
+        try
+        {
+            combo.SelectedItem = vm.Languages.Single(l => l.Code == "en");
+
+            Assert.True(File.Exists(path));
+            Assert.Equal("en", File.ReadAllText(path).Trim());
+            Assert.Equal("en", new LanguageStore(path).Load());
+        }
+        finally
+        {
+            Localizer.Instance.SetLanguage("ru");
+            File.Delete(path);
+        }
     }
 
     [AvaloniaFact]
