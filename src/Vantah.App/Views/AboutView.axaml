@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantah.App.ViewModels"
+             x:DataType="vm:AboutViewModel"
+             x:Class="Vantah.App.Views.AboutView">
+  <StackPanel Margin="16" Spacing="10">
+    <TextBlock Text="Vantah" FontSize="16" FontWeight="Bold"/>
+
+    <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto" RowSpacing="6">
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Версия:" Opacity="0.7"/>
+      <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding AppVersion}"/>
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="adguardvpn-cli:" Opacity="0.7"/>
+      <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CliVersion}" TextWrapping="Wrap"/>
+    </Grid>
+
+    <HyperlinkButton Content="{Binding Repository}" NavigateUri="{Binding RepositoryUri}"
+                     HorizontalAlignment="Left" Padding="0" MinHeight="0"/>
+
+    <TextBlock Text="{Binding LegalNotice}" Opacity="0.7" FontSize="11"
+               TextWrapping="Wrap" MaxWidth="520" HorizontalAlignment="Left"/>
+  </StackPanel>
+</UserControl>
