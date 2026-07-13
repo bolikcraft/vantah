@@ -1,9 +1,7 @@
-using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using Vantah.App.Localization;
 using Vantah.App.Services;
@@ -32,14 +30,21 @@ public sealed class TrayIconController
     private readonly NativeMenuItem _domainsItem = new();
 
     private readonly VpnCoordinator _coordinator;
+    private readonly TrayIconSet _icons;
 
-    public TrayIconController(VpnCoordinator coordinator, AppStateStore store, FavoritesStore favorites, Window window)
+    public TrayIconController(
+        VpnCoordinator coordinator,
+        AppStateStore store,
+        FavoritesStore favorites,
+        Window window,
+        TrayIconSet icons)
     {
         _coordinator = coordinator;
+        _icons = icons;
         _icon = new TrayIcon
         {
             ToolTipText = "Vantah",
-            Icon = LoadIcon(),
+            Icon = icons.For(store.Current.Connection),
         };
 
         _fastest.Click += async (_, _) => await _coordinator.ConnectAsync(null, true);
@@ -110,19 +115,6 @@ public sealed class TrayIconController
         return submenu;
     }
 
-    private static WindowIcon? LoadIcon()
-    {
-        try
-        {
-            using var stream = AssetLoader.Open(new Uri("avares://Vantah.App/Assets/tray.ico"));
-            return new WindowIcon(stream);
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private async Task OnToggle(AppStateStore store)
     {
         if (store.Current.Connection == ConnectionState.Connected)
@@ -153,6 +145,8 @@ public sealed class TrayIconController
     private void Apply(AppSnapshot s)
     {
         var loc = Localizer.Instance;
+        _icon.Icon = _icons.For(s.Connection);
+
         var connected = s.Connection == ConnectionState.Connected;
         _toggle.Header = loc[connected ? LocKeys.Common_Disconnect : LocKeys.Common_Connect];
 

@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Vantah.App.Localization;
 using Vantah.App.Services;
@@ -40,12 +41,11 @@ public partial class App : Application
                 CultureSelector.Resolve(languageStore.Load(), CultureInfo.CurrentUICulture));
 
             var store = new AppStateStore();
+            var config = IniConfig.Load(VantahPaths.ConfigFile);
 
             // Путь к CLI и команда убийства настраиваются: ~/.config/vantah/vantah.conf, затем env,
             // затем дефолт «adguardvpn-cli» из PATH.
-            var cliOptions = CliOptionsResolver.Resolve(
-                IniConfig.Load(VantahPaths.ConfigFile),
-                Environment.GetEnvironmentVariable);
+            var cliOptions = CliOptionsResolver.Resolve(config, Environment.GetEnvironmentVariable);
             var runner = new CliRunner(cliOptions.Executable, new PosixProcessKiller(cliOptions.KillCommand));
             var vpn = new VpnService(runner);
             var traffic = new TrafficMonitor(new SysfsTrafficReader());
@@ -69,8 +69,14 @@ public partial class App : Application
             var window = new MainWindow { DataContext = mainVm };
             desktop.MainWindow = window;
 
+            // Комплект иконок трея: панель растровую иконку не перекрашивает, поэтому
+            // цвет знака выбираем сами — по теме приложения, с переопределением в vantah.conf.
+            var polarity = TrayIconResolver.ResolvePolarity(
+                config.Get(TrayIconResolver.PolarityKey),
+                appThemeIsDark: ActualThemeVariant == ThemeVariant.Dark);
+
             // Системный трей + сворачивание окна вместо выхода.
-            _ = new TrayIconController(coordinator, store, favorites, window);
+            _ = new TrayIconController(coordinator, store, favorites, window, new TrayIconSet(polarity));
             window.Closing += (_, e) =>
             {
                 e.Cancel = true;
