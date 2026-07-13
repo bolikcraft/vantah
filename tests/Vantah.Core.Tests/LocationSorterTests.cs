@@ -69,6 +69,40 @@ public class LocationSorterTests
     }
 
     [Fact]
+    public void Favorites_first_keeps_column_order_among_favorites()
+    {
+        var favorites = new HashSet<string> { "US|New York", "EE|Tallinn" };
+
+        var sorted = LocationSorter.Sort(Sample(), LocationSortKey.Ping, ascending: true, favoritesFirst: true, favorites);
+
+        // Избранные наверху и между собой отсортированы по колонке: 24 < 50.
+        Assert.Equal(new[] { "Tallinn", "New York" }, sorted.Take(2).Select(l => l.City));
+        // Не-избранные ниже и тоже сохраняют порядок по колонке.
+        Assert.Equal(new[] { "Berlin", "aachen" }, sorted.Skip(2).Select(l => l.City));
+    }
+
+    [Fact]
+    public void Favorites_first_respects_descending_direction()
+    {
+        var favorites = new HashSet<string> { "EE|Tallinn" };
+
+        var sorted = LocationSorter.Sort(Sample(), LocationSortKey.Ping, ascending: false, favoritesFirst: true, favorites);
+
+        // Избранное всплывает наверх несмотря на минимальный пинг, остальные — по убыванию.
+        Assert.Equal("Tallinn", sorted[0].City);
+        Assert.Equal(new[] { 50, 30, 30 }, sorted.Skip(1).Select(l => l.PingMs));
+    }
+
+    [Fact]
+    public void Sort_of_empty_list_returns_empty()
+    {
+        var sorted = LocationSorter.Sort(
+            Array.Empty<Location>(), LocationSortKey.Ping, ascending: true, favoritesFirst: true, NoFavorites);
+
+        Assert.Empty(sorted);
+    }
+
+    [Fact]
     public void Favorites_first_disabled_ignores_favorites()
     {
         var favorites = new HashSet<string> { "US|New York" };

@@ -33,11 +33,11 @@ public static class LocationSorter
             LocationSortKey.Ping => ascending
                 ? items.OrderBy(l => l.PingMs)
                 : items.OrderByDescending(l => l.PingMs),
-            _ => items
+            _ => throw new ArgumentOutOfRangeException(nameof(key), key, null)
         };
 
         if (favoritesFirst)
-            sorted = sorted.ToList().OrderBy(l => favoriteKeys.Contains(l.Key) ? 0 : 1);
+            sorted = sorted.OrderBy(l => favoriteKeys.Contains(l.Key) ? 0 : 1);
 
         return sorted.ToList();
     }
