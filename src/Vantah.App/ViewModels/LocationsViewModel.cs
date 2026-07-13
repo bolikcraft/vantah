@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Services;
 using Vantah.Core.Favorites;
+using Vantah.Core.Locations;
 using Vantah.Core.Models;
 using Vantah.Core.State;
 using Vantah.Core.Vpn;
@@ -23,7 +24,22 @@ public partial class LocationsViewModel : ObservableObject
     private readonly List<LocationItemViewModel> _all = new();
 
     [ObservableProperty] private string _search = "";
+
+    // Дефолты повторяют прежнее жёсткое поведение: избранные сверху, дальше по возрастанию пинга.
+    [ObservableProperty] private LocationSortKey _sortKey = LocationSortKey.Ping;
+    [ObservableProperty] private bool _sortAscending = true;
+    [ObservableProperty] private bool _favoritesFirst = true;
+
     public ObservableCollection<LocationItemViewModel> Items { get; } = new();
+
+    public string IsoHeader => Header("ISO", LocationSortKey.Iso);
+    public string CityHeader => Header("Город", LocationSortKey.City);
+    public string CountryHeader => Header("Страна", LocationSortKey.Country);
+    public string PingHeader => Header("Пинг (мс)", LocationSortKey.Ping);
+    public string FavoritesHeader => FavoritesFirst ? "★ ▲" : "★";
+
+    private string Header(string text, LocationSortKey key) =>
+        SortKey == key ? text + (SortAscending ? " ▲" : " ▼") : text;
 
     public LocationsViewModel(IVpnService vpn, VpnCoordinator coordinator, FavoritesStore favorites, AppStateStore store)
     {
@@ -33,6 +49,32 @@ public partial class LocationsViewModel : ObservableObject
     }
 
     partial void OnSearchChanged(string value) => ApplyFilter();
+
+    partial void OnSortKeyChanged(LocationSortKey value)
+    {
+        RaiseHeadersChanged();
+        ApplyFilter();
+    }
+
+    partial void OnSortAscendingChanged(bool value)
+    {
+        RaiseHeadersChanged();
+        ApplyFilter();
+    }
+
+    partial void OnFavoritesFirstChanged(bool value)
+    {
+        OnPropertyChanged(nameof(FavoritesHeader));
+        ApplyFilter();
+    }
+
+    private void RaiseHeadersChanged()
+    {
+        OnPropertyChanged(nameof(IsoHeader));
+        OnPropertyChanged(nameof(CityHeader));
+        OnPropertyChanged(nameof(CountryHeader));
+        OnPropertyChanged(nameof(PingHeader));
+    }
 
     private async Task LoadAsync()
     {
@@ -66,10 +108,52 @@ public partial class LocationsViewModel : ObservableObject
                 i.Country.Contains(s, StringComparison.OrdinalIgnoreCase) ||
                 i.IsoCode.Contains(s, StringComparison.OrdinalIgnoreCase));
         }
-        q = q.OrderByDescending(i => i.IsFavorite).ThenBy(i => i.PingMs);
+        var filtered = q.ToList();
+        var favoriteKeys = filtered.Where(i => i.IsFavorite).Select(i => i.Key).ToHashSet(StringComparer.Ordinal);
+        var sorted = LocationSorter.Sort(
+            filtered.Select(i => i.Model).ToList(), SortKey, SortAscending, FavoritesFirst, favoriteKeys);
+
+        // Ключ локации теоретически может повториться — раскладываем по очереди на ключ,
+        // чтобы каждой отсортированной доменной модели достался свой элемент списка.
+        var byKey = new Dictionary<string, Queue<LocationItemViewModel>>(StringComparer.Ordinal);
+        foreach (var i in filtered)
+        {
+            if (!byKey.TryGetValue(i.Key, out var queue))
+                byKey[i.Key] = queue = new Queue<LocationItemViewModel>();
+            queue.Enqueue(i);
+        }
+
         Items.Clear();
-        foreach (var i in q) Items.Add(i);
+        foreach (var loc in sorted)
+            if (byKey.TryGetValue(loc.Key, out var queue) && queue.Count > 0)
+                Items.Add(queue.Dequeue());
     }
+
+    [RelayCommand]
+    private void SortBy(string column)
+    {
+        var key = column switch
+        {
+            "Iso" => LocationSortKey.Iso,
+            "Country" => LocationSortKey.Country,
+            "City" => LocationSortKey.City,
+            "Ping" => LocationSortKey.Ping,
+            _ => (LocationSortKey?)null
+        };
+        if (key is null)
+            return;
+
+        if (SortKey == key.Value)
+            SortAscending = !SortAscending;
+        else
+        {
+            SortAscending = true;
+            SortKey = key.Value;
+        }
+    }
+
+    [RelayCommand]
+    private void ToggleFavoritesFirst() => FavoritesFirst = !FavoritesFirst;
 
     private void ApplyConnected(AppSnapshot s)
     {
