@@ -21,8 +21,7 @@ public partial class DomainsViewModel : ObservableObject
     private SiteExclusionMode _mode = SiteExclusionMode.General;
     private bool _switchingMode;   // защита от реентранта при программной установке радио
 
-    [ObservableProperty] private string _filter = "";
-    [ObservableProperty] private string _newDomain = "";
+    [ObservableProperty] private string _query = "";  // одно поле: ввод домена и фильтр списка
     [ObservableProperty] private bool _isGeneral = true;
     [ObservableProperty] private bool _isSelective;
     [ObservableProperty] private bool _isBusy;
@@ -38,7 +37,7 @@ public partial class DomainsViewModel : ObservableObject
         _ = ReloadAsync();
     }
 
-    partial void OnFilterChanged(string value) => ApplyFilter();
+    partial void OnQueryChanged(string value) => ApplyFilter();
 
     partial void OnIsGeneralChanged(bool value)
     {
@@ -74,8 +73,8 @@ public partial class DomainsViewModel : ObservableObject
     private void ApplyFilter()
     {
         IEnumerable<string> q = _all;
-        if (!string.IsNullOrWhiteSpace(Filter))
-            q = q.Where(d => d.Contains(Filter.Trim(), StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrWhiteSpace(Query))
+            q = q.Where(d => d.Contains(Query.Trim(), StringComparison.OrdinalIgnoreCase));
         Items.Clear();
         foreach (var d in q) Items.Add(new DomainItemViewModel(d));
     }
@@ -105,9 +104,9 @@ public partial class DomainsViewModel : ObservableObject
     [RelayCommand]
     private async Task Add()
     {
-        var domain = NewDomain.Trim();
+        var domain = Query.Trim();
         if (domain.Length == 0) return;
-        try { await _exclusions.AddAsync(domain); NewDomain = ""; await ReloadAsync(); }
+        try { await _exclusions.AddAsync(domain); Query = ""; await ReloadAsync(); }
         catch (Exception ex) { Error = ex.Message; }
     }
 

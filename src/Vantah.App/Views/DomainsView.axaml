@@ -12,15 +12,13 @@
     </StackPanel>
 
     <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-      <TextBox Grid.Column="0" PlaceholderText="Домен (напр. example.com)" Text="{Binding NewDomain}">
+      <TextBox Grid.Column="0" PlaceholderText="Домен / фильтр (напр. example.com)" Text="{Binding Query}">
         <TextBox.KeyBindings>
           <KeyBinding Gesture="Enter" Command="{Binding AddCommand}"/>
         </TextBox.KeyBindings>
       </TextBox>
       <Button Grid.Column="1" Content="Добавить" Command="{Binding AddCommand}" Margin="8,0,0,0"/>
     </Grid>
-
-    <TextBox DockPanel.Dock="Top" PlaceholderText="Фильтр…" Text="{Binding Filter}" Margin="0,0,0,8"/>
 
     <TextBlock DockPanel.Dock="Bottom" Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap"
                IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="0,8,0,0"/>
