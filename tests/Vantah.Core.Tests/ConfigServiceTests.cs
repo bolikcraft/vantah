@@ -37,7 +37,7 @@ public class ConfigServiceTests
         Assert.NotNull(cfg);
     }
 
-    // CLI объявляет `set-mode mode TEXT:{socks,tun}` — токен СТРОЧНЫЙ, «SOCKS» отвергается.
+    // CLI объявляет `set-mode mode TEXT:{socks,tun}` — шлём объявленную, строчную форму.
     [Fact]
     public async Task SetMode_passes_lowercase_token()
     {
@@ -49,7 +49,7 @@ public class ConfigServiceTests
         Assert.Equal(new[] { "config", "set-mode", "socks" }, cli.Calls[0]);
     }
 
-    // `set-tun-routing-mode mode TEXT:{auto,none,script}` — тоже строчный.
+    // `set-tun-routing-mode mode TEXT:{auto,none,script}` — тоже объявлен строчным.
     [Fact]
     public async Task SetTunRoutingMode_passes_lowercase_token()
     {

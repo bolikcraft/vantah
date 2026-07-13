@@ -10,8 +10,9 @@ public sealed class ConfigCommandException(string message) : Exception(message);
 /// перечитываем <c>show</c>: возвращаем не то, что просили, а то, что CLI реально применил.
 /// </summary>
 /// <remarks>
-/// Токены сверены с <c>config set-… --help</c>: CLI объявляет их СТРОЧНЫМИ
-/// (<c>{socks,tun}</c>, <c>{auto,none,script}</c>) и верхний регистр отвергает.
+/// Токены сверены с <c>config set-… --help</c>: CLI объявляет их строчными
+/// (<c>{socks,tun}</c>, <c>{auto,none,script}</c>). На практике он регистронезависим и «TUN»
+/// тоже принимает, но шлём объявленную форму — на неё он и рассчитан.
 /// </remarks>
 public sealed class ConfigService(ICliRunner cli) : IConfigService
 {
