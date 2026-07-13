@@ -28,9 +28,10 @@
     </Style>
   </Window.Styles>
 
-  <!-- ComboBox языка лежит поверх полосы вкладок TabControl, прижат вправо: одна визуальная строка с меню. -->
   <Grid>
 
+    <!-- Служебные экраны («Процессы», «Настройки», «Лицензия», «О программе») живут не во вкладках,
+         а в меню «☰» и открываются отдельными окнами: в полосе остаются три рабочие вкладки. -->
     <TabControl SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
       <TabItem Header="{Binding [Tab_Status], Source={x:Static loc:Localizer.Instance}}">
         <v:StatusView DataContext="{Binding Status}"/>
@@ -41,37 +42,31 @@
       <TabItem Header="{Binding [Tab_Domains], Source={x:Static loc:Localizer.Instance}}">
         <v:DomainsView DataContext="{Binding Domains}"/>
       </TabItem>
-      <TabItem Header="{Binding [Tab_License], Source={x:Static loc:Localizer.Instance}}">
-        <v:LicenseView DataContext="{Binding License}"/>
-      </TabItem>
-      <TabItem Header="{Binding [Tab_Processes], Source={x:Static loc:Localizer.Instance}}">
-        <v:ProcessesView DataContext="{Binding Processes}"/>
-      </TabItem>
-      <TabItem Header="{Binding [Tab_About], Source={x:Static loc:Localizer.Instance}}">
-        <v:AboutView DataContext="{Binding About}"/>
-      </TabItem>
-      <TabItem Header="{Binding [Tab_Settings], Source={x:Static loc:Localizer.Instance}}">
-        <v:ConfigView DataContext="{Binding Config}"/>
-      </TabItem>
     </TabControl>
 
-    <!-- Выбор языка интерфейса: применяется на лету и запоминается на следующий запуск. -->
-    <ComboBox Margin="0,3,12,0"
-              MinWidth="110"
-              MinHeight="0"
-              Padding="8,2"
-              FontSize="13"
-              HorizontalAlignment="Right"
-              VerticalAlignment="Top"
-              ItemsSource="{Binding Languages}"
-              SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
-              ToolTip.Tip="{Binding [Lang_Label], Source={x:Static loc:Localizer.Instance}}">
-      <ComboBox.ItemTemplate>
-        <DataTemplate x:DataType="vm:LanguageOption">
-          <TextBlock Text="{Binding Display}"/>
-        </DataTemplate>
-      </ComboBox.ItemTemplate>
-    </ComboBox>
+    <!-- Меню служебных экранов: лежит поверх полосы вкладок TabControl, прижато вправо. -->
+    <Button Margin="0,3,12,0"
+            Padding="10,2"
+            FontSize="16"
+            Content="☰"
+            Background="Transparent"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            ToolTip.Tip="{Binding [Menu_Tooltip], Source={x:Static loc:Localizer.Instance}}">
+      <Button.Flyout>
+        <MenuFlyout Placement="BottomEdgeAlignedRight">
+          <MenuItem Header="{Binding [Menu_Processes], Source={x:Static loc:Localizer.Instance}}"
+                    Click="OnProcessesClick"/>
+          <MenuItem Header="{Binding [Menu_Settings], Source={x:Static loc:Localizer.Instance}}"
+                    Click="OnSettingsClick"/>
+          <Separator/>
+          <MenuItem Header="{Binding [Menu_License], Source={x:Static loc:Localizer.Instance}}"
+                    Click="OnLicenseClick"/>
+          <MenuItem Header="{Binding [Menu_About], Source={x:Static loc:Localizer.Instance}}"
+                    Click="OnAboutClick"/>
+        </MenuFlyout>
+      </Button.Flyout>
+    </Button>
 
   </Grid>
 

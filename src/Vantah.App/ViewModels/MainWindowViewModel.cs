@@ -30,9 +30,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty] private LanguageOption _selectedLanguage;
 
-    // Индекс активной вкладки (Статус=0, Локации=1, Домены=2, Лицензия=3, Процессы=4, О программе=5,
-    // Настройки=6) — двусторонняя привязка к TabControl; на индексы завязано меню трея,
-    // поэтому новые вкладки добавляем в конец.
+    // Индекс активной вкладки (Статус=0, Локации=1, Домены=2) — двусторонняя привязка к TabControl;
+    // на индексы завязано меню трея, поэтому новые вкладки добавляем в конец. Служебные экраны
+    // вкладками больше не являются: они живут в меню «☰» и открываются отдельными окнами.
     [ObservableProperty] private int _selectedTab;
 
     public MainWindowViewModel(
