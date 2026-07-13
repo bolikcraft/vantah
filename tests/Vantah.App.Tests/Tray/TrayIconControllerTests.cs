@@ -108,7 +108,9 @@ public class TrayIconControllerTests
             new VpnService(runner),
             new TrafficMonitor(new SysfsTrafficReader()),
             store,
-            new ConnectionHistoryTracker(new ConnectionHistoryStore(Path.Combine(temp, "history"))));
+            new ConnectionHistoryTracker(
+                new ConnectionHistoryStore(Path.Combine(temp, "history")),
+                new ActiveSessionStore(Path.Combine(temp, "connection-active"))));
 
         return new TrayIconController(
             coordinator,

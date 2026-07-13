@@ -48,8 +48,12 @@ public partial class App : Application
             var runner = new CliRunner(cliOptions.Executable, new PosixProcessKiller(cliOptions.KillCommand));
             var vpn = new VpnService(runner);
             var traffic = new TrafficMonitor(new SysfsTrafficReader());
+            // Активная сессия живёт в отдельном файле и переживает перезапуск: закрытие Vantah
+            // не рвёт VPN, поэтому на выходе сессию НЕ финализируем — на следующем старте её
+            // подхватит трекер (тот же город — продолжаем, другой/нет — закрываем по heartbeat).
             var historyStore = new ConnectionHistoryStore();
-            var history = new ConnectionHistoryTracker(historyStore);
+            var activeStore = new ActiveSessionStore();
+            var history = new ConnectionHistoryTracker(historyStore, activeStore);
             var coordinator = new VpnCoordinator(vpn, traffic, store, history);
             var favorites = new FavoritesStore();
             var exclusionsStore = new ExclusionsStore();

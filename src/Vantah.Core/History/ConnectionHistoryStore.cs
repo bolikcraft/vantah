@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Vantah.Core.Config;
 
 namespace Vantah.Core.History;
 
@@ -11,17 +12,8 @@ public sealed class ConnectionHistoryStore
 
     private readonly string _path;
 
-    public ConnectionHistoryStore(string? path = null) => _path = path ?? DefaultPath();
-
-    private static string DefaultPath()
-    {
-        var dataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
-        if (string.IsNullOrWhiteSpace(dataHome))
-            dataHome = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".local", "share");
-        return Path.Combine(dataHome, "vantah", "connections-history");
-    }
+    public ConnectionHistoryStore(string? path = null) =>
+        _path = path ?? Path.Combine(VantahPaths.DataDir, "connections-history");
 
     public IReadOnlyList<ConnectionHistoryEntry> Load()
     {
