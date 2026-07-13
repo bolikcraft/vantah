@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantah.App.ViewModels"
+             x:DataType="vm:LicenseViewModel"
+             x:Class="Vantah.App.Views.LicenseView">
+  <StackPanel Margin="16" Spacing="10">
+    <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
+      <TextBlock Grid.Row="0" Grid.Column="0" Text="Аккаунт:" Opacity="0.7"/>
+      <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Email}" TextWrapping="Wrap"/>
+      <TextBlock Grid.Row="1" Grid.Column="0" Text="Тариф:" Opacity="0.7"/>
+      <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Plan}" TextWrapping="Wrap"/>
+      <TextBlock Grid.Row="2" Grid.Column="0" Text="Устройств:" Opacity="0.7"/>
+      <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Devices}"/>
+      <TextBlock Grid.Row="3" Grid.Column="0" Text="Продление:" Opacity="0.7"/>
+      <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Renewal}"/>
+    </Grid>
+
+    <!-- Одна строка на загрузку и ошибку: ошибка выделяется классом .error (локальное
+         значение Opacity перебило бы сеттер стиля, поэтому базовая прозрачность тоже в стиле). -->
+    <TextBlock Text="{Binding Status}" TextWrapping="Wrap"
+               Classes.error="{Binding IsError}"
+               IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+      <TextBlock.Styles>
+        <Style Selector="TextBlock">
+          <Setter Property="Opacity" Value="0.7"/>
+        </Style>
+        <Style Selector="TextBlock.error">
+          <Setter Property="Foreground" Value="IndianRed"/>
+          <Setter Property="Opacity" Value="1"/>
+        </Style>
+      </TextBlock.Styles>
+    </TextBlock>
+
+    <Button Content="Обновить" Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}"
+            HorizontalAlignment="Left" Width="140"/>
+  </StackPanel>
+</UserControl>
