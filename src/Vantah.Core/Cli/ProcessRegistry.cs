@@ -4,9 +4,9 @@ namespace Vantah.Core.Cli;
 /// Потокобезопасный реестр живых процессов CLI. Чистая бухгалтерия: реальные процессы
 /// не запускает и не убивает — только учитывает. Часы инжектируются (тестируемость).
 /// </summary>
-public sealed class ProcessRegistry(Func<DateTime>? clock = null)
+public sealed class ProcessRegistry(Func<DateTimeOffset>? clock = null)
 {
-    private readonly Func<DateTime> _clock = clock ?? (() => DateTime.Now);
+    private readonly Func<DateTimeOffset> _clock = clock ?? (() => DateTimeOffset.Now);
     private readonly Dictionary<long, RunningProcess> _processes = new();
     private readonly object _gate = new();
     private long _nextId;

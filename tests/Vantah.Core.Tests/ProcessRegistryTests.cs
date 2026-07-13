@@ -3,7 +3,7 @@ using Xunit;
 
 public class ProcessRegistryTests
 {
-    private static DateTime At(int minute) => new(2026, 7, 13, 10, minute, 0, DateTimeKind.Local);
+    private static DateTimeOffset At(int minute) => new(2026, 7, 13, 10, minute, 0, TimeSpan.FromHours(3));
 
     [Fact]
     public void Register_assigns_monotonic_ids_and_fills_fields()

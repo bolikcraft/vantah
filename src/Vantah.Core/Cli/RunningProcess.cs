@@ -6,7 +6,7 @@ public sealed record RunningProcess(
     int Pid,
     string Command,
     IReadOnlyList<string> Args,
-    DateTime StartedAt)
+    DateTimeOffset StartedAt)
 {
     /// <summary>Команда с аргументами через пробел, как её видит пользователь.</summary>
     public string CommandLine =>
