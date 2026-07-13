@@ -17,6 +17,7 @@ using Vantah.Core.Favorites;
 using Vantah.Core.History;
 using Vantah.Core.Localization;
 using Vantah.Core.Logs;
+using Vantah.Core.Settings;
 using Vantah.Core.State;
 using Vantah.Core.Traffic;
 using Vantah.Core.Vpn;
@@ -67,6 +68,9 @@ public partial class App : Application
             var exclusionsStore = new ExclusionsStore();
             var exclusions = new ExclusionsService(runner, exclusionsStore);
             var logReader = new VpnLogReader();
+            // Настройки самого adguardvpn-cli (config show / set-*) — не путать с `config` выше,
+            // это INI-конфиг Vantah (~/.config/vantah/vantah.conf).
+            var vpnConfig = new ConfigService(runner);
 
             var mainVm = new MainWindowViewModel(
                 new StatusViewModel(coordinator, store, logReader, new HistoryViewModel(coordinator, store)),
@@ -75,6 +79,7 @@ public partial class App : Application
                 new LicenseViewModel(vpn),
                 new AboutViewModel(vpn),
                 new ProcessesViewModel(processes),
+                new ConfigViewModel(vpnConfig, store),
                 languageStore);
 
             var window = new MainWindow { DataContext = mainVm };

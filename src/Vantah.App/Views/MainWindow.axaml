@@ -50,6 +50,9 @@
       <TabItem Header="{Binding [Tab_About], Source={x:Static loc:Localizer.Instance}}">
         <v:AboutView DataContext="{Binding About}"/>
       </TabItem>
+      <TabItem Header="{Binding [Tab_Settings], Source={x:Static loc:Localizer.Instance}}">
+        <v:ConfigView DataContext="{Binding Config}"/>
+      </TabItem>
     </TabControl>
 
     <!-- Выбор языка интерфейса: применяется на лету и запоминается на следующий запуск. -->

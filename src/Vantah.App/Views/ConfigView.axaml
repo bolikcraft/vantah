@@ -27,20 +27,20 @@
                      Text="{Binding [Settings_SocksSection], Source={x:Static loc:Localizer.Instance}}"/>
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBox Width="140" Text="{Binding SocksPort}"
-                     Watermark="{Binding [Settings_SocksPort], Source={x:Static loc:Localizer.Instance}}"/>
+                     PlaceholderText="{Binding [Settings_SocksPort], Source={x:Static loc:Localizer.Instance}}"/>
             <Button Command="{Binding ApplySocksPortCommand}"
                     Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
           </StackPanel>
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBox Width="200" Text="{Binding SocksHost}"
-                     Watermark="{Binding [Settings_SocksHost], Source={x:Static loc:Localizer.Instance}}"/>
+                     PlaceholderText="{Binding [Settings_SocksHost], Source={x:Static loc:Localizer.Instance}}"/>
             <Button Command="{Binding ApplySocksHostCommand}"
                     Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
           </StackPanel>
           <TextBox Text="{Binding SocksUsername}"
-                   Watermark="{Binding [Settings_SocksUsername], Source={x:Static loc:Localizer.Instance}}"/>
+                   PlaceholderText="{Binding [Settings_SocksUsername], Source={x:Static loc:Localizer.Instance}}"/>
           <TextBox Text="{Binding SocksPassword}" PasswordChar="•"
-                   Watermark="{Binding [Settings_SocksPassword], Source={x:Static loc:Localizer.Instance}}"/>
+                   PlaceholderText="{Binding [Settings_SocksPassword], Source={x:Static loc:Localizer.Instance}}"/>
           <StackPanel Orientation="Horizontal" Spacing="8">
             <Button Command="{Binding ApplySocksAuthCommand}"
                     Content="{Binding [Settings_SaveAuth], Source={x:Static loc:Localizer.Instance}}"/>
@@ -55,7 +55,7 @@
                    Text="{Binding [Settings_Dns], Source={x:Static loc:Localizer.Instance}}"/>
         <StackPanel Orientation="Horizontal" Spacing="8">
           <TextBox Width="300" Text="{Binding DnsUpstream}"
-                   Watermark="{Binding [Settings_DnsPlaceholder], Source={x:Static loc:Localizer.Instance}}"/>
+                   PlaceholderText="{Binding [Settings_DnsPlaceholder], Source={x:Static loc:Localizer.Instance}}"/>
           <Button Command="{Binding ApplyDnsCommand}"
                   Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
         </StackPanel>
