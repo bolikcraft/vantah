@@ -1,0 +1,18 @@
+[1mCurrent configuration:
+[0m	Data directory: /home/user/.local/share/adguardvpn-cli
+	Mode: tun
+	SOCKS port: 1080
+	SOCKS host: 127.0.0.1
+	SOCKS username: 
+	DNS upstream: Default (provided by AdGuard VPN)
+	Tunnel routing mode: auto
+	Change system DNS: off
+	Crash reporting: on
+	Send anonymized usage data: on
+	Update channel: RELEASE
+	Protocol: Default (auto)
+	Post-quantum cryptography: Default (on)
+	Show hints: Default (on)
+	Debug logging: off
+	Show notifications: Default (off)
+	Outbound interface override: not set
