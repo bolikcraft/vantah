@@ -13,5 +13,11 @@ public interface IProcessKiller
     /// <c>if (await killer.KillAsync(pid, ct))</c> без try/catch, независимо от того,
     /// используется ли kill(2) или внешняя привилегированная kill-команда.
     /// </remarks>
+    /// <remarks>
+    /// ОГРАНИЧЕНИЕ: сигнал подаётся только самому процессу с этим pid, дочерние процессы НЕ убиваются
+    /// (в отличие от <c>Process.Kill(entireProcessTree: true)</c>, которым CliRunner убивает свои
+    /// собственные процессы). Если убиваемая команда CLI порождает детей, они переживут вызов.
+    /// Убийство по группе процессов сознательно не делаем: настраиваемая kill-команда придёт в E7.
+    /// </remarks>
     Task<bool> KillAsync(int pid, CancellationToken ct = default);
 }
