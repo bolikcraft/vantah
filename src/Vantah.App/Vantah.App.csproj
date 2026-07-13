@@ -4,7 +4,16 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!--
+      Нейтральные значения в Strings.resx уже русские, поэтому Strings.ru.resx не нужен:
+      ResourceManager для культуры ru берёт строки прямо из главного (нейтрального) ресурса.
+    -->
+    <NeutralLanguage>ru</NeutralLanguage>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Vantah.App.Tests" />
+  </ItemGroup>
 
   <!--
     Self-contained single-file publish (Linux). Активируется только когда задан

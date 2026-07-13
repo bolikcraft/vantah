@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- English strings. Neutral culture (Strings.resx) is Russian. -->
+
+  <!-- Вкладки главного окна -->
+  <data name="Tab_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Tab_Locations" xml:space="preserve">
+    <value>Locations</value>
+  </data>
+  <data name="Tab_Domains" xml:space="preserve">
+    <value>Domains</value>
+  </data>
+  <data name="Tab_License" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="Tab_About" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="Tab_Processes" xml:space="preserve">
+    <value>Processes</value>
+  </data>
+
+  <!-- Общие подписи кнопок и состояний -->
+  <data name="Common_Connect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="Common_Disconnect" xml:space="preserve">
+    <value>Disconnect</value>
+  </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Common_Clear" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="Common_Import" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="Common_Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Loading…</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>unavailable</value>
+  </data>
+
+  <!-- Вкладка «Статус» -->
+  <data name="Status_Connected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="Status_Connecting" xml:space="preserve">
+    <value>Connecting…</value>
+  </data>
+  <data name="Status_Disconnecting" xml:space="preserve">
+    <value>Disconnecting…</value>
+  </data>
+  <data name="Status_Disconnected" xml:space="preserve">
+    <value>Disconnected</value>
+  </data>
+  <data name="Status_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Status_SpeedLabel" xml:space="preserve">
+    <value>Speed:</value>
+  </data>
+  <data name="Status_SessionLabel" xml:space="preserve">
+    <value>Session total:</value>
+  </data>
+  <data name="Status_ModeFormat" xml:space="preserve">
+    <value>Mode: {0}</value>
+    <comment>{0} — режим CLI (TUN/SOCKS), не переводится.</comment>
+  </data>
+  <data name="Status_Exclusions_General" xml:space="preserve">
+    <value>Exclusions: General</value>
+  </data>
+  <data name="Status_Exclusions_Selective" xml:space="preserve">
+    <value>Exclusions: Selective</value>
+  </data>
+  <data name="Status_SubTab_History" xml:space="preserve">
+    <value>History</value>
+  </data>
+  <data name="Status_SubTab_Log" xml:space="preserve">
+    <value>Log</value>
+  </data>
+  <data name="Status_HistoryEmpty" xml:space="preserve">
+    <value>No entries yet — history appears after your first connection</value>
+  </data>
+  <data name="Status_HistoryEntryFormat" xml:space="preserve">
+    <value>{0} — {1} → {2}</value>
+    <comment>{0} — локация, {1} — начало, {2} — конец сессии.</comment>
+  </data>
+
+  <!-- Вкладка «Локации» -->
+  <data name="Locations_SearchPlaceholder" xml:space="preserve">
+    <value>Search location…</value>
+  </data>
+  <data name="Locations_ConnectedBadge" xml:space="preserve">
+    <value>✓ Connected</value>
+  </data>
+  <data name="Locations_Col_Iso" xml:space="preserve">
+    <value>ISO</value>
+  </data>
+  <data name="Locations_Col_City" xml:space="preserve">
+    <value>City</value>
+  </data>
+  <data name="Locations_Col_Country" xml:space="preserve">
+    <value>Country</value>
+  </data>
+  <data name="Locations_Col_Ping" xml:space="preserve">
+    <value>Ping (ms)</value>
+  </data>
+  <data name="Locations_Tooltip_FavoritesFirst" xml:space="preserve">
+    <value>Favorites on top</value>
+  </data>
+  <data name="Locations_Tooltip_SortByIso" xml:space="preserve">
+    <value>Sort by country code</value>
+  </data>
+  <data name="Locations_Tooltip_SortByCity" xml:space="preserve">
+    <value>Sort by city</value>
+  </data>
+  <data name="Locations_Tooltip_SortByCountry" xml:space="preserve">
+    <value>Sort by country</value>
+  </data>
+  <data name="Locations_Tooltip_SortByPing" xml:space="preserve">
+    <value>Sort by ping</value>
+  </data>
+
+  <!-- Вкладка «Домены» -->
+  <data name="Domains_Mode_General" xml:space="preserve">
+    <value>Listed domains bypass the VPN</value>
+  </data>
+  <data name="Domains_Mode_Selective" xml:space="preserve">
+    <value>Only listed domains go through the VPN</value>
+  </data>
+  <data name="Domains_QueryPlaceholder" xml:space="preserve">
+    <value>Domain / filter (e.g. example.com)</value>
+  </data>
+  <data name="Domains_PasteFromClipboard" xml:space="preserve">
+    <value>Paste from clipboard</value>
+  </data>
+  <data name="Domains_ExportDialogTitle" xml:space="preserve">
+    <value>Export domains</value>
+  </data>
+  <data name="Domains_ImportDialogTitle" xml:space="preserve">
+    <value>Import domains</value>
+  </data>
+  <data name="Domains_ClearConfirmTitle" xml:space="preserve">
+    <value>Clear exclusions</value>
+  </data>
+  <data name="Domains_ClearConfirmMessage" xml:space="preserve">
+    <value>Remove all domains of the current mode?</value>
+  </data>
+
+  <!-- Вкладка «Лицензия» -->
+  <data name="License_Account" xml:space="preserve">
+    <value>Account:</value>
+  </data>
+  <data name="License_Plan" xml:space="preserve">
+    <value>Plan:</value>
+  </data>
+  <data name="License_Devices" xml:space="preserve">
+    <value>Devices:</value>
+  </data>
+  <data name="License_Renewal" xml:space="preserve">
+    <value>Renewal:</value>
+  </data>
+  <data name="License_Loading" xml:space="preserve">
+    <value>Loading license…</value>
+  </data>
+  <data name="License_ErrorNotLoggedIn" xml:space="preserve">
+    <value>Failed to get the license — you may not be signed in</value>
+  </data>
+  <data name="License_ErrorFormat" xml:space="preserve">
+    <value>Failed to get the license: {0}</value>
+    <comment>{0} — текст ошибки CLI.</comment>
+  </data>
+
+  <!-- Вкладка «О программе» -->
+  <data name="About_Version" xml:space="preserve">
+    <value>Version:</value>
+  </data>
+  <data name="About_CliVersion" xml:space="preserve">
+    <value>adguardvpn-cli:</value>
+  </data>
+  <data name="About_LegalNotice" xml:space="preserve">
+    <value>Vantah is an independent graphical client for the adguardvpn-cli utility. The project is not affiliated with, endorsed by, or supported by AdGuard. "AdGuard" and "AdGuard VPN" are trademarks of their respective owners and are mentioned solely to indicate compatibility.</value>
+  </data>
+
+  <!-- Вкладка «Процессы» -->
+  <data name="Processes_Col_Pid" xml:space="preserve">
+    <value>PID</value>
+  </data>
+  <data name="Processes_Col_Command" xml:space="preserve">
+    <value>Command</value>
+  </data>
+  <data name="Processes_Col_Started" xml:space="preserve">
+    <value>Started</value>
+  </data>
+  <data name="Processes_Kill" xml:space="preserve">
+    <value>Kill</value>
+  </data>
+  <data name="Processes_KillAll" xml:space="preserve">
+    <value>Kill all</value>
+  </data>
+  <data name="Processes_KillConfirm" xml:space="preserve">
+    <value>Terminate process PID {0}?</value>
+    <comment>{0} — PID процесса.</comment>
+  </data>
+  <data name="Processes_KillAllConfirm" xml:space="preserve">
+    <value>Terminate all running processes?</value>
+  </data>
+  <data name="Processes_KillConfirmAction" xml:space="preserve">
+    <value>Terminate</value>
+  </data>
+  <data name="Processes_Empty" xml:space="preserve">
+    <value>No running processes</value>
+  </data>
+
+  <!-- Меню и подсказка в трее -->
+  <data name="Tray_Fastest" xml:space="preserve">
+    <value>⚡ Fastest</value>
+  </data>
+  <data name="Tray_Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="Tray_ShowWindow" xml:space="preserve">
+    <value>Show window</value>
+  </data>
+  <data name="Tray_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Tray_NoFavorites" xml:space="preserve">
+    <value>No favorites</value>
+  </data>
+  <data name="Tray_DomainsFormat" xml:space="preserve">
+    <value>Domains ({0})</value>
+    <comment>{0} — число доменов-исключений.</comment>
+  </data>
+  <data name="Tray_Tooltip_ConnectedFormat" xml:space="preserve">
+    <value>{0} Vantah — Connected{1}</value>
+    <comment>{0} — глиф состояния, {1} — «: Город» либо пусто.</comment>
+  </data>
+  <data name="Tray_Tooltip_DisconnectedFormat" xml:space="preserve">
+    <value>{0} Vantah — Disconnected</value>
+    <comment>{0} — глиф состояния.</comment>
+  </data>
+  <data name="Tray_Tooltip_TrafficFormat" xml:space="preserve">
+    <value>↓ {0}/s ↑ {1}/s</value>
+    <comment>{0} — приём, {1} — передача.</comment>
+  </data>
+  <data name="Tray_Tooltip_DomainsFormat" xml:space="preserve">
+    <value>Domains: {0}</value>
+    <comment>{0} — число доменов-исключений.</comment>
+  </data>
+  <data name="Tray_StatusConnectedFormat" xml:space="preserve">
+    <value>{0} {1}{2}</value>
+    <comment>{0} — глиф состояния, {1} — локация, {2} — « · Режим» либо пусто.</comment>
+  </data>
+
+  <!-- Выбор языка -->
+  <data name="Lang_Label" xml:space="preserve">
+    <value>Language</value>
+  </data>
+</root>
