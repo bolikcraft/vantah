@@ -6,6 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Vantah.App.Services;
+using Vantah.App.ViewModels;
 using Vantah.Core.Favorites;
 using Vantah.Core.Models;
 using Vantah.Core.State;
@@ -14,9 +15,11 @@ namespace Vantah.App.Tray;
 
 public sealed class TrayIconController
 {
+    private const int DomainsTabIndex = 2;
     private readonly TrayIcon _icon;
+    private readonly NativeMenuItem _statusItem = new("Отключено") { IsEnabled = false };
     private readonly NativeMenuItem _toggle = new("Подключить");
-    private readonly NativeMenuItem _domainsItem = new("Домены (0)") { IsEnabled = false };
+    private readonly NativeMenuItem _domainsItem = new("Домены (0)");
     private readonly VpnCoordinator _coordinator;
 
     public TrayIconController(VpnCoordinator coordinator, AppStateStore store, FavoritesStore favorites, Window window)
@@ -34,6 +37,8 @@ public sealed class TrayIconController
 
         var locations = new NativeMenuItem("Локация") { Menu = BuildFavoritesMenu(favorites) };
 
+        _domainsItem.Click += (_, _) => ShowDomains(window);
+
         var show = new NativeMenuItem("Показать окно");
         show.Click += (_, _) => { window.Show(); window.Activate(); };
 
@@ -42,13 +47,13 @@ public sealed class TrayIconController
             as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
 
         var menu = new NativeMenu();
-        menu.Add(_toggle);
+        menu.Add(_statusItem);          // статус вверху
         menu.Add(fastest);
         menu.Add(locations);
-        menu.Add(new NativeMenuItemSeparator());
-        menu.Add(_domainsItem);
-        menu.Add(new NativeMenuItemSeparator());
+        menu.Add(_domainsItem);         // кликабельно → окно на вкладке «Домены»
         menu.Add(show);
+        menu.Add(_toggle);              // Отключить/Подключить — внизу, перед выходом
+        menu.Add(new NativeMenuItemSeparator());  // единственная отбивка — у выхода
         menu.Add(exit);
         _icon.Menu = menu;
 
@@ -106,6 +111,14 @@ public sealed class TrayIconController
             await _coordinator.ConnectAsync(null, false);
     }
 
+    // Клик по «Домены (N)» — показать окно и сразу открыть вкладку «Домены».
+    private static void ShowDomains(Window window)
+    {
+        if (window.DataContext is MainWindowViewModel vm) vm.SelectedTab = DomainsTabIndex;
+        window.Show();
+        window.Activate();
+    }
+
     private void Apply(AppSnapshot s)
     {
         var connected = s.Connection == ConnectionState.Connected;
@@ -114,6 +127,10 @@ public sealed class TrayIconController
         var glyph = connected ? "🟢" : "⚪";
         if (connected)
         {
+            // Статус вверху меню: к чему и в каком режиме подключено.
+            var mode = s.Mode is { } m ? $" · {m}" : "";
+            _statusItem.Header = $"{glyph} {s.Location}{mode}".Trim();
+
             var loc = s.Location is { } l ? $": {l}" : "";
             var tip = $"{glyph} Vantah — Подключено{loc}";
             if (s.Traffic is { } t)
@@ -122,10 +139,11 @@ public sealed class TrayIconController
         }
         else
         {
+            _statusItem.Header = $"{glyph} Отключено";
             _icon.ToolTipText = $"{glyph} Vantah — Отключено";
         }
 
-        // Счётчик доменов-исключений: неактивный пункт меню + строка в подсказке.
+        // Счётчик доменов-исключений: пункт меню + строка в подсказке.
         // Дописывается в самом конце, чтобы не накапливаться поверх базового текста.
         _domainsItem.Header = $"Домены ({s.ExclusionsCount})";
         _icon.ToolTipText += $"\nДомены: {s.ExclusionsCount}";

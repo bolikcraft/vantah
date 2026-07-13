@@ -10,7 +10,7 @@
         Icon="/Assets/tray.ico"
         Title="Vantah" Width="800" Height="800">
 
-  <TabControl>
+  <TabControl SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
     <TabItem Header="Статус"><v:StatusView DataContext="{Binding Status}"/></TabItem>
     <TabItem Header="Локации"><v:LocationsView DataContext="{Binding Locations}"/></TabItem>
     <TabItem Header="Домены"><v:DomainsView DataContext="{Binding Domains}"/></TabItem>
