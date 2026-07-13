@@ -13,6 +13,9 @@ public partial class AboutViewModel : ObservableObject
 
     private const string DefaultVersion = "1.0.0";
 
+    // TODO(E6): станет ресурсным ключом Common_NotAvailable.
+    private const string NotAvailable = "недоступно";
+
     private readonly IVpnService _vpn;
 
     [ObservableProperty] private string _cliVersion = "загрузка…";
@@ -39,11 +42,11 @@ public partial class AboutViewModel : ObservableObject
     {
         try
         {
-            CliVersion = await _vpn.GetCliVersionAsync(ct);
+            CliVersion = await _vpn.GetCliVersionAsync(ct) ?? NotAvailable;
         }
         catch
         {
-            CliVersion = "недоступно";
+            CliVersion = NotAvailable;
         }
     }
 

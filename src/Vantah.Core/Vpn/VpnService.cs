@@ -54,12 +54,12 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
         return LicenseParser.Parse(r.Stdout);
     }
 
-    public async Task<string> GetCliVersionAsync(CancellationToken ct = default)
+    public async Task<string?> GetCliVersionAsync(CancellationToken ct = default)
     {
         var r = await cli.RunAsync(["--version"], QuickTimeout, ct);
-        if (!r.Ok) return "недоступно";
+        if (!r.Ok) return null;
         var version = Ansi.Strip(r.Stdout).Trim();
-        return string.IsNullOrWhiteSpace(version) ? "недоступно" : version;
+        return string.IsNullOrWhiteSpace(version) ? null : version;
     }
 
     private static string FirstNonEmpty(params string[] xs) =>

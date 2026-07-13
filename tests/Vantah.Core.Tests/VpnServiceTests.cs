@@ -93,20 +93,20 @@ public class VpnServiceTests
     }
 
     [Fact]
-    public async Task GetCliVersion_returns_placeholder_when_command_fails()
+    public async Task GetCliVersion_returns_null_when_command_fails()
     {
         var cli = new FakeCliRunner().Enqueue(new Vantah.Core.Cli.CliResult(127, "", "command not found"));
         var svc = new VpnService(cli);
 
-        Assert.Equal("недоступно", await svc.GetCliVersionAsync());
+        Assert.Null(await svc.GetCliVersionAsync());
     }
 
     [Fact]
-    public async Task GetCliVersion_returns_placeholder_when_output_empty()
+    public async Task GetCliVersion_returns_null_when_output_empty()
     {
         var cli = new FakeCliRunner().Enqueue("   \n");
         var svc = new VpnService(cli);
 
-        Assert.Equal("недоступно", await svc.GetCliVersionAsync());
+        Assert.Null(await svc.GetCliVersionAsync());
     }
 }
