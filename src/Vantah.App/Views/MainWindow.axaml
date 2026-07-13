@@ -14,6 +14,8 @@
     <TabItem Header="Статус"><v:StatusView DataContext="{Binding Status}"/></TabItem>
     <TabItem Header="Локации"><v:LocationsView DataContext="{Binding Locations}"/></TabItem>
     <TabItem Header="Домены"><v:DomainsView DataContext="{Binding Domains}"/></TabItem>
+    <TabItem Header="Лицензия"><v:LicenseView DataContext="{Binding License}"/></TabItem>
+    <TabItem Header="О программе"><v:AboutView DataContext="{Binding About}"/></TabItem>
   </TabControl>
 
 </Window>

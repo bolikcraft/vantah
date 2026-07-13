@@ -45,7 +45,9 @@ public partial class App : Application
             var mainVm = new MainWindowViewModel(
                 new StatusViewModel(coordinator, store, logReader, new HistoryViewModel(coordinator, store)),
                 new LocationsViewModel(vpn, coordinator, favorites, store),
-                new DomainsViewModel(exclusions, exclusionsStore, store));
+                new DomainsViewModel(exclusions, exclusionsStore, store),
+                new LicenseViewModel(vpn),
+                new AboutViewModel(vpn));
 
             var window = new MainWindow { DataContext = mainVm };
             desktop.MainWindow = window;
