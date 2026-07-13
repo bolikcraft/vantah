@@ -9,8 +9,16 @@ assets="$root/src/Vantah.App/Assets"
 hicolor="$root/packaging/icons/hicolor"
 tmp=$(mktemp -d); trap 'rm -rf "$tmp"' EXIT
 
-DARK='#18181b'   # знак для светлых панелей
-LIGHT='#f4f4f5'  # знак для тёмных панелей
+# Цвет знака в исходниках трея — его и подменяем на цвет состояния.
+MARK='#18181b'
+
+# Цвет состояния трея. Дублирует форму знака, не заменяет её: см.
+# docs/specs/2026-07-13-icon-design.md.
+declare -A TRAY_COLOR=(
+  [disconnected]='#9ca3af'  # серый — защиты нет (сюда же Error)
+  [connecting]='#f59e0b'    # янтарный — переходное состояние
+  [connected]='#22c55e'     # зелёный — маршрут построен
+)
 
 png() {  # png <svg> <size> <out>
   # stderr не глушим: иначе падение inkscape оборвёт скрипт без единой диагностики.
@@ -28,29 +36,26 @@ for s in "${app_sizes[@]}"; do
 done
 magick "${app_pngs[@]}" "$assets/vantah.ico"
 
-# --- трей: 2 комплекта × 3 глифа. Светлый — тот же SVG с заменённым цветом.
+# --- трей: 3 глифа, каждый в цвете своего состояния.
 tray_sizes=(16 22 24 32 48)
 mkdir -p "$assets/tray"
 for state in disconnected connecting connected; do
-  for polarity in dark light; do
-    src="tray-$state.svg"
-    if [ "$polarity" = light ]; then
-      src="$tmp/tray-$state-light.svg"
-      sed "s/$DARK/$LIGHT/g" "tray-$state.svg" > "$src"
-      # Замена цвета обязана сработать: иначе светлый комплект молча станет копией
-      # тёмного и знак пропадёт на тёмной панели.
-      if cmp -s "$src" "tray-$state.svg"; then
-        echo "ОШИБКА: в tray-$state.svg не найден цвет $DARK — светлый комплект не собрать" >&2
-        exit 1
-      fi
-    fi
-    pngs=()
-    for s in "${tray_sizes[@]}"; do
-      png "$src" "$s" "$tmp/$polarity-$state-$s.png"
-      pngs+=("$tmp/$polarity-$state-$s.png")
-    done
-    magick "${pngs[@]}" "$assets/tray/$polarity-$state.ico"
+  color="${TRAY_COLOR[$state]}"
+  src="$tmp/tray-$state.svg"
+  sed "s/$MARK/$color/g" "tray-$state.svg" > "$src"
+  # Замена цвета обязана сработать: молчаливый no-op в sed отправил бы в трей знак
+  # цвета исходника (почти чёрный) — состояние перестало бы читаться цветом вовсе.
+  if cmp -s "$src" "tray-$state.svg"; then
+    echo "ОШИБКА: в tray-$state.svg не найден цвет $MARK — знак не покрасить в $color" >&2
+    exit 1
+  fi
+
+  pngs=()
+  for s in "${tray_sizes[@]}"; do
+    png "$src" "$s" "$tmp/$state-$s.png"
+    pngs+=("$tmp/$state-$s.png")
   done
+  magick "${pngs[@]}" "$assets/tray/$state.ico"
 done
 
-echo "OK: $assets/vantah.ico + 6 иконок в $assets/tray"
+echo "OK: $assets/vantah.ico + ${#TRAY_COLOR[@]} иконки в $assets/tray"

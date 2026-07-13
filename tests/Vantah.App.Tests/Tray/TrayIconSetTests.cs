@@ -5,17 +5,16 @@ using Vantah.Core.Models;
 namespace Vantah.App.Tests.Tray;
 
 /// <summary>
-/// Зелёная сборка не доказывает, что иконка есть: TrayIconController глушит исключение
-/// загрузки и остаётся с пустым треем. Поэтому грузим все ICO по-настоящему, в headless.
+/// Зелёная сборка не доказывает, что иконка есть: путь avares:// — строка, и опечатка в нём
+/// или невключённый в ресурсы ICO компилируются молча. Поэтому грузим все ICO по-настоящему,
+/// через реальный загрузчик ресурсов Avalonia, в headless.
 /// </summary>
 public class TrayIconSetTests
 {
-    [AvaloniaTheory]
-    [InlineData(TrayIconPolarity.Light)]
-    [InlineData(TrayIconPolarity.Dark)]
-    public void Every_state_has_a_loadable_icon(TrayIconPolarity polarity)
+    [AvaloniaFact]
+    public void Every_state_has_a_loadable_icon()
     {
-        var set = new TrayIconSet(polarity);
+        var set = new TrayIconSet();
 
         foreach (var state in Enum.GetValues<ConnectionState>())
             Assert.NotNull(set.For(state));
@@ -24,7 +23,7 @@ public class TrayIconSetTests
     [AvaloniaFact]
     public void Error_and_disconnected_share_one_icon_instance()
     {
-        var set = new TrayIconSet(TrayIconPolarity.Dark);
+        var set = new TrayIconSet();
 
         Assert.Same(set.For(ConnectionState.Disconnected), set.For(ConnectionState.Error));
     }
