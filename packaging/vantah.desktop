@@ -1,8 +1,17 @@
 [Desktop Entry]
 Type=Application
 Name=Vantah
+GenericName=VPN Client
+GenericName[ru]=VPN-клиент
 Comment=GUI for AdGuard VPN CLI (Linux)
+Comment[ru]=Графический интерфейс для adguardvpn-cli
 Exec=vantah
 Icon=vantah
 Terminal=false
-Categories=Network;
+Categories=Network;Security;
+Keywords=vpn;adguard;proxy;privacy;
+Keywords[ru]=впн;адгуард;прокси;приватность;
+StartupNotify=true
+# res_class окна Avalonia берётся из имени сборки, а не файла: переименование бинаря
+# в `vantah` его не меняет. Без этой строки GNOME не связывает окно с пунктом меню.
+StartupWMClass=Vantah.App

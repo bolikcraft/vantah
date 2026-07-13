@@ -66,8 +66,21 @@ XAML на рефлексии не тримятся безопасно). Флаг
 включаются автоматически, когда задан `-r <RID>`; без RID сборка остаётся
 обычной framework-dependent — поэтому повседневная разработка не замедляется.
 
-Файл `.desktop` для интеграции с меню приложений лежит в
-[`packaging/vantah.desktop`](packaging/vantah.desktop).
+## Установка в меню приложений
+
+Чтобы Vantah появился в меню (GNOME, KDE, любой другой DE) с иконкой и
+запускался кликом:
+
+```bash
+packaging/install.sh
+```
+
+Скрипт публикует самодостаточный бинарник, кладёт его в `~/.local/lib/vantah`
+со ссылкой `~/.local/bin/vantah`, ставит иконки в `~/.local/share/icons/hicolor`
+и [`vantah.desktop`](packaging/vantah.desktop) в `~/.local/share/applications`,
+после чего обновляет кэши меню и иконок. Root не нужен. Системная установка —
+`PREFIX=/usr/local packaging/install.sh` (от root), удаление —
+`packaging/install.sh --uninstall`.
 
 ## Технологии
 
