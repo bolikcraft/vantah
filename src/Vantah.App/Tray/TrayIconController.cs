@@ -30,11 +30,7 @@ public sealed class TrayIconController
     private readonly NativeMenuItem _domainsItem = new();
 
     private readonly VpnCoordinator _coordinator;
-    private readonly AppStateStore _store;
-
-    // Не readonly: комплект меняется на лету, когда система переключается со светлой темы
-    // на тёмную и обратно, — см. UseIcons().
-    private TrayIconSet _icons;
+    private readonly TrayIconSet _icons;
 
     public TrayIconController(
         VpnCoordinator coordinator,
@@ -44,7 +40,6 @@ public sealed class TrayIconController
         TrayIconSet icons)
     {
         _coordinator = coordinator;
-        _store = store;
         _icons = icons;
         _icon = new TrayIcon
         {
@@ -91,17 +86,6 @@ public sealed class TrayIconController
             ApplyLabels();
             Apply(store.Current);
         });
-    }
-
-    /// <summary>
-    /// Заменить комплект иконок и сразу перерисовать иконку текущего состояния.
-    /// Без второй половины смена комплекта была бы незаметна до ближайшего изменения
-    /// состояния VPN, а его можно ждать часами.
-    /// </summary>
-    public void UseIcons(TrayIconSet icons)
-    {
-        _icons = icons;
-        _icon.Icon = _icons.For(_store.Current.Connection);
     }
 
     // Подменю строится один раз при старте из сохранённого избранного.

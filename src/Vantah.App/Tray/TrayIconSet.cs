@@ -7,14 +7,14 @@ using Vantah.Core.Models;
 namespace Vantah.App.Tray;
 
 /// <summary>
-/// Иконки трея для одного комплекта. Грузятся один раз: Apply() дёргается на каждое
-/// изменение состояния, читать файл с диска каждый раз незачем.
+/// Иконки трея. Грузятся один раз: Apply() дёргается на каждое изменение состояния,
+/// читать файл с диска каждый раз незачем.
 /// </summary>
 public sealed class TrayIconSet
 {
     private readonly Dictionary<string, WindowIcon> _byGlyph = new();
 
-    public TrayIconSet(TrayIconPolarity polarity)
+    public TrayIconSet()
     {
         foreach (var state in Enum.GetValues<ConnectionState>())
         {
@@ -23,7 +23,7 @@ public sealed class TrayIconSet
 
             // Исключение загрузки намеренно НЕ глушится: битый ресурс должен падать на старте
             // и в тесте, а не вырождаться в пустой трей.
-            using var stream = AssetLoader.Open(new Uri(TrayIconResolver.AssetUri(state, polarity)));
+            using var stream = AssetLoader.Open(new Uri(TrayIconResolver.AssetUri(state)));
             _byGlyph[glyph] = new WindowIcon(stream);
         }
     }

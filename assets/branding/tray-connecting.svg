@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <g opacity="0.8">
-    <path d="M16 21 L32 46 L48 21" fill="none" stroke="#18181b" stroke-width="7"
-          stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="14" cy="14" r="7" fill="none" stroke="#18181b" stroke-width="3.5"/>
-    <circle cx="50" cy="14" r="7" fill="none" stroke="#18181b" stroke-width="3.5"/>
-  </g>
+  <!-- Альфы нет намеренно: переходность состояния несут контурные узлы и янтарный цвет,
+       а полупрозрачность поверх него роняет контраст на светлой панели до ~1.9:1. -->
+  <path d="M16 21 L32 46 L48 21" fill="none" stroke="#18181b" stroke-width="7"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="14" cy="14" r="7" fill="none" stroke="#18181b" stroke-width="3.5"/>
+  <circle cx="50" cy="14" r="7" fill="none" stroke="#18181b" stroke-width="3.5"/>
 </svg>
