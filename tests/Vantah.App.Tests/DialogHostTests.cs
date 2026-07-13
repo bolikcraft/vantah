@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Vantah.App.Localization;
 using Vantah.App.Views;
 using Xunit;
 
@@ -18,13 +19,16 @@ public class DialogHostTests
         return owner;
     }
 
+    /// <summary>Неизменный заголовок: тестам, которым смена языка не важна.</summary>
+    private static Func<string> Title(string title) => () => title;
+
     [AvaloniaFact]
     public void Open_shows_a_window_with_the_given_content()
     {
         var host = new DialogHost();
         var content = new TextBlock { Text = "содержимое" };
 
-        var window = host.Open("settings", "Настройки", () => content, Owner());
+        var window = host.Open("settings", Title("Настройки"), () => content, Owner());
 
         Assert.True(window.IsVisible);
         Assert.Equal("Настройки", window.Title);
@@ -37,8 +41,8 @@ public class DialogHostTests
         var host = new DialogHost();
         var owner = Owner();
 
-        var first = host.Open("settings", "Настройки", () => new TextBlock(), owner);
-        var second = host.Open("settings", "Настройки", () => new TextBlock(), owner);
+        var first = host.Open("settings", Title("Настройки"), () => new TextBlock(), owner);
+        var second = host.Open("settings", Title("Настройки"), () => new TextBlock(), owner);
 
         Assert.Same(first, second);
     }
@@ -49,8 +53,8 @@ public class DialogHostTests
         var host = new DialogHost();
         var owner = Owner();
 
-        var settings = host.Open("settings", "Настройки", () => new TextBlock(), owner);
-        var about = host.Open("about", "О программе", () => new TextBlock(), owner);
+        var settings = host.Open("settings", Title("Настройки"), () => new TextBlock(), owner);
+        var about = host.Open("about", Title("О программе"), () => new TextBlock(), owner);
 
         Assert.NotSame(settings, about);
     }
@@ -73,8 +77,8 @@ public class DialogHostTests
             return new TextBlock { Text = "содержимое" };
         }
 
-        var first = host.Open("settings", "Настройки", Create, owner);
-        var second = host.Open("settings", "Настройки", Create, owner);
+        var first = host.Open("settings", Title("Настройки"), Create, owner);
+        var second = host.Open("settings", Title("Настройки"), Create, owner);
 
         Assert.Equal(1, created);
         Assert.Same(first.Content, second.Content);
@@ -88,25 +92,26 @@ public class DialogHostTests
         var host = new DialogHost();
         var owner = Owner();
 
-        var window = host.Open("settings", "Настройки", () => new TextBlock(), owner);
+        var window = host.Open("settings", Title("Настройки"), () => new TextBlock(), owner);
 
         Assert.Same(owner, window.Owner);
     }
 
     /// <summary>
-    /// Владелец переживает закрытие. Avalonia проставляет Owner внутри Show(owner), а голый
-    /// Show() на спрятанном окне его ОБНУЛЯЕТ — поэтому владельца надо передавать при каждом
-    /// открытии, иначе после первого же закрытия окно теряет связь с главным.
+    /// Владелец переживает закрытие. Owner проставляется внутри Show(owner), а Hide() (закрытие
+    /// у нас прячет окно) его ОБНУЛЯЕТ и отцепляет окно от детей владельца; голый Show() владельца
+    /// не восстанавливает, и вернуть его потом нечем — Show(owner) на видимом окне no-op. Поэтому
+    /// владельца передаём при каждом открытии, иначе после первого же закрытия окно станет ничьим.
     /// </summary>
     [AvaloniaFact]
     public void The_owner_survives_closing_and_reopening()
     {
         var host = new DialogHost();
         var owner = Owner();
-        var window = host.Open("settings", "Настройки", () => new TextBlock(), owner);
+        var window = host.Open("settings", Title("Настройки"), () => new TextBlock(), owner);
 
         window.Close();
-        var reopened = host.Open("settings", "Настройки", () => new TextBlock(), owner);
+        var reopened = host.Open("settings", Title("Настройки"), () => new TextBlock(), owner);
 
         Assert.Same(owner, reopened.Owner);
     }
@@ -118,16 +123,48 @@ public class DialogHostTests
         var host = new DialogHost();
         var owner = Owner();
         var content = new TextBlock { Text = "содержимое" };
-        var window = host.Open("settings", "Настройки", () => content, owner);
+        var window = host.Open("settings", Title("Настройки"), () => content, owner);
 
         window.Close();
 
         Assert.False(window.IsVisible);
 
-        var reopened = host.Open("settings", "Настройки", () => content, owner);
+        var reopened = host.Open("settings", Title("Настройки"), () => content, owner);
 
         Assert.Same(window, reopened);
         Assert.True(reopened.IsVisible);
         Assert.Same(content, reopened.Content);
+    }
+
+    /// <summary>
+    /// Язык интерфейса переключают в окне «Настройки» — то есть в одном из этих самых окон.
+    /// Заголовок открытого окна обязан переехать на новый язык сразу: контент перерисовывается
+    /// по привязкам, а Title — обычное свойство, и без подписки на смену языка он так и остался
+    /// бы русским посреди английского интерфейса.
+    /// </summary>
+    [AvaloniaFact]
+    public void The_title_of_an_open_window_follows_the_ui_language()
+    {
+        var host = new DialogHost();
+        var window = host.Open(
+            "settings",
+            () => Localizer.Instance[LocKeys.Menu_Settings].TrimEnd('…'),
+            () => new TextBlock(),
+            Owner());
+
+        try
+        {
+            Assert.Equal(Localizer.Instance[LocKeys.Menu_Settings].TrimEnd('…'), window.Title);
+
+            Localizer.Instance.SetLanguage("en");
+
+            Assert.Equal(Localizer.Instance[LocKeys.Menu_Settings].TrimEnd('…'), window.Title);
+            Assert.Equal("Settings", window.Title);
+        }
+        finally
+        {
+            // Localizer.Instance — синглтон на весь тест-хост: не вернём «ru» — протечёт в соседей.
+            Localizer.Instance.SetLanguage("ru");
+        }
     }
 }

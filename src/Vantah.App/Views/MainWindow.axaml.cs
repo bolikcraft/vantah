@@ -28,20 +28,25 @@ public partial class MainWindow : Window
         Open("about", LocKeys.Menu_About, vm => new AboutView { DataContext = vm.About });
 
     /// <summary>
-    /// Открытие откладываем на следующий такт диспетчера: MenuFlyout закрывается прямо в обработчике
-    /// Click, и элемент, на котором мы стоим, к этому моменту уже отцеплен от дерева. Вьюмодель при
-    /// этом берём из DataContext ровно один раз — в момент клика: фабрика контента выполняется
+    /// Открытие откладываем на следующий такт диспетчера: Avalonia поднимает Click ДО того, как
+    /// закроет MenuFlyout, и окно, показанное прямо из обработчика, всплывает поверх ещё открытого
+    /// попапа — а закрытие попапа следом возвращает фокус главному окну. Post показывает окно, когда
+    /// меню уже свёрнуто. Тестом эта защита не покрыта: headless-ввод сам прокручивает диспетчер,
+    /// поэтому снятие Post ничего там не меняет (см. MainWindowTests: клик через раскрытый флайаут).
+    /// Вьюмодель берём из DataContext ровно один раз — в момент клика: фабрика контента выполняется
     /// позже и лениво (только при первом открытии окна), и читать DataContext оттуда нельзя.
     /// </summary>
     private void Open(string key, string titleKey, Func<MainWindowViewModel, Control> createContent)
     {
         if (Vm is not { } vm) return;
 
+        // Заголовок — фабрикой: окно живёт до конца сессии и обязано пережить смену языка.
+        // Многоточие в пункте меню обещает диалог; в заголовке самого окна оно лишнее.
         Dispatcher.UIThread.Post(() =>
-        {
-            // Многоточие в пункте меню обещает диалог; в заголовке самого окна оно лишнее.
-            var title = Localizer.Instance[titleKey].TrimEnd('…');
-            _dialogs.Open(key, title, () => createContent(vm), this);
-        });
+            _dialogs.Open(
+                key,
+                () => Localizer.Instance[titleKey].TrimEnd('…'),
+                () => createContent(vm),
+                this));
     }
 }
