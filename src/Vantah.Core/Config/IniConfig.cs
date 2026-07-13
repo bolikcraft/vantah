@@ -21,7 +21,9 @@ public sealed class IniConfig
     {
         var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var raw in text.Split('\n'))
+        // BOM: File.ReadAllText его съедает сам, но Parse зовут и с сырой строкой —
+        // иначе первый ключ файла молча «терялся» бы вместе с невидимым символом.
+        foreach (var raw in text.TrimStart('﻿').Split('\n'))
         {
             var line = raw.Trim();
             if (line.Length == 0 || line[0] is '#' or ';' or '[') continue;

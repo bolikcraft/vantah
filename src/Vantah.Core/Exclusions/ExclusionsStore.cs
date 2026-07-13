@@ -1,3 +1,4 @@
+using Vantah.Core.Config;
 using Vantah.Core.Models;
 
 namespace Vantah.Core.Exclusions;
@@ -8,9 +9,7 @@ public sealed class ExclusionsStore
 
     public ExclusionsStore(string? dir = null)
     {
-        _dir = dir ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "vantah", "site-exclusions");
+        _dir = dir ?? Path.Combine(VantahPaths.ConfigDir, "site-exclusions");
     }
 
     public string FilePath(SiteExclusionMode mode) =>

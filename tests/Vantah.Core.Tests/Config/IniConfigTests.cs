@@ -53,6 +53,29 @@ public class IniConfigTests
     }
 
     [Fact]
+    public void Parse_ignores_leading_byte_order_mark()
+    {
+        var config = IniConfig.Parse("﻿adguard_cmd = /usr/bin/vpn");
+
+        Assert.Equal("/usr/bin/vpn", config.Get("adguard_cmd"));
+    }
+
+    [Fact]
+    public void Load_unreadable_file_returns_empty_config()
+    {
+        // Файл есть, но прочитать его нельзя — эксклюзивный захват. Конфиг обязан промолчать,
+        // а не уронить старт приложения.
+        var path = Path.Combine(Path.GetTempPath(), $"vantah-ini-{Guid.NewGuid():N}.conf");
+        File.WriteAllText(path, "adguard_cmd = /tmp/fake-cli\n");
+        try
+        {
+            using var _ = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+            Assert.Null(IniConfig.Load(path).Get("adguard_cmd"));
+        }
+        finally { File.Delete(path); }
+    }
+
+    [Fact]
     public void Load_missing_file_returns_empty_config()
     {
         var path = Path.Combine(Path.GetTempPath(), $"vantah-ini-{Guid.NewGuid():N}.conf");

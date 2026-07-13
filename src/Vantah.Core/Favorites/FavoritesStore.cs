@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Vantah.Core.Config;
 
 namespace Vantah.Core.Favorites;
 
@@ -8,9 +9,7 @@ public sealed class FavoritesStore
 
     public FavoritesStore(string? path = null)
     {
-        _path = path ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "vantah", "favorites.json");
+        _path = path ?? Path.Combine(VantahPaths.ConfigDir, "favorites.json");
     }
 
     public HashSet<string> Load()

@@ -1,10 +1,11 @@
 using System.Diagnostics;
 using System.Text;
+using Vantah.Core.Config;
 
 namespace Vantah.Core.Cli;
 
 public sealed class CliRunner(
-    string executable = "adguardvpn-cli",
+    string executable = CliOptionsResolver.DefaultExecutable,
     IProcessKiller? killer = null,
     ProcessRegistry? registry = null) : ICliRunner, IProcessMonitor
 {
@@ -60,7 +61,7 @@ public sealed class CliRunner(
                 // Если отмену запросил вызывающий — показываем настоящую OperationCanceledException,
                 // а не маскируем её таймаутом (linked cts срабатывает и на ct, и на timeout).
                 ct.ThrowIfCancellationRequested();
-                throw new TimeoutException($"adguardvpn-cli {string.Join(' ', args)} превысил таймаут");
+                throw new TimeoutException($"{executable} {string.Join(' ', args)} превысил таймаут");
             }
 
             return new CliResult(proc.ExitCode, stdout.ToString(), stderr.ToString());

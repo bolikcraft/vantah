@@ -50,6 +50,16 @@ public class CliOptionsResolverTests
     }
 
     [Fact]
+    public void Whitespace_only_value_in_config_falls_through_to_env()
+    {
+        var options = CliOptionsResolver.Resolve(
+            IniConfig.Parse($"{CliOptionsResolver.ExecutableKey} =    "),
+            Env((CliOptionsResolver.ExecutableEnvVar, "/from/env")));
+
+        Assert.Equal("/from/env", options.Executable);
+    }
+
+    [Fact]
     public void Custom_default_executable_is_respected()
     {
         var options = CliOptionsResolver.Resolve(IniConfig.Empty, NoEnv, "/usr/local/bin/vpn");
