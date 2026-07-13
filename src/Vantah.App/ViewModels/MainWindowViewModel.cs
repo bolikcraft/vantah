@@ -7,16 +7,14 @@ public partial class MainWindowViewModel : ObservableObject
     public StatusViewModel Status { get; }
     public LocationsViewModel Locations { get; }
     public DomainsViewModel Domains { get; }
-    public HistoryViewModel History { get; }
 
-    // Индекс активной вкладки (Статус=0, Локации=1, Домены=2, История=3) — двусторонняя привязка к TabControl.
+    // Индекс активной вкладки (Статус=0, Локации=1, Домены=2) — двусторонняя привязка к TabControl.
     [ObservableProperty] private int _selectedTab;
 
-    public MainWindowViewModel(StatusViewModel status, LocationsViewModel locations, DomainsViewModel domains, HistoryViewModel history)
+    public MainWindowViewModel(StatusViewModel status, LocationsViewModel locations, DomainsViewModel domains)
     {
         Status = status;
         Locations = locations;
         Domains = domains;
-        History = history;
     }
 }

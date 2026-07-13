@@ -43,10 +43,9 @@ public partial class App : Application
             var logReader = new VpnLogReader();
 
             var mainVm = new MainWindowViewModel(
-                new StatusViewModel(coordinator, store, logReader),
+                new StatusViewModel(coordinator, store, logReader, new HistoryViewModel(coordinator, store)),
                 new LocationsViewModel(vpn, coordinator, favorites, store),
-                new DomainsViewModel(exclusions, exclusionsStore, store),
-                new HistoryViewModel(coordinator, store));
+                new DomainsViewModel(exclusions, exclusionsStore, store));
 
             var window = new MainWindow { DataContext = mainVm };
             desktop.MainWindow = window;

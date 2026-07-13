@@ -32,10 +32,14 @@ public partial class StatusViewModel : ObservableObject
     // Подпись кнопки = действие, которое она выполнит (не статус).
     public string ToggleText => IsConnected ? "Отключить" : "Подключить";
 
-    public StatusViewModel(VpnCoordinator coordinator, AppStateStore store, VpnLogReader logReader)
+    // История подключений — под-панель на вкладке Статус.
+    public HistoryViewModel History { get; }
+
+    public StatusViewModel(VpnCoordinator coordinator, AppStateStore store, VpnLogReader logReader, HistoryViewModel history)
     {
         _coordinator = coordinator;
         _logReader = logReader;
+        History = history;
         store.Changed += (_, s) => Dispatcher.UIThread.Post(() => Apply(s));
         Apply(store.Current);
 
