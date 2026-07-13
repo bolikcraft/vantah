@@ -4,6 +4,7 @@
     <Project Path="src/Vantah.Core/Vantah.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Vantah.App.Tests/Vantah.App.Tests.csproj" />
     <Project Path="tests/Vantah.Core.Tests/Vantah.Core.Tests.csproj" />
   </Folder>
 </Solution>
