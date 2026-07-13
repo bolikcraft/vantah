@@ -25,25 +25,25 @@
     </StackPanel>
 
     <TabControl Grid.Row="1" Margin="0,12,0,0">
-      <TabItem Header="История подключений">
+      <TabItem Header="История">
         <Grid>
           <TextBlock Text="Пока нет записей — история появится после подключений"
-                     Opacity="0.6" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     Opacity="0.6" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"
                      IsVisible="{Binding !History.HasHistory}"/>
           <ScrollViewer IsVisible="{Binding History.HasHistory}">
-            <ItemsControl ItemsSource="{Binding History.Items}" Margin="4,8">
+            <ItemsControl ItemsSource="{Binding History.Items}" Margin="4,6">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <TextBlock Text="{Binding}" TextWrapping="Wrap" Opacity="0.85" Margin="0,3"/>
+                  <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="11" Opacity="0.85" Margin="0,2"/>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
           </ScrollViewer>
         </Grid>
       </TabItem>
-      <TabItem Header="Системный лог">
+      <TabItem Header="Лог">
         <TextBox Text="{Binding Log}" IsReadOnly="True" AcceptsReturn="True"
-                 TextWrapping="Wrap" FontFamily="monospace" FontSize="12"
+                 TextWrapping="Wrap" FontFamily="monospace" FontSize="11"
                  VerticalContentAlignment="Top" VerticalAlignment="Stretch"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
       </TabItem>
