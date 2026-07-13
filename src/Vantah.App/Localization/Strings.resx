@@ -70,18 +70,6 @@
   <data name="Tab_Domains" xml:space="preserve">
     <value>Домены</value>
   </data>
-  <data name="Tab_License" xml:space="preserve">
-    <value>Лицензия</value>
-  </data>
-  <data name="Tab_About" xml:space="preserve">
-    <value>О программе</value>
-  </data>
-  <data name="Tab_Processes" xml:space="preserve">
-    <value>Процессы</value>
-  </data>
-  <data name="Tab_Settings" xml:space="preserve">
-    <value>Настройки</value>
-  </data>
 
   <!-- Общие подписи кнопок и состояний -->
   <data name="Common_Connect" xml:space="preserve">

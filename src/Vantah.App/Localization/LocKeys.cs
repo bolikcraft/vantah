@@ -11,10 +11,6 @@ public static class LocKeys
     public const string Tab_Status = "Tab_Status";
     public const string Tab_Locations = "Tab_Locations";
     public const string Tab_Domains = "Tab_Domains";
-    public const string Tab_License = "Tab_License";
-    public const string Tab_About = "Tab_About";
-    public const string Tab_Processes = "Tab_Processes";
-    public const string Tab_Settings = "Tab_Settings";
 
     // Меню «☰» в правом углу полосы вкладок
     public const string Menu_Tooltip = "Menu_Tooltip";
