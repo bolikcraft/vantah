@@ -22,8 +22,15 @@ public partial class DomainsViewModel : ObservableObject
     private bool _switchingMode;   // защита от реентранта при программной установке радио
 
     [ObservableProperty] private string _query = "";  // одно поле: ввод домена и фильтр списка
-    [ObservableProperty] private bool _isGeneral = true;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ModeHint))]
+    private bool _isGeneral = true;
     [ObservableProperty] private bool _isSelective;
+
+    /// <summary>Пояснение к текущему режиму — показывается под радио-кнопками.</summary>
+    public string ModeHint => IsGeneral
+        ? "Общий: сайты из списка идут МИМО VPN (весь остальной трафик — через VPN)."
+        : "Выборочный: только сайты из списка идут ЧЕРЕЗ VPN (всё остальное — напрямую).";
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private string? _error;
 

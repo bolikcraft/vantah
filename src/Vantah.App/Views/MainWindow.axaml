@@ -8,7 +8,7 @@
         x:Class="Vantah.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/tray.ico"
-        Title="Vantah" Width="520" Height="640">
+        Title="Vantah" Width="800" Height="800">
 
   <TabControl>
     <TabItem Header="Статус"><v:StatusView DataContext="{Binding Status}"/></TabItem>
