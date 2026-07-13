@@ -36,10 +36,15 @@ public sealed class CliRunner(
         proc.ErrorDataReceived  += (_, e) => { if (e.Data is not null) stderr.AppendLine(e.Data); };
 
         proc.Start();
-        // Регистрируем сразу после старта: PID уже валиден, а процесс может жить долго.
-        var entry = _registry.Register(proc.Id, executable, args);
+
+        // Регистрация — уже внутри try: что бы ни бросило между стартом и ней, finally успеет
+        // убить/дерегистрировать процесс, а не осиротит его.
+        RunningProcess? entry = null;
         try
         {
+            // Регистрируем сразу после старта: PID уже валиден, а процесс может жить долго.
+            entry = _registry.Register(proc.Id, executable, args);
+
             proc.BeginOutputReadLine();
             proc.BeginErrorReadLine();
 
@@ -62,8 +67,13 @@ public sealed class CliRunner(
         }
         finally
         {
+            // Подстраховка от осиротевших процессов: на штатных путях процесс уже мёртв
+            // (успешно завершился либо убит в catch выше), так что это ловит лишь
+            // неожиданный бросок между стартом и ожиданием выхода.
+            try { if (!proc.HasExited) proc.Kill(entireProcessTree: true); } catch { /* уже мёртв */ }
+
             // Дерегистрируем при любом исходе: успех, таймаут, отмена, ошибка.
-            _registry.Deregister(entry.Id);
+            if (entry is not null) _registry.Deregister(entry.Id);
         }
     }
 
@@ -83,7 +93,9 @@ public sealed class CliRunner(
     /// <inheritdoc />
     public async Task KillAllAsync(CancellationToken ct = default)
     {
-        foreach (var entry in _registry.Snapshot())
-            await KillAsync(entry.Id, ct);
+        // Записи независимы — бьём параллельно, иначе N процессов = N × grace-таймаут убийцы.
+        // ct проверяем сами: IProcessKiller по контракту отмену наружу не пробрасывает.
+        ct.ThrowIfCancellationRequested();
+        await Task.WhenAll(_registry.Snapshot().Select(entry => KillAsync(entry.Id, ct)));
     }
 }

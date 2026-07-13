@@ -74,6 +74,29 @@ public class ProcessRegistryTests
         Assert.Equal(2, fired);
     }
 
+    /// <summary>
+    /// Кривой подписчик (например UI-вьюмодель, маршалящая в Dispatcher закрытого окна) не должен
+    /// ломать бухгалтерию: исключение хендлера не пробрасывается, остальные хендлеры вызываются,
+    /// а запись честно добавляется/удаляется.
+    /// </summary>
+    [Fact]
+    public void Throwing_subscriber_breaks_neither_register_nor_deregister()
+    {
+        var registry = new ProcessRegistry(() => At(0));
+        var sane = 0;
+        registry.Changed += (_, _) => throw new InvalidOperationException("handler boom");
+        registry.Changed += (_, _) => sane++;
+
+        var proc = registry.Register(7, "adguardvpn-cli", ["status"]);
+        Assert.Single(registry.Snapshot());
+
+        registry.Deregister(proc.Id);
+        Assert.Empty(registry.Snapshot());
+
+        // Бросок первого подписчика не помешал второму получить оба события.
+        Assert.Equal(2, sane);
+    }
+
     [Fact]
     public void Snapshot_is_immutable_copy()
     {

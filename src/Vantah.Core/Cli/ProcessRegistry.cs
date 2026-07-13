@@ -22,7 +22,7 @@ public sealed class ProcessRegistry(Func<DateTimeOffset>? clock = null)
             proc = new RunningProcess(++_nextId, pid, command, args.ToArray(), _clock());
             _processes[proc.Id] = proc;
         }
-        Changed?.Invoke(this, EventArgs.Empty);
+        RaiseChanged();
         return proc;
     }
 
@@ -30,7 +30,25 @@ public sealed class ProcessRegistry(Func<DateTimeOffset>? clock = null)
     {
         bool removed;
         lock (_gate) removed = _processes.Remove(id);
-        if (removed) Changed?.Invoke(this, EventArgs.Empty);
+        if (removed) RaiseChanged();
+    }
+
+    /// <summary>
+    /// Поднимает <see cref="Changed"/> защищённо: каждый подписчик вызывается отдельно, его исключение
+    /// проглатывается. Иначе кривой хендлер (UI-вьюмодель, маршалящая в Dispatcher закрытого окна)
+    /// сломал бы жизненный цикл процесса у вызывающего: бросок из Register оставил бы запись в реестре
+    /// и осиротил процесс, а бросок из Deregister в finally подменил бы собой настоящий результат RunAsync.
+    /// Реестр — бухгалтерия, он не вправе падать из-за чужого хендлера.
+    /// </summary>
+    private void RaiseChanged()
+    {
+        if (Changed is not { } handlers) return;
+
+        foreach (var handler in handlers.GetInvocationList())
+        {
+            try { ((EventHandler)handler).Invoke(this, EventArgs.Empty); }
+            catch { /* подписчик сам себе злобный буратино */ }
+        }
     }
 
     public RunningProcess? Find(long id)
