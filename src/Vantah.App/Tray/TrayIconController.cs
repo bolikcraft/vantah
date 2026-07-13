@@ -1,9 +1,7 @@
-using System;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Platform;
 using Avalonia.Threading;
 using Vantah.App.Localization;
 using Vantah.App.Services;
@@ -32,14 +30,26 @@ public sealed class TrayIconController
     private readonly NativeMenuItem _domainsItem = new();
 
     private readonly VpnCoordinator _coordinator;
+    private readonly AppStateStore _store;
 
-    public TrayIconController(VpnCoordinator coordinator, AppStateStore store, FavoritesStore favorites, Window window)
+    // Не readonly: комплект меняется на лету, когда система переключается со светлой темы
+    // на тёмную и обратно, — см. UseIcons().
+    private TrayIconSet _icons;
+
+    public TrayIconController(
+        VpnCoordinator coordinator,
+        AppStateStore store,
+        FavoritesStore favorites,
+        Window window,
+        TrayIconSet icons)
     {
         _coordinator = coordinator;
+        _store = store;
+        _icons = icons;
         _icon = new TrayIcon
         {
             ToolTipText = "Vantah",
-            Icon = LoadIcon(),
+            Icon = icons.For(store.Current.Connection),
         };
 
         _fastest.Click += async (_, _) => await _coordinator.ConnectAsync(null, true);
@@ -83,6 +93,17 @@ public sealed class TrayIconController
         });
     }
 
+    /// <summary>
+    /// Заменить комплект иконок и сразу перерисовать иконку текущего состояния.
+    /// Без второй половины смена комплекта была бы незаметна до ближайшего изменения
+    /// состояния VPN, а его можно ждать часами.
+    /// </summary>
+    public void UseIcons(TrayIconSet icons)
+    {
+        _icons = icons;
+        _icon.Icon = _icons.For(_store.Current.Connection);
+    }
+
     // Подменю строится один раз при старте из сохранённого избранного.
     // Новые отмеченные звёздочкой локации появляются после перезапуска — приемлемо для MVP.
     private NativeMenu BuildFavoritesMenu(FavoritesStore favorites, out NativeMenuItem? placeholder)
@@ -108,19 +129,6 @@ public sealed class TrayIconController
             submenu.Add(item);
         }
         return submenu;
-    }
-
-    private static WindowIcon? LoadIcon()
-    {
-        try
-        {
-            using var stream = AssetLoader.Open(new Uri("avares://Vantah.App/Assets/tray.ico"));
-            return new WindowIcon(stream);
-        }
-        catch
-        {
-            return null;
-        }
     }
 
     private async Task OnToggle(AppStateStore store)
@@ -153,6 +161,8 @@ public sealed class TrayIconController
     private void Apply(AppSnapshot s)
     {
         var loc = Localizer.Instance;
+        _icon.Icon = _icons.For(s.Connection);
+
         var connected = s.Connection == ConnectionState.Connected;
         _toggle.Header = loc[connected ? LocKeys.Common_Disconnect : LocKeys.Common_Connect];
 
@@ -174,6 +184,10 @@ public sealed class TrayIconController
         {
             _statusItem.Header = $"{glyph} {loc[LocKeys.Status_Disconnected]}";
             _icon.ToolTipText = loc.Format(LocKeys.Tray_Tooltip_DisconnectedFormat, glyph);
+
+            // Ошибку не показываем глифом (на 16px не читается) — значит, она обязана быть здесь.
+            if (s.Connection == ConnectionState.Error && !string.IsNullOrWhiteSpace(s.Error))
+                _icon.ToolTipText += "\n" + loc.Format(LocKeys.Tray_Tooltip_ErrorFormat, s.Error);
         }
 
         // Счётчик доменов-исключений: пункт меню + строка в подсказке.

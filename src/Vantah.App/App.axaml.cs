@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using Vantah.App.Localization;
 using Vantah.App.Services;
@@ -40,12 +41,11 @@ public partial class App : Application
                 CultureSelector.Resolve(languageStore.Load(), CultureInfo.CurrentUICulture));
 
             var store = new AppStateStore();
+            var config = IniConfig.Load(VantahPaths.ConfigFile);
 
             // Путь к CLI и команда убийства настраиваются: ~/.config/vantah/vantah.conf, затем env,
             // затем дефолт «adguardvpn-cli» из PATH.
-            var cliOptions = CliOptionsResolver.Resolve(
-                IniConfig.Load(VantahPaths.ConfigFile),
-                Environment.GetEnvironmentVariable);
+            var cliOptions = CliOptionsResolver.Resolve(config, Environment.GetEnvironmentVariable);
             var runner = new CliRunner(cliOptions.Executable, new PosixProcessKiller(cliOptions.KillCommand));
             var vpn = new VpnService(runner);
             var traffic = new TrafficMonitor(new SysfsTrafficReader());
@@ -69,8 +69,29 @@ public partial class App : Application
             var window = new MainWindow { DataContext = mainVm };
             desktop.MainWindow = window;
 
+            // Комплект иконок трея: панель растровую иконку не перекрашивает, поэтому
+            // цвет знака выбираем сами — по теме приложения, с переопределением в vantah.conf.
+            var configuredPolarity = config.Get(TrayIconResolver.PolarityKey);
+            var polarity = ResolveTrayPolarity(configuredPolarity);
+
             // Системный трей + сворачивание окна вместо выхода.
-            _ = new TrayIconController(coordinator, store, favorites, window);
+            var tray = new TrayIconController(coordinator, store, favorites, window, new TrayIconSet(polarity));
+
+            // RequestedThemeVariant=Default → тема приложения следует за системной, а трей живёт
+            // сутками и переживает переключение день→ночь. Пересобираем комплект на лету, иначе
+            // после смены темы в панели остаётся почти невидимый знак — до перезапуска.
+            ActualThemeVariantChanged += (_, _) =>
+            {
+                var next = ResolveTrayPolarity(configuredPolarity);
+                // Явный tray_icon=light|dark даёт ту же полярность при любой теме, поэтому
+                // отдельной проверки «не закреплено ли» не нужно: сравнение само её поглощает.
+                // Заодно не дёргаем трей на сменах темы, не переворачивающих светлое/тёмное.
+                if (next == polarity) return;
+
+                polarity = next;
+                tray.UseIcons(new TrayIconSet(polarity));
+            };
+
             window.Closing += (_, e) =>
             {
                 e.Cancel = true;
@@ -87,4 +108,7 @@ public partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
     }
+
+    private TrayIconPolarity ResolveTrayPolarity(string? configured) =>
+        TrayIconResolver.ResolvePolarity(configured, appThemeIsDark: ActualThemeVariant == ThemeVariant.Dark);
 }
