@@ -102,6 +102,7 @@ public static class LocKeys
     public const string Tray_Tooltip_DisconnectedFormat = "Tray_Tooltip_DisconnectedFormat";
     public const string Tray_Tooltip_TrafficFormat = "Tray_Tooltip_TrafficFormat";
     public const string Tray_Tooltip_DomainsFormat = "Tray_Tooltip_DomainsFormat";
+    public const string Tray_Tooltip_ErrorFormat = "Tray_Tooltip_ErrorFormat";
     public const string Tray_StatusConnectedFormat = "Tray_StatusConnectedFormat";
 
     // Выбор языка

@@ -168,6 +168,10 @@ public sealed class TrayIconController
         {
             _statusItem.Header = $"{glyph} {loc[LocKeys.Status_Disconnected]}";
             _icon.ToolTipText = loc.Format(LocKeys.Tray_Tooltip_DisconnectedFormat, glyph);
+
+            // Ошибку не показываем глифом (на 16px не читается) — значит, она обязана быть здесь.
+            if (s.Connection == ConnectionState.Error && !string.IsNullOrWhiteSpace(s.Error))
+                _icon.ToolTipText += "\n" + loc.Format(LocKeys.Tray_Tooltip_ErrorFormat, s.Error);
         }
 
         // Счётчик доменов-исключений: пункт меню + строка в подсказке.

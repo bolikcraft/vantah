@@ -320,6 +320,10 @@
     <value>Domains: {0}</value>
     <comment>{0} — число доменов-исключений.</comment>
   </data>
+  <data name="Tray_Tooltip_ErrorFormat" xml:space="preserve">
+    <value>⚠ Error: {0}</value>
+    <comment>{0} — текст ошибки подключения.</comment>
+  </data>
   <data name="Tray_StatusConnectedFormat" xml:space="preserve">
     <value>{0} {1}{2}</value>
     <comment>{0} — глиф состояния, {1} — локация, {2} — « · Режим» либо пусто.</comment>
