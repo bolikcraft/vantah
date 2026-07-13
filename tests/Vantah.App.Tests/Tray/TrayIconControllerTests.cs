@@ -103,7 +103,7 @@ public class TrayIconControllerTests
     private static TrayIconController NewController(AppStateStore store, TrayIconSet icons)
     {
         var temp = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
-        var runner = new CliRunner("adguardvpn-cli", new PosixProcessKiller("pkill"));
+        var runner = new CliRunner("adguardvpn-cli");
         var coordinator = new VpnCoordinator(
             new VpnService(runner),
             new TrafficMonitor(new SysfsTrafficReader()),

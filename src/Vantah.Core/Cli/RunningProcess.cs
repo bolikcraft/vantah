@@ -1,6 +1,6 @@
 namespace Vantah.Core.Cli;
 
-/// <summary>Запись о живом процессе CLI: <paramref name="Id"/> — внутренний id реестра, стабильный для UI.</summary>
+/// <summary>Запись о живом процессе CLI: <paramref name="Id"/> — идентификатор строки в UI, равен pid.</summary>
 public sealed record RunningProcess(
     long Id,
     int Pid,

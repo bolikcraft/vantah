@@ -45,8 +45,16 @@ public partial class App : Application
             // Путь к CLI и команда убийства настраиваются: ~/.config/vantah/vantah.conf, затем env,
             // затем дефолт «adguardvpn-cli» из PATH.
             var cliOptions = CliOptionsResolver.Resolve(config, Environment.GetEnvironmentVariable);
-            var runner = new CliRunner(cliOptions.Executable, new PosixProcessKiller(cliOptions.KillCommand));
+            var runner = new CliRunner(cliOptions.Executable);
             var vpn = new VpnService(runner);
+
+            // Процессы CLI ищем сканом системы, а не учётом собственных детей: туннель CLI
+            // демонизирует через «sudo -b», нашим ребёнком он не становится, и в реестре
+            // собственных запусков были видны лишь мгновенные «status» — они и мигали.
+            var processes = new SystemProcessMonitor(
+                new ProcFsProcessSource(cliOptions.Executable),
+                new PosixProcessKiller(cliOptions.KillCommand));
+            processes.StartPolling(TimeSpan.FromSeconds(2));
             var traffic = new TrafficMonitor(new SysfsTrafficReader());
             // Активная сессия живёт в отдельном файле и переживает перезапуск: закрытие Vantah
             // не рвёт VPN, поэтому на выходе сессию НЕ финализируем — на следующем старте её
@@ -66,7 +74,7 @@ public partial class App : Application
                 new DomainsViewModel(exclusions, exclusionsStore, store),
                 new LicenseViewModel(vpn),
                 new AboutViewModel(vpn),
-                new ProcessesViewModel(runner), // тот же CliRunner, что исполняет команды, — он же IProcessMonitor
+                new ProcessesViewModel(processes),
                 languageStore);
 
             var window = new MainWindow { DataContext = mainVm };
