@@ -28,13 +28,13 @@
       <TabItem Header="История">
         <Grid>
           <TextBlock Text="Пока нет записей — история появится после подключений"
-                     Opacity="0.6" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"
+                     Opacity="0.6" FontSize="10" HorizontalAlignment="Center" VerticalAlignment="Center"
                      IsVisible="{Binding !History.HasHistory}"/>
           <ScrollViewer IsVisible="{Binding History.HasHistory}">
             <ItemsControl ItemsSource="{Binding History.Items}" Margin="4,6">
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="11" Opacity="0.85" Margin="0,2"/>
+                  <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="10" Opacity="0.85" Margin="0,2"/>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -43,7 +43,8 @@
       </TabItem>
       <TabItem Header="Лог">
         <TextBox Text="{Binding Log}" IsReadOnly="True" AcceptsReturn="True"
-                 TextWrapping="Wrap" FontFamily="monospace" FontSize="11"
+                 TextWrapping="Wrap" FontFamily="monospace" FontSize="10"
+                 BorderThickness="0" Background="Transparent" Padding="0"
                  VerticalContentAlignment="Top" VerticalAlignment="Stretch"
                  ScrollViewer.VerticalScrollBarVisibility="Auto"/>
       </TabItem>
