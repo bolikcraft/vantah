@@ -16,30 +16,32 @@ public partial class MainWindow : Window
     private MainWindowViewModel? Vm => DataContext as MainWindowViewModel;
 
     private void OnProcessesClick(object? sender, RoutedEventArgs e) =>
-        Open("processes", LocKeys.Menu_Processes, () => new ProcessesView { DataContext = Vm!.Processes });
+        Open("processes", LocKeys.Menu_Processes, vm => new ProcessesView { DataContext = vm.Processes });
 
     private void OnSettingsClick(object? sender, RoutedEventArgs e) =>
-        Open("settings", LocKeys.Menu_Settings, () => new ConfigView { DataContext = Vm!.Config });
+        Open("settings", LocKeys.Menu_Settings, vm => new ConfigView { DataContext = vm.Config });
 
     private void OnLicenseClick(object? sender, RoutedEventArgs e) =>
-        Open("license", LocKeys.Menu_License, () => new LicenseView { DataContext = Vm!.License });
+        Open("license", LocKeys.Menu_License, vm => new LicenseView { DataContext = vm.License });
 
     private void OnAboutClick(object? sender, RoutedEventArgs e) =>
-        Open("about", LocKeys.Menu_About, () => new AboutView { DataContext = Vm!.About });
+        Open("about", LocKeys.Menu_About, vm => new AboutView { DataContext = vm.About });
 
     /// <summary>
     /// Открытие откладываем на следующий такт диспетчера: MenuFlyout закрывается прямо в обработчике
-    /// Click, и элемент, на котором мы стоим, к этому моменту уже отцеплен от дерева.
+    /// Click, и элемент, на котором мы стоим, к этому моменту уже отцеплен от дерева. Вьюмодель при
+    /// этом берём из DataContext ровно один раз — в момент клика: фабрика контента выполняется
+    /// позже и лениво (только при первом открытии окна), и читать DataContext оттуда нельзя.
     /// </summary>
-    private void Open(string key, string titleKey, Func<Control> createContent)
+    private void Open(string key, string titleKey, Func<MainWindowViewModel, Control> createContent)
     {
-        if (Vm is null) return;
+        if (Vm is not { } vm) return;
 
         Dispatcher.UIThread.Post(() =>
         {
             // Многоточие в пункте меню обещает диалог; в заголовке самого окна оно лишнее.
             var title = Localizer.Instance[titleKey].TrimEnd('…');
-            _dialogs.Open(key, title, createContent, this);
+            _dialogs.Open(key, title, () => createContent(vm), this);
         });
     }
 }
