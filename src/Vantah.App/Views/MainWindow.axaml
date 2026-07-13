@@ -8,27 +8,22 @@
         mc:Ignorable="d" d:DesignWidth="520" d:DesignHeight="640"
         x:Class="Vantah.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/tray.ico"
+        Icon="/Assets/vantah.ico"
         Title="Vantah" Width="800" Height="800">
 
-  <Grid RowDefinitions="Auto,*">
+  <Window.Styles>
+    <!-- Заголовки вкладок во FluentTheme по умолчанию 24px и с зашитой MinHeight. -->
+    <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="16"/>
+      <Setter Property="Padding" Value="10,4"/>
+      <Setter Property="MinHeight" Value="0"/>
+    </Style>
+  </Window.Styles>
 
-    <!-- Выбор языка интерфейса: применяется на лету и запоминается на следующий запуск. -->
-    <ComboBox Grid.Row="0"
-              Margin="0,8,12,0"
-              MinWidth="120"
-              HorizontalAlignment="Right"
-              ItemsSource="{Binding Languages}"
-              SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
-              ToolTip.Tip="{Binding [Lang_Label], Source={x:Static loc:Localizer.Instance}}">
-      <ComboBox.ItemTemplate>
-        <DataTemplate x:DataType="vm:LanguageOption">
-          <TextBlock Text="{Binding Display}"/>
-        </DataTemplate>
-      </ComboBox.ItemTemplate>
-    </ComboBox>
+  <!-- ComboBox языка лежит поверх полосы вкладок TabControl, прижат вправо: одна визуальная строка с меню. -->
+  <Grid>
 
-    <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
+    <TabControl SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
       <TabItem Header="{Binding [Tab_Status], Source={x:Static loc:Localizer.Instance}}">
         <v:StatusView DataContext="{Binding Status}"/>
       </TabItem>
@@ -41,13 +36,31 @@
       <TabItem Header="{Binding [Tab_License], Source={x:Static loc:Localizer.Instance}}">
         <v:LicenseView DataContext="{Binding License}"/>
       </TabItem>
-      <TabItem Header="{Binding [Tab_About], Source={x:Static loc:Localizer.Instance}}">
-        <v:AboutView DataContext="{Binding About}"/>
-      </TabItem>
       <TabItem Header="{Binding [Tab_Processes], Source={x:Static loc:Localizer.Instance}}">
         <v:ProcessesView DataContext="{Binding Processes}"/>
       </TabItem>
+      <TabItem Header="{Binding [Tab_About], Source={x:Static loc:Localizer.Instance}}">
+        <v:AboutView DataContext="{Binding About}"/>
+      </TabItem>
     </TabControl>
+
+    <!-- Выбор языка интерфейса: применяется на лету и запоминается на следующий запуск. -->
+    <ComboBox Margin="0,3,12,0"
+              MinWidth="110"
+              MinHeight="0"
+              Padding="8,2"
+              FontSize="13"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Top"
+              ItemsSource="{Binding Languages}"
+              SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+              ToolTip.Tip="{Binding [Lang_Label], Source={x:Static loc:Localizer.Instance}}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate x:DataType="vm:LanguageOption">
+          <TextBlock Text="{Binding Display}"/>
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
 
   </Grid>
 
