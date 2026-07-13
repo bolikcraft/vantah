@@ -29,24 +29,28 @@
 
     <!-- Шапка: те же ColumnDefinitions, что и у строки списка; отступ 4 слева/справа
          компенсирует Padding="4,2" рамки внутри шаблона строки. -->
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="36,34,48,*,*,120,80,110" Margin="4,0,4,4">
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="36,34,48,*,*,120,120,110" Margin="4,0,4,4">
       <Button Grid.Column="0" Classes="header" Content="{Binding FavoritesHeader}"
               Command="{Binding ToggleFavoritesFirstCommand}" ToolTip.Tip="Избранные сверху"/>
       <Button Grid.Column="2" Classes="header" Content="{Binding IsoHeader}"
-              Command="{Binding SortByCommand}" CommandParameter="Iso"/>
+              Command="{Binding SortByCommand}" CommandParameter="Iso"
+              ToolTip.Tip="Сортировать по коду страны"/>
       <Button Grid.Column="3" Classes="header" Content="{Binding CityHeader}"
-              Command="{Binding SortByCommand}" CommandParameter="City"/>
+              Command="{Binding SortByCommand}" CommandParameter="City"
+              ToolTip.Tip="Сортировать по городу"/>
       <Button Grid.Column="4" Classes="header" Content="{Binding CountryHeader}"
-              Command="{Binding SortByCommand}" CommandParameter="Country"/>
+              Command="{Binding SortByCommand}" CommandParameter="Country"
+              ToolTip.Tip="Сортировать по стране"/>
       <Button Grid.Column="6" Classes="header" Content="{Binding PingHeader}"
-              Command="{Binding SortByCommand}" CommandParameter="Ping"/>
+              Command="{Binding SortByCommand}" CommandParameter="Ping"
+              HorizontalContentAlignment="Right" ToolTip.Tip="Сортировать по пингу"/>
     </Grid>
 
     <ListBox ItemsSource="{Binding Items}" Padding="0">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:LocationItemViewModel">
           <Border Classes.connected="{Binding IsConnected}" CornerRadius="4" Padding="4,2">
-            <Grid ColumnDefinitions="36,34,48,*,*,120,80,110">
+            <Grid ColumnDefinitions="36,34,48,*,*,120,120,110">
               <Button Grid.Column="0" Content="{Binding Star}"
                       Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ToggleFavoriteCommand}"
                       CommandParameter="{Binding}" Background="Transparent" BorderThickness="0"
@@ -62,7 +66,7 @@
               <TextBlock Grid.Column="5" Text="✓ Подключено" Foreground="#00C853" FontWeight="SemiBold"
                          Margin="6,0" VerticalAlignment="Center" IsVisible="{Binding IsConnected}"/>
               <TextBlock Grid.Column="6" Text="{Binding PingMs}" Opacity="0.7" Margin="6,0"
-                         VerticalAlignment="Center"/>
+                         HorizontalAlignment="Right" VerticalAlignment="Center"/>
               <Button Grid.Column="7" Content="Подключить"
                       Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ConnectCommand}"
                       CommandParameter="{Binding}" VerticalAlignment="Center"/>

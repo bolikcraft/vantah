@@ -23,6 +23,9 @@ public partial class LocationsViewModel : ObservableObject
     private readonly AppStateStore _store;
     private readonly List<LocationItemViewModel> _all = new();
 
+    // Взводится, когда SortBy меняет колонку и направление разом: пересортировка — одна, в конце.
+    private bool _suspendApplyFilter;
+
     [ObservableProperty] private string _search = "";
 
     // Дефолты повторяют прежнее жёсткое поведение: избранные сверху, дальше по возрастанию пинга.
@@ -53,13 +56,13 @@ public partial class LocationsViewModel : ObservableObject
     partial void OnSortKeyChanged(LocationSortKey value)
     {
         RaiseHeadersChanged();
-        ApplyFilter();
+        if (!_suspendApplyFilter) ApplyFilter();
     }
 
     partial void OnSortAscendingChanged(bool value)
     {
         RaiseHeadersChanged();
-        ApplyFilter();
+        if (!_suspendApplyFilter) ApplyFilter();
     }
 
     partial void OnFavoritesFirstChanged(bool value)
@@ -113,20 +116,16 @@ public partial class LocationsViewModel : ObservableObject
         var sorted = LocationSorter.Sort(
             filtered.Select(i => i.Model).ToList(), SortKey, SortAscending, FavoritesFirst, favoriteKeys);
 
-        // Ключ локации теоретически может повториться — раскладываем по очереди на ключ,
-        // чтобы каждой отсортированной доменной модели достался свой элемент списка.
-        var byKey = new Dictionary<string, Queue<LocationItemViewModel>>(StringComparer.Ordinal);
+        // Key = "ISO|City" уникален, поэтому отсортированные доменные модели
+        // раскладываем обратно в элементы списка простым поиском по ключу.
+        var byKey = new Dictionary<string, LocationItemViewModel>(StringComparer.Ordinal);
         foreach (var i in filtered)
-        {
-            if (!byKey.TryGetValue(i.Key, out var queue))
-                byKey[i.Key] = queue = new Queue<LocationItemViewModel>();
-            queue.Enqueue(i);
-        }
+            byKey[i.Key] = i;
 
         Items.Clear();
         foreach (var loc in sorted)
-            if (byKey.TryGetValue(loc.Key, out var queue) && queue.Count > 0)
-                Items.Add(queue.Dequeue());
+            if (byKey.TryGetValue(loc.Key, out var item))
+                Items.Add(item);
     }
 
     [RelayCommand]
@@ -143,13 +142,20 @@ public partial class LocationsViewModel : ObservableObject
         if (key is null)
             return;
 
-        if (SortKey == key.Value)
-            SortAscending = !SortAscending;
-        else
+        // Смена колонки трогает сразу два свойства. Подавляем промежуточный ApplyFilter():
+        // каждая пересборка Items роняет Reset в ListBox и сбрасывает скролл и выделение.
+        _suspendApplyFilter = true;
+        try
         {
-            SortAscending = true;
+            SortAscending = SortKey == key.Value ? !SortAscending : true;
             SortKey = key.Value;
         }
+        finally
+        {
+            _suspendApplyFilter = false;
+        }
+
+        ApplyFilter();
     }
 
     [RelayCommand]
