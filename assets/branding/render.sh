@@ -13,7 +13,8 @@ DARK='#18181b'   # знак для светлых панелей
 LIGHT='#f4f4f5'  # знак для тёмных панелей
 
 png() {  # png <svg> <size> <out>
-  inkscape "$1" --export-type=png --export-width="$2" --export-height="$2" -o "$3" >/dev/null 2>&1
+  # stderr не глушим: иначе падение inkscape оборвёт скрипт без единой диагностики.
+  inkscape "$1" --export-type=png --export-width="$2" --export-height="$2" -o "$3" >/dev/null
 }
 
 # --- иконка приложения: один ICO со всеми размерами + PNG для hicolor
@@ -36,6 +37,12 @@ for state in disconnected connecting connected; do
     if [ "$polarity" = light ]; then
       src="$tmp/tray-$state-light.svg"
       sed "s/$DARK/$LIGHT/g" "tray-$state.svg" > "$src"
+      # Замена цвета обязана сработать: иначе светлый комплект молча станет копией
+      # тёмного и знак пропадёт на тёмной панели.
+      if cmp -s "$src" "tray-$state.svg"; then
+        echo "ОШИБКА: в tray-$state.svg не найден цвет $DARK — светлый комплект не собрать" >&2
+        exit 1
+      fi
     fi
     pngs=()
     for s in "${tray_sizes[@]}"; do
