@@ -1,0 +1,105 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantah.App.ViewModels"
+             xmlns:loc="clr-namespace:Vantah.App.Localization"
+             x:Class="Vantah.App.Views.ConfigView"
+             x:DataType="vm:ConfigViewModel">
+  <ScrollViewer>
+    <StackPanel Margin="20" Spacing="14" MaxWidth="460" HorizontalAlignment="Center">
+
+      <!-- Смена настроек на живом туннеле применяется, но подхватывается лишь при следующем подключении. -->
+      <Border Background="#33F59E0B" CornerRadius="6" Padding="10"
+              IsVisible="{Binding IsConnectedWarningVisible}">
+        <TextBlock TextWrapping="Wrap"
+                   Text="{Binding [Settings_ConnectedWarning], Source={x:Static loc:Localizer.Instance}}"/>
+      </Border>
+
+      <StackPanel Spacing="4">
+        <TextBlock FontWeight="SemiBold"
+                   Text="{Binding [Settings_Mode], Source={x:Static loc:Localizer.Instance}}"/>
+        <ToggleSwitch IsChecked="{Binding IsSocksMode}" OffContent="TUN" OnContent="SOCKS"/>
+      </StackPanel>
+
+      <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="6" Padding="12"
+              IsVisible="{Binding IsSocksMode}">
+        <StackPanel Spacing="8">
+          <TextBlock FontWeight="SemiBold"
+                     Text="{Binding [Settings_SocksSection], Source={x:Static loc:Localizer.Instance}}"/>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBox Width="140" Text="{Binding SocksPort}"
+                     Watermark="{Binding [Settings_SocksPort], Source={x:Static loc:Localizer.Instance}}"/>
+            <Button Command="{Binding ApplySocksPortCommand}"
+                    Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
+          </StackPanel>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBox Width="200" Text="{Binding SocksHost}"
+                     Watermark="{Binding [Settings_SocksHost], Source={x:Static loc:Localizer.Instance}}"/>
+            <Button Command="{Binding ApplySocksHostCommand}"
+                    Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
+          </StackPanel>
+          <TextBox Text="{Binding SocksUsername}"
+                   Watermark="{Binding [Settings_SocksUsername], Source={x:Static loc:Localizer.Instance}}"/>
+          <TextBox Text="{Binding SocksPassword}" PasswordChar="•"
+                   Watermark="{Binding [Settings_SocksPassword], Source={x:Static loc:Localizer.Instance}}"/>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Command="{Binding ApplySocksAuthCommand}"
+                    Content="{Binding [Settings_SaveAuth], Source={x:Static loc:Localizer.Instance}}"/>
+            <Button Command="{Binding ClearSocksAuthCommand}"
+                    Content="{Binding [Settings_ClearAuth], Source={x:Static loc:Localizer.Instance}}"/>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <StackPanel Spacing="4">
+        <TextBlock FontWeight="SemiBold"
+                   Text="{Binding [Settings_Dns], Source={x:Static loc:Localizer.Instance}}"/>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBox Width="300" Text="{Binding DnsUpstream}"
+                   Watermark="{Binding [Settings_DnsPlaceholder], Source={x:Static loc:Localizer.Instance}}"/>
+          <Button Command="{Binding ApplyDnsCommand}"
+                  Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
+        </StackPanel>
+      </StackPanel>
+
+      <StackPanel Spacing="4">
+        <TextBlock FontWeight="SemiBold"
+                   Text="{Binding [Settings_Protocol], Source={x:Static loc:Localizer.Instance}}"/>
+        <ComboBox Width="200" ItemsSource="{Binding ProtocolOptions}" SelectedItem="{Binding SelectedProtocol}"/>
+      </StackPanel>
+
+      <StackPanel Spacing="4">
+        <TextBlock FontWeight="SemiBold"
+                   Text="{Binding [Settings_Channel], Source={x:Static loc:Localizer.Instance}}"/>
+        <ComboBox Width="200" ItemsSource="{Binding ChannelOptions}" SelectedItem="{Binding SelectedChannel}"/>
+      </StackPanel>
+
+      <StackPanel Spacing="4">
+        <TextBlock FontWeight="SemiBold"
+                   Text="{Binding [Settings_Routing], Source={x:Static loc:Localizer.Instance}}"/>
+        <ComboBox Width="200" ItemsSource="{Binding RoutingOptions}" SelectedItem="{Binding SelectedRouting}"/>
+      </StackPanel>
+
+      <StackPanel Spacing="6">
+        <CheckBox IsChecked="{Binding ChangeSystemDns}"
+                  Content="{Binding [Settings_ChangeSystemDns], Source={x:Static loc:Localizer.Instance}}"/>
+        <CheckBox IsChecked="{Binding PostQuantum}"
+                  Content="{Binding [Settings_PostQuantum], Source={x:Static loc:Localizer.Instance}}"/>
+        <CheckBox IsChecked="{Binding ShowNotifications}"
+                  Content="{Binding [Settings_ShowNotifications], Source={x:Static loc:Localizer.Instance}}"/>
+        <CheckBox IsChecked="{Binding DebugLogging}"
+                  Content="{Binding [Settings_DebugLogging], Source={x:Static loc:Localizer.Instance}}"/>
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Button Command="{Binding ReloadCommand}" IsEnabled="{Binding !IsBusy}"
+                Content="{Binding [Common_Refresh], Source={x:Static loc:Localizer.Instance}}"/>
+        <TextBlock VerticalAlignment="Center" Foreground="MediumSeaGreen" Text="{Binding StatusText}"
+                   IsVisible="{Binding StatusText, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+      </StackPanel>
+
+      <TextBlock Foreground="IndianRed" TextWrapping="Wrap" Text="{Binding Error}"
+                 IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
