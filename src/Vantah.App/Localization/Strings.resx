@@ -79,6 +79,9 @@
   <data name="Tab_Processes" xml:space="preserve">
     <value>Процессы</value>
   </data>
+  <data name="Tab_Settings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
 
   <!-- Общие подписи кнопок и состояний -->
   <data name="Common_Connect" xml:space="preserve">
@@ -110,6 +113,15 @@
   </data>
   <data name="Common_NotAvailable" xml:space="preserve">
     <value>недоступно</value>
+  </data>
+  <data name="Common_Apply" xml:space="preserve">
+    <value>Применить</value>
+  </data>
+  <data name="Common_Reset" xml:space="preserve">
+    <value>Сбросить</value>
+  </data>
+  <data name="Common_Saved" xml:space="preserve">
+    <value>Сохранено</value>
   </data>
 
   <!-- Вкладка «Статус» -->
@@ -327,6 +339,68 @@
   <data name="Tray_StatusConnectedFormat" xml:space="preserve">
     <value>{0} {1}{2}</value>
     <comment>{0} — глиф состояния, {1} — локация, {2} — « · Режим» либо пусто.</comment>
+  </data>
+
+  <!-- Вкладка «Настройки» -->
+  <data name="Settings_ConnectedWarning" xml:space="preserve">
+    <value>VPN сейчас подключён. Изменение настроек может потребовать переподключения, чтобы вступить в силу.</value>
+  </data>
+  <data name="Settings_Mode" xml:space="preserve">
+    <value>Режим работы</value>
+  </data>
+  <data name="Settings_SocksSection" xml:space="preserve">
+    <value>Параметры SOCKS</value>
+  </data>
+  <data name="Settings_SocksPort" xml:space="preserve">
+    <value>Порт</value>
+  </data>
+  <data name="Settings_SocksHost" xml:space="preserve">
+    <value>Хост</value>
+  </data>
+  <data name="Settings_SocksUsername" xml:space="preserve">
+    <value>Логин</value>
+  </data>
+  <data name="Settings_SocksPassword" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="Settings_SaveAuth" xml:space="preserve">
+    <value>Сохранить логин и пароль</value>
+  </data>
+  <data name="Settings_ClearAuth" xml:space="preserve">
+    <value>Сбросить авторизацию</value>
+  </data>
+  <data name="Settings_Dns" xml:space="preserve">
+    <value>DNS-апстрим</value>
+  </data>
+  <data name="Settings_DnsPlaceholder" xml:space="preserve">
+    <value>Пусто — серверы AdGuard по умолчанию</value>
+  </data>
+  <data name="Settings_Protocol" xml:space="preserve">
+    <value>Протокол</value>
+  </data>
+  <data name="Settings_Channel" xml:space="preserve">
+    <value>Канал обновлений</value>
+  </data>
+  <data name="Settings_Routing" xml:space="preserve">
+    <value>Режим TUN-роутинга</value>
+  </data>
+  <data name="Settings_ChangeSystemDns" xml:space="preserve">
+    <value>Менять системный DNS</value>
+  </data>
+  <data name="Settings_PostQuantum" xml:space="preserve">
+    <value>Постквантовая криптография</value>
+  </data>
+  <data name="Settings_ShowNotifications" xml:space="preserve">
+    <value>Показывать уведомления</value>
+  </data>
+  <data name="Settings_DebugLogging" xml:space="preserve">
+    <value>Отладочное логирование</value>
+  </data>
+  <data name="Settings_ErrorInvalidPort" xml:space="preserve">
+    <value>Порт SOCKS должен быть числом от 1 до 65535</value>
+  </data>
+  <data name="Settings_ErrorEmptyHost" xml:space="preserve">
+    <value>Укажите хост SOCKS</value>
   </data>
 
   <!-- Выбор языка -->

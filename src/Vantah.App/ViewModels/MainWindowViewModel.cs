@@ -19,6 +19,7 @@ public partial class MainWindowViewModel : ObservableObject
     public LicenseViewModel License { get; }
     public AboutViewModel About { get; }
     public ProcessesViewModel Processes { get; }
+    public ConfigViewModel Config { get; }
 
     /// <summary>Языки интерфейса. Название каждого — на нём самом, поэтому не переводится.</summary>
     public IReadOnlyList<LanguageOption> Languages { get; } = new[]
@@ -29,8 +30,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty] private LanguageOption _selectedLanguage;
 
-    // Индекс активной вкладки (Статус=0, Локации=1, Домены=2, Лицензия=3, О программе=4, Процессы=5) —
-    // двусторонняя привязка к TabControl; на индексы завязано меню трея.
+    // Индекс активной вкладки (Статус=0, Локации=1, Домены=2, Лицензия=3, Процессы=4, О программе=5,
+    // Настройки=6) — двусторонняя привязка к TabControl; на индексы завязано меню трея,
+    // поэтому новые вкладки добавляем в конец.
     [ObservableProperty] private int _selectedTab;
 
     public MainWindowViewModel(
@@ -40,6 +42,7 @@ public partial class MainWindowViewModel : ObservableObject
         LicenseViewModel license,
         AboutViewModel about,
         ProcessesViewModel processes,
+        ConfigViewModel config,
         LanguageStore languageStore)
     {
         Status = status;
@@ -48,6 +51,7 @@ public partial class MainWindowViewModel : ObservableObject
         License = license;
         About = about;
         Processes = processes;
+        Config = config;
         _languageStore = languageStore;
 
         // Пишем в backing-поле, а не в свойство: стартовый язык — не выбор пользователя,
