@@ -48,4 +48,34 @@ public class VpnServiceTests
         Assert.Single(locs);
         Assert.Equal("Tallinn", locs[0].City);
     }
+
+    [Fact]
+    public async Task GetCliVersion_calls_version_flag_and_strips_ansi()
+    {
+        var cli = new FakeCliRunner().Enqueue("AdGuard VPN CLI [1mv1.7.12[0m\n");
+        var svc = new VpnService(cli);
+
+        var version = await svc.GetCliVersionAsync();
+
+        Assert.Equal(new[] { "--version" }, cli.Calls[0]);
+        Assert.Equal("AdGuard VPN CLI v1.7.12", version);
+    }
+
+    [Fact]
+    public async Task GetCliVersion_returns_placeholder_when_command_fails()
+    {
+        var cli = new FakeCliRunner().Enqueue(new Vantah.Core.Cli.CliResult(127, "", "command not found"));
+        var svc = new VpnService(cli);
+
+        Assert.Equal("недоступно", await svc.GetCliVersionAsync());
+    }
+
+    [Fact]
+    public async Task GetCliVersion_returns_placeholder_when_output_empty()
+    {
+        var cli = new FakeCliRunner().Enqueue("   \n");
+        var svc = new VpnService(cli);
+
+        Assert.Equal("недоступно", await svc.GetCliVersionAsync());
+    }
 }

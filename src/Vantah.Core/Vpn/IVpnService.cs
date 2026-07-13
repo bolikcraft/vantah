@@ -9,4 +9,5 @@ public interface IVpnService
     Task<VpnStatus> ConnectAsync(string? location, bool fastest, CancellationToken ct = default);
     Task<VpnStatus> DisconnectAsync(CancellationToken ct = default);
     Task<License> GetLicenseAsync(CancellationToken ct = default);
+    Task<string> GetCliVersionAsync(CancellationToken ct = default);
 }
