@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -20,12 +21,21 @@ public partial class StatusViewModel : ObservableObject
     [ObservableProperty] private string _rxTotalText = "↓ 0.0 B";
     [ObservableProperty] private string _txTotalText = "↑ 0.0 B";
     [ObservableProperty] private string? _error;
-    [ObservableProperty] private bool _isConnected;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ToggleText))]
+    private bool _isConnected;
     [ObservableProperty] private bool _isBusy;
+    [ObservableProperty] private string _log = "";
+
+    private ConnectionState? _lastConnection;
+
+    // Подпись кнопки = действие, которое она выполнит (не статус).
+    public string ToggleText => IsConnected ? "Отключить" : "Подключить";
 
     public StatusViewModel(VpnCoordinator coordinator, AppStateStore store)
     {
         _coordinator = coordinator;
+        _lastConnection = store.Current.Connection;   // не логируем стартовое состояние
         store.Changed += (_, s) => Dispatcher.UIThread.Post(() => Apply(s));
         Apply(store.Current);
     }
@@ -59,14 +69,33 @@ public partial class StatusViewModel : ObservableObject
             RxTotalText = "↓ 0.0 B";
             TxTotalText = "↑ 0.0 B";
         }
+
+        // Событие в лог — только при смене состояния подключения.
+        if (_lastConnection != s.Connection)
+        {
+            _lastConnection = s.Connection;
+            AppendLog(StateLogMessage(s));
+        }
     }
 
     [RelayCommand]
     private Task Toggle() =>
         IsConnected ? _coordinator.DisconnectAsync() : _coordinator.ConnectAsync(null, fastest: false);
 
-    [RelayCommand]
-    private Task Fastest() => _coordinator.ConnectAsync(null, fastest: true);
+    private static string StateLogMessage(AppSnapshot s) => s.Connection switch
+    {
+        ConnectionState.Connecting    => "Подключение…",
+        ConnectionState.Connected     => $"Подключено: {s.Location} ({s.Mode})",
+        ConnectionState.Disconnecting => "Отключение…",
+        ConnectionState.Error         => $"Ошибка: {s.Error}",
+        _                             => "Отключено",
+    };
+
+    private void AppendLog(string message)
+    {
+        var line = $"{DateTime.Now:HH:mm:ss}  {message}";
+        Log = string.IsNullOrEmpty(Log) ? line : line + "\n" + Log;   // новые сверху
+    }
 
     private static string Format(double bytesPerSec)
     {
