@@ -1,15 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Localization;
+using Vantah.Core.Localization;
 using Vantah.Core.Models;
 using Vantah.Core.Settings;
 using Vantah.Core.State;
 
 namespace Vantah.App.ViewModels;
+
+/// <summary>Язык интерфейса в выпадающем списке. Display — самоназвание, не переводится.</summary>
+public sealed record LanguageOption(string Code, string Display);
 
 /// <summary>
 /// Вкладка «Настройки». Тумблеры и выпадающие списки применяются сразу, текстовые поля — по кнопке.
@@ -18,20 +23,43 @@ namespace Vantah.App.ViewModels;
 public partial class ConfigViewModel : ObservableObject
 {
     private readonly IConfigService _config;
+    private readonly LanguageStore _languageStore;
 
     // Подавляет авто-применение, пока форму заполняем программно: иначе загрузка конфига
     // тут же отправила бы обратно в CLI всё, что только что из него прочитали.
     private bool _loading;
 
-    public ConfigViewModel(IConfigService config, AppStateStore store)
+    public ConfigViewModel(IConfigService config, AppStateStore store, LanguageStore languageStore)
     {
         _config = config;
+        _languageStore = languageStore;
+
+        // Пишем в backing-поле, а не в свойство: стартовый язык — не выбор пользователя,
+        // сохранять его в ~/.config/vantah/language незачем.
+        var current = Localizer.Instance.Language;
+        _selectedLanguage = Languages.FirstOrDefault(l => l.Code == current) ?? Languages[0];
 
         store.Changed += (_, s) => Dispatcher.UIThread.Post(() =>
             IsConnectedWarningVisible = s.Connection == ConnectionState.Connected);
         IsConnectedWarningVisible = store.Current.Connection == ConnectionState.Connected;
 
         _ = LoadAsync();
+    }
+
+    /// <summary>Языки интерфейса. Название каждого — на нём самом, поэтому не переводится.</summary>
+    public IReadOnlyList<LanguageOption> Languages { get; } = new[]
+    {
+        new LanguageOption("ru", "Русский"),
+        new LanguageOption("en", "English"),
+    };
+
+    [ObservableProperty] private LanguageOption _selectedLanguage;
+
+    // Выбор языка в UI: переключаем на лету и запоминаем на следующий запуск.
+    partial void OnSelectedLanguageChanged(LanguageOption value)
+    {
+        Localizer.Instance.SetLanguage(value.Code);
+        _languageStore.Save(value.Code);
     }
 
     // Токены CLI — техническая номенклатура, одинаковая на всех языках, поэтому не переводятся.

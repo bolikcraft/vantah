@@ -79,8 +79,7 @@ public partial class App : Application
                 new LicenseViewModel(vpn),
                 new AboutViewModel(vpn),
                 new ProcessesViewModel(processes),
-                new ConfigViewModel(vpnConfig, store),
-                languageStore);
+                new ConfigViewModel(vpnConfig, store, languageStore));
 
             var window = new MainWindow { DataContext = mainVm };
             desktop.MainWindow = window;

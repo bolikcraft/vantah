@@ -6,6 +6,7 @@ using Vantah.App.Localization;
 using Vantah.App.Tests.Fakes;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
+using Vantah.Core.Localization;
 using Vantah.Core.Models;
 using Vantah.Core.Settings;
 using Vantah.Core.State;
@@ -24,8 +25,13 @@ public class ConfigViewTests
         return window;
     }
 
+    // LanguageStore пишет в ~/.config/vantah/language — путь уводим в temp,
+    // иначе прогон тестов перезаписал бы настоящий выбор языка пользователя.
     private static ConfigViewModel Vm(FakeConfigService svc, AppStateStore? store = null) =>
-        new(svc, store ?? new AppStateStore());
+        new(svc,
+            store ?? new AppStateStore(),
+            new LanguageStore(Path.Combine(
+                Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "language")));
 
     /// <summary>Кнопки самой формы: ровно <see cref="Button"/>, без ToggleButton/RepeatButton из шаблонов.</summary>
     private static Button[] OwnButtons(Window window) =>
@@ -186,6 +192,34 @@ public class ConfigViewTests
         await ClickAsync(window, LocKeys.Common_Apply);
 
         Assert.Contains("set-dns:94.140.14.14", svc.Calls);
+    }
+
+    /// <summary>
+    /// Язык интерфейса — поле формы настроек, а не элемент полосы вкладок. Выбор в комбобоксе
+    /// обязан переключать язык на лету: проверяем через сам ComboBox, а не через вьюмодель,
+    /// иначе отвязанный SelectedItem остался бы незамеченным.
+    /// </summary>
+    [AvaloniaFact]
+    public void Choosing_a_language_switches_the_ui_language()
+    {
+        var vm = Vm(new FakeConfigService());
+        var window = Show(vm);
+
+        var combo = window.GetVisualDescendants().OfType<ComboBox>()
+            .Single(c => c.ItemsSource is IEnumerable<LanguageOption>);
+
+        try
+        {
+            combo.SelectedItem = vm.Languages.Single(l => l.Code == "en");
+
+            Assert.Equal("en", Localizer.Instance.Language);
+            Assert.Equal("en", vm.SelectedLanguage.Code);
+        }
+        finally
+        {
+            // Localizer.Instance — синглтон на весь тест-хост: не вернём «ru» — протечёт в другие тесты.
+            Localizer.Instance.SetLanguage("ru");
+        }
     }
 
     [AvaloniaFact]
