@@ -64,7 +64,7 @@ public partial class DomainsViewModel : ObservableObject
             _all.Clear();
             _all.AddRange(snap.Domains);
             ApplyFilter();
-            _appState.Set(s => s with { ExclusionsCount = _all.Count });
+            _appState.Set(s => s with { ExclusionsCount = _all.Count, ExclusionsMode = _mode });
         }
         catch (Exception ex) { Error = ex.Message; }
         finally { IsBusy = false; }

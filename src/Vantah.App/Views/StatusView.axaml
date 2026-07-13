@@ -8,6 +8,7 @@
       <TextBlock Text="{Binding ConnectionText}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
       <TextBlock Text="{Binding Location}" FontSize="16" HorizontalAlignment="Center"/>
       <TextBlock Text="{Binding Mode}" Opacity="0.7" HorizontalAlignment="Center"/>
+      <TextBlock Text="{Binding ExclusionsText}" Opacity="0.7" HorizontalAlignment="Center"/>
       <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
         <TextBlock Text="Скорость:" Opacity="0.7"/>
         <TextBlock Text="{Binding RxText}"/>

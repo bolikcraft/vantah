@@ -51,6 +51,7 @@ public sealed class VpnCoordinator(
             {
                 Connection = status.IsConnected ? ConnectionState.Connected : ConnectionState.Disconnected,
                 Location = status.Location,
+                LocationDisplay = ResolveLocationDisplay(status),
                 Mode = status.Mode,
                 Interface = status.Interface,
                 Traffic = sample,
@@ -74,7 +75,8 @@ public sealed class VpnCoordinator(
             store.Set(s => s with
             {
                 Connection = status.IsConnected ? ConnectionState.Connected : ConnectionState.Disconnected,
-                Location = status.Location, Mode = status.Mode, Interface = status.Interface, Error = null,
+                Location = status.Location, LocationDisplay = ResolveLocationDisplay(status),
+                Mode = status.Mode, Interface = status.Interface, Error = null,
             });
         }
         catch (Exception ex)
@@ -96,7 +98,7 @@ public sealed class VpnCoordinator(
             await vpn.DisconnectAsync(ct);
             traffic.Reset();
             history.OnDisconnected(DateTimeOffset.UtcNow);
-            store.Set(s => s with { Connection = ConnectionState.Disconnected, Location = null, Interface = null, Traffic = null });
+            store.Set(s => s with { Connection = ConnectionState.Disconnected, Location = null, LocationDisplay = null, Interface = null, Traffic = null });
         }
         catch (Exception ex)
         {
@@ -120,6 +122,14 @@ public sealed class VpnCoordinator(
         {
             history.OnDisconnected(now);
         }
+    }
+
+    // Человекочитаемая локация «Город, Страна» из известного списка (или просто город).
+    private string? ResolveLocationDisplay(VpnStatus status)
+    {
+        if (!status.IsConnected || string.IsNullOrWhiteSpace(status.Location)) return null;
+        var (city, country, _) = ResolveLocation(status.Location);
+        return string.IsNullOrEmpty(country) ? city : $"{city}, {country}";
     }
 
     // adguardvpn-cli status отдаёт только город (в верхнем регистре). Country/Ping берём

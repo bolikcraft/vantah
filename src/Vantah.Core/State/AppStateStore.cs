@@ -11,6 +11,8 @@ public sealed record AppSnapshot
     public TrafficSample? Traffic { get; init; }
     public string? Error { get; init; }
     public int ExclusionsCount { get; init; }
+    public string? LocationDisplay { get; init; }              // «Amsterdam, Netherlands» (человекочитаемо)
+    public SiteExclusionMode ExclusionsMode { get; init; }     // текущий режим исключений
 }
 
 public sealed class AppStateStore

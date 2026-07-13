@@ -22,6 +22,7 @@ public partial class StatusViewModel : ObservableObject
     [ObservableProperty] private string _txText = "↑ 0.0 B/s";
     [ObservableProperty] private string _rxTotalText = "↓ 0.0 B";
     [ObservableProperty] private string _txTotalText = "↑ 0.0 B";
+    [ObservableProperty] private string _exclusionsText = "";
     [ObservableProperty] private string? _error;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ToggleText))]
@@ -62,8 +63,11 @@ public partial class StatusViewModel : ObservableObject
             ConnectionState.Error         => "Ошибка",
             _                             => "Отключено",
         };
-        Location = s.Location;
-        Mode = s.Mode;
+        Location = s.LocationDisplay ?? s.Location;                  // полная локация: «Amsterdam, Netherlands»
+        Mode = s.Mode is { } m ? $"Режим: {m}" : null;               // «Режим: TUN»
+        ExclusionsText = s.ExclusionsMode == SiteExclusionMode.Selective
+            ? "Исключения: Выборочный (selective)"
+            : "Исключения: Общий (general)";
         Error = s.Error;
         IsConnected = s.Connection == ConnectionState.Connected;
         IsBusy = s.Connection is ConnectionState.Connecting or ConnectionState.Disconnecting;
