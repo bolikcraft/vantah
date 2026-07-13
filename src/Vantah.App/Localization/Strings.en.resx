@@ -403,6 +403,23 @@
     <value>Enter a SOCKS host</value>
   </data>
 
+  <!-- Меню «☰» -->
+  <data name="Menu_Tooltip" xml:space="preserve">
+    <value>Menu</value>
+  </data>
+  <data name="Menu_Processes" xml:space="preserve">
+    <value>Processes…</value>
+  </data>
+  <data name="Menu_Settings" xml:space="preserve">
+    <value>Settings…</value>
+  </data>
+  <data name="Menu_License" xml:space="preserve">
+    <value>License…</value>
+  </data>
+  <data name="Menu_About" xml:space="preserve">
+    <value>About…</value>
+  </data>
+
   <!-- Выбор языка -->
   <data name="Lang_Label" xml:space="preserve">
     <value>Language</value>

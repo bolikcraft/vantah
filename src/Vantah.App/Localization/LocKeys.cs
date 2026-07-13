@@ -16,6 +16,13 @@ public static class LocKeys
     public const string Tab_Processes = "Tab_Processes";
     public const string Tab_Settings = "Tab_Settings";
 
+    // Меню «☰» в правом углу полосы вкладок
+    public const string Menu_Tooltip = "Menu_Tooltip";
+    public const string Menu_Processes = "Menu_Processes";
+    public const string Menu_Settings = "Menu_Settings";
+    public const string Menu_License = "Menu_License";
+    public const string Menu_About = "Menu_About";
+
     // Общие подписи кнопок и состояний
     public const string Common_Connect = "Common_Connect";
     public const string Common_Disconnect = "Common_Disconnect";
