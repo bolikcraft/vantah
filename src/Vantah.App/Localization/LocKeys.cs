@@ -127,6 +127,7 @@ public static class LocKeys
     public const string Settings_Protocol = "Settings_Protocol";
     public const string Settings_Channel = "Settings_Channel";
     public const string Settings_Routing = "Settings_Routing";
+    public const string Settings_CreateRouteScript = "Settings_CreateRouteScript";
     public const string Settings_ChangeSystemDns = "Settings_ChangeSystemDns";
     public const string Settings_PostQuantum = "Settings_PostQuantum";
     public const string Settings_ShowNotifications = "Settings_ShowNotifications";

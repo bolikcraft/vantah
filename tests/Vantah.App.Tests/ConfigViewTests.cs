@@ -64,7 +64,7 @@ public class ConfigViewTests
         Assert.Equal("script", vm.SelectedRouting);
 
         var boxes = window.GetVisualDescendants().OfType<CheckBox>().ToArray();
-        Assert.Equal(4, boxes.Length);
+        Assert.Equal(7, boxes.Length);
         Assert.Contains(boxes, b => b.IsChecked == true);   // post-quantum и debug пришли включёнными
     }
 
@@ -137,28 +137,53 @@ public class ConfigViewTests
         Assert.True(shown);
     }
 
-    /// <summary>
-    /// Каждая кнопка формы связана с командой. В E4 кнопка, отвязанная от вьюмодели, молча
-    /// становилась пустышкой: сборка зелёная, тесты через vm.Command зелёные, клик — ничего.
-    /// </summary>
     [AvaloniaFact]
-    public void Every_button_is_wired_to_a_command()
+    public void Route_script_button_visible_only_in_script_routing()
     {
-        var window = Show(Vm(new FakeConfigService { }));
+        var svc = new FakeConfigService(new VpnConfig { TunnelRoutingMode = TunnelRoutingMode.Auto });
+        var vm = Vm(svc);
+        Show(vm);
 
-        // Ровно Button, без наследников: шаблоны ComboBox и ScrollViewer полны служебных
-        // ToggleButton/RepeatButton, у которых команды и не бывает.
+        Assert.False(vm.IsRouteScriptAvailable);
+
+        vm.SelectedRouting = "script";
+
+        Assert.True(vm.IsRouteScriptAvailable);
+    }
+
+    [AvaloniaFact]
+    public async Task Creating_route_script_calls_the_service()
+    {
+        var svc = new FakeConfigService(new VpnConfig { TunnelRoutingMode = TunnelRoutingMode.Script });
+        var vm = Vm(svc);
+        Show(vm);
+
+        await vm.CreateRouteScriptCommand.ExecuteAsync(null);
+
+        Assert.Contains("create-route-script", svc.Calls);
+        Assert.NotNull(vm.StatusText);
+    }
+
+    // Собственные кнопки формы: порт, хост, save-auth, clear-auth, DNS, интерфейс, route-скрипт, обновить = 8.
+    [AvaloniaFact]
+    public void All_own_buttons_still_wired()
+    {
+        var svc = new FakeConfigService(new VpnConfig { TunnelRoutingMode = TunnelRoutingMode.Script });
+        var window = Show(Vm(svc));
+
         var buttons = OwnButtons(window);
 
-        Assert.Equal(6, buttons.Length);   // порт, хост, сохранить auth, сбросить auth, DNS, обновить
+        Assert.Equal(8, buttons.Length);
         Assert.All(buttons, b => Assert.NotNull(b.Command));
     }
 
-    /// <summary>Жмём именно КНОПКУ, а не команду вьюмодели: проверяем проводку разметки.</summary>
-    private static async Task ClickAsync(Window window, string contentKey)
+    /// <summary>
+    /// Жмём именно КНОПКУ, а не команду вьюмодели: проверяем проводку разметки.
+    /// По имени, а не по подписи: у DNS и интерфейса общая подпись «Применить».
+    /// </summary>
+    private static async Task ClickAsync(Window window, string name)
     {
-        var label = Localizer.Instance[contentKey];
-        var button = OwnButtons(window).Single(b => (b.Content as string) == label && b.IsEffectivelyVisible);
+        var button = OwnButtons(window).Single(b => b.Name == name && b.IsEffectivelyVisible);
 
         Assert.NotNull(button.Command);
         button.Command!.Execute(button.CommandParameter);
@@ -175,7 +200,7 @@ public class ConfigViewTests
         var window = Show(vm);
 
         vm.DnsUpstream = "";
-        await ClickAsync(window, LocKeys.Common_Apply);   // единственная видимая «Применить» в режиме TUN — у DNS
+        await ClickAsync(window, "ApplyDnsButton");
 
         Assert.Contains("reset-dns", svc.Calls);
         Assert.Null(vm.Error);
@@ -189,7 +214,7 @@ public class ConfigViewTests
         var window = Show(vm);
 
         vm.DnsUpstream = "  94.140.14.14  ";
-        await ClickAsync(window, LocKeys.Common_Apply);
+        await ClickAsync(window, "ApplyDnsButton");
 
         Assert.Contains("set-dns:94.140.14.14", svc.Calls);
     }

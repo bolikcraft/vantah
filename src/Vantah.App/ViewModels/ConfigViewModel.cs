@@ -153,8 +153,18 @@ public partial class ConfigViewModel : ObservableObject
     partial void OnSelectedChannelChanged(string value) =>
         AutoApply(() => _config.SetUpdateChannelAsync(ParseChannel(value)));
 
-    partial void OnSelectedRoutingChanged(string value) =>
+    partial void OnSelectedRoutingChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsRouteScriptAvailable));
         AutoApply(() => _config.SetTunRoutingModeAsync(ParseRouting(value)));
+    }
+
+    /// <summary>Route-скрипт имеет смысл только при routing = script.</summary>
+    public bool IsRouteScriptAvailable => SelectedRouting == "script";
+
+    [RelayCommand]
+    private Task CreateRouteScript() =>
+        RunAsyncText(() => _config.CreateRouteScriptAsync());
 
     private void AutoApply(Func<Task<VpnConfig>> action)
     {
@@ -211,6 +221,24 @@ public partial class ConfigViewModel : ObservableObject
         {
             Apply(await action());
             StatusText = Localizer.Instance[LocKeys.Common_Saved];
+        }
+        catch (Exception ex) { Error = ex.Message; }
+        finally { IsBusy = false; }
+    }
+
+    // Как RunAsync, но действие возвращает текст (create-route-script конфиг не меняет).
+    private async Task RunAsyncText(Func<Task<string>> action)
+    {
+        if (IsBusy) return;
+        IsBusy = true;
+        Error = null;
+        StatusText = null;
+        try
+        {
+            var text = await action();
+            StatusText = string.IsNullOrWhiteSpace(text)
+                ? Localizer.Instance[LocKeys.Common_Saved]
+                : text.Trim();
         }
         catch (Exception ex) { Error = ex.Message; }
         finally { IsBusy = false; }

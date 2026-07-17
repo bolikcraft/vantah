@@ -372,6 +372,9 @@
   <data name="Settings_Routing" xml:space="preserve">
     <value>TUN routing mode</value>
   </data>
+  <data name="Settings_CreateRouteScript" xml:space="preserve">
+    <value>Create route script</value>
+  </data>
   <data name="Settings_ChangeSystemDns" xml:space="preserve">
     <value>Change system DNS</value>
   </data>

@@ -70,7 +70,7 @@
         <StackPanel Orientation="Horizontal" Spacing="8">
           <TextBox Width="300" Text="{Binding DnsUpstream}"
                    PlaceholderText="{Binding [Settings_DnsPlaceholder], Source={x:Static loc:Localizer.Instance}}"/>
-          <Button Command="{Binding ApplyDnsCommand}"
+          <Button Name="ApplyDnsButton" Command="{Binding ApplyDnsCommand}"
                   Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
         </StackPanel>
       </StackPanel>
@@ -93,6 +93,21 @@
         <ComboBox Width="200" ItemsSource="{Binding RoutingOptions}" SelectedItem="{Binding SelectedRouting}"/>
       </StackPanel>
 
+      <Button Command="{Binding CreateRouteScriptCommand}" IsEnabled="{Binding !IsBusy}"
+              IsVisible="{Binding IsRouteScriptAvailable}"
+              Content="{Binding [Settings_CreateRouteScript], Source={x:Static loc:Localizer.Instance}}"/>
+
+      <StackPanel Spacing="4">
+        <TextBlock FontWeight="SemiBold"
+                   Text="{Binding [Settings_InterfaceOverride], Source={x:Static loc:Localizer.Instance}}"/>
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <TextBox Width="200" Text="{Binding InterfaceOverride}"
+                   PlaceholderText="{Binding [Settings_InterfacePlaceholder], Source={x:Static loc:Localizer.Instance}}"/>
+          <Button Command="{Binding ApplyInterfaceOverrideCommand}"
+                  Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
+        </StackPanel>
+      </StackPanel>
+
       <StackPanel Spacing="6">
         <CheckBox IsChecked="{Binding ChangeSystemDns}"
                   Content="{Binding [Settings_ChangeSystemDns], Source={x:Static loc:Localizer.Instance}}"/>
@@ -102,6 +117,12 @@
                   Content="{Binding [Settings_ShowNotifications], Source={x:Static loc:Localizer.Instance}}"/>
         <CheckBox IsChecked="{Binding DebugLogging}"
                   Content="{Binding [Settings_DebugLogging], Source={x:Static loc:Localizer.Instance}}"/>
+        <CheckBox IsChecked="{Binding CrashReporting}"
+                  Content="{Binding [Settings_CrashReporting], Source={x:Static loc:Localizer.Instance}}"/>
+        <CheckBox IsChecked="{Binding Telemetry}"
+                  Content="{Binding [Settings_Telemetry], Source={x:Static loc:Localizer.Instance}}"/>
+        <CheckBox IsChecked="{Binding ShowHints}"
+                  Content="{Binding [Settings_ShowHints], Source={x:Static loc:Localizer.Instance}}"/>
       </StackPanel>
 
       <StackPanel Orientation="Horizontal" Spacing="8">

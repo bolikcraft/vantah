@@ -49,8 +49,11 @@ public sealed class FakeConfigService(VpnConfig? current = null) : IConfigServic
     public Task<VpnConfig> SetChangeSystemDnsAsync(bool on, CancellationToken ct = default) =>
         Record($"set-change-system-dns:{on}");
 
-    public Task<VpnConfig> SetTunRoutingModeAsync(TunnelRoutingMode mode, CancellationToken ct = default) =>
-        Record($"set-tun-routing-mode:{mode}");
+    public Task<VpnConfig> SetTunRoutingModeAsync(TunnelRoutingMode mode, CancellationToken ct = default)
+    {
+        _current = _current with { TunnelRoutingMode = mode };
+        return Record($"set-tun-routing-mode:{mode}");
+    }
 
     public Task<VpnConfig> SetProtocolAsync(VpnProtocol protocol, CancellationToken ct = default) =>
         Record($"set-protocol:{protocol}");
