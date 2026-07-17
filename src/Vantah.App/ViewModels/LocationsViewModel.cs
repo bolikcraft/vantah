@@ -29,6 +29,14 @@ public partial class LocationsViewModel : ObservableObject
 
     [ObservableProperty] private string _search = "";
 
+    // Состояние загрузки локаций для самого экрана «Локации»: пока грузим — показываем «Загрузка…»,
+    // при сбое — текст ошибки и кнопку «Обновить», а не молчаливо пустой список.
+    [ObservableProperty] private bool _isLoading;
+    [ObservableProperty] private string? _loadError;
+
+    /// <summary>Текущая (пере)загрузка списка — чтобы её можно было дождаться в тестах.</summary>
+    public Task LoadTask { get; private set; } = Task.CompletedTask;
+
     // Дефолты повторяют прежнее жёсткое поведение: избранные сверху, дальше по возрастанию пинга.
     [ObservableProperty] private LocationSortKey _sortKey = LocationSortKey.Ping;
     [ObservableProperty] private bool _sortAscending = true;
@@ -56,7 +64,7 @@ public partial class LocationsViewModel : ObservableObject
         // Заголовки колонок собираются в коде (название + стрелка сортировки) — после
         // смены языка просим их перечитать себя.
         Localizer.Instance.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(RaiseHeadersChanged);
-        _ = LoadAsync();
+        LoadTask = LoadAsync();
     }
 
     partial void OnSearchChanged(string value) => ApplyFilter();
@@ -89,24 +97,45 @@ public partial class LocationsViewModel : ObservableObject
 
     private async Task LoadAsync()
     {
+        IsLoading = true;
+        LoadError = null;
         try
         {
             var favs = _favorites.Load();
             var locs = await _vpn.GetLocationsAsync();
-            _all.Clear();
-            foreach (var l in locs)
-                _all.Add(new LocationItemViewModel(l) { IsFavorite = favs.Contains(l.Key) });
-            _coordinator.UpdateKnownLocations(locs);
-            ApplyFilter();
-            ApplyConnected(_store.Current);
+            // Продолжение после await может оказаться на потоке пула (реальный CliRunner ждёт
+            // внешний процесс). Список Items привязан к UI, поэтому его правку выполняем строго
+            // на UI-потоке — иначе Avalonia роняет cross-thread исключение и список молча
+            // остаётся пустым (headless-тесты этого не ловят: там продолжение всегда на UI-потоке).
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                _all.Clear();
+                foreach (var l in locs)
+                    _all.Add(new LocationItemViewModel(l) { IsFavorite = favs.Contains(l.Key) });
+                _coordinator.UpdateKnownLocations(locs);
+                ApplyFilter();
+                ApplyConnected(_store.Current);
+            });
         }
         catch (Exception ex)
         {
-            // Ошибка загрузки локаций (нет CLI / не залогинен / таймаут) —
-            // показываем в баннере на вкладке «Статус».
-            _store.Set(s => s with { Error = ex.Message });
+            // Ошибку показываем и на самом экране «Локации» (LoadError + кнопка «Обновить»),
+            // и в общем баннере на «Статусе».
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                LoadError = ex.Message;
+                _store.Set(s => s with { Error = ex.Message });
+            });
+        }
+        finally
+        {
+            await Dispatcher.UIThread.InvokeAsync(() => IsLoading = false);
         }
     }
+
+    /// <summary>Повторная загрузка локаций (кнопка «Обновить» на экране и после сбоя).</summary>
+    [RelayCommand]
+    private Task Reload() => LoadTask = LoadAsync();
 
     private void ApplyFilter()
     {

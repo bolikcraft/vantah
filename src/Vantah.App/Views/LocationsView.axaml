@@ -50,6 +50,7 @@
               ToolTip.Tip="{Binding [Locations_Tooltip_SortByPing], Source={x:Static loc:Localizer.Instance}}"/>
     </Grid>
 
+    <Grid>
     <ListBox ItemsSource="{Binding Items}" Padding="0">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:LocationItemViewModel">
@@ -81,5 +82,20 @@
         </DataTemplate>
       </ListBox.ItemTemplate>
     </ListBox>
+
+      <!-- Пока грузим — «Загрузка локаций…» по центру поверх (пустого) списка. -->
+      <TextBlock IsVisible="{Binding IsLoading}" Opacity="0.7"
+                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                 Text="{Binding [Locations_Loading], Source={x:Static loc:Localizer.Instance}}"/>
+
+      <!-- Сбой загрузки — текст ошибки и кнопка «Обновить» вместо молчаливой пустоты. -->
+      <StackPanel IsVisible="{Binding LoadError, Converter={x:Static ObjectConverters.IsNotNull}}"
+                  HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10" MaxWidth="380">
+        <TextBlock Text="{Binding LoadError}" Foreground="IndianRed" TextWrapping="Wrap"
+                   HorizontalAlignment="Center" TextAlignment="Center"/>
+        <Button Command="{Binding ReloadCommand}" HorizontalAlignment="Center"
+                Content="{Binding [Common_Refresh], Source={x:Static loc:Localizer.Instance}}"/>
+      </StackPanel>
+    </Grid>
   </DockPanel>
 </UserControl>

@@ -53,6 +53,7 @@ public static class LocKeys
 
     // Вкладка «Локации»
     public const string Locations_SearchPlaceholder = "Locations_SearchPlaceholder";
+    public const string Locations_Loading = "Locations_Loading";
     public const string Locations_ConnectedBadge = "Locations_ConnectedBadge";
     public const string Locations_Col_Iso = "Locations_Col_Iso";
     public const string Locations_Col_City = "Locations_Col_City";
