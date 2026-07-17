@@ -139,6 +139,9 @@ public static class LocKeys
     public const string Settings_InterfacePlaceholder = "Settings_InterfacePlaceholder";
     public const string Settings_ErrorInvalidPort = "Settings_ErrorInvalidPort";
     public const string Settings_ErrorEmptyHost = "Settings_ErrorEmptyHost";
+    public const string Settings_UpdateAvailable = "Settings_UpdateAvailable";
+    public const string Settings_ExportLogs = "Settings_ExportLogs";
+    public const string Settings_LogsExported = "Settings_LogsExported";
 
     // Выбор языка
     public const string Lang_Label = "Lang_Label";

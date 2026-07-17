@@ -7,9 +7,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Localization;
 using Vantah.Core.Localization;
+using Vantah.Core.Logs;
 using Vantah.Core.Models;
 using Vantah.Core.Settings;
 using Vantah.Core.State;
+using Vantah.Core.Update;
 
 namespace Vantah.App.ViewModels;
 
@@ -24,15 +26,27 @@ public partial class ConfigViewModel : ObservableObject
 {
     private readonly IConfigService _config;
     private readonly LanguageStore _languageStore;
+    private readonly IUpdateChecker _updates;
+    private readonly ILogExporter _logs;
+    private readonly Func<Task<string?>> _pickFolder;
 
     // Подавляет авто-применение, пока форму заполняем программно: иначе загрузка конфига
     // тут же отправила бы обратно в CLI всё, что только что из него прочитали.
     private bool _loading;
 
-    public ConfigViewModel(IConfigService config, AppStateStore store, LanguageStore languageStore)
+    public ConfigViewModel(
+        IConfigService config,
+        AppStateStore store,
+        LanguageStore languageStore,
+        IUpdateChecker updates,
+        ILogExporter logs,
+        Func<Task<string?>> pickFolder)
     {
         _config = config;
         _languageStore = languageStore;
+        _updates = updates;
+        _logs = logs;
+        _pickFolder = pickFolder;
 
         // Пишем в backing-поле, а не в свойство: стартовый язык — не выбор пользователя,
         // сохранять его в ~/.config/vantah/language незачем.
@@ -44,6 +58,7 @@ public partial class ConfigViewModel : ObservableObject
         IsConnectedWarningVisible = store.Current.Connection == ConnectionState.Connected;
 
         _ = LoadAsync();
+        UpdateCheckTask = CheckForUpdatesAsync();
     }
 
     /// <summary>Языки интерфейса. Название каждого — на нём самом, поэтому не переводится.</summary>
@@ -89,11 +104,29 @@ public partial class ConfigViewModel : ObservableObject
     [ObservableProperty] private string? _error;
     [ObservableProperty] private string? _statusText;
     [ObservableProperty] private bool _isConnectedWarningVisible;
+    [ObservableProperty] private bool _isUpdateAvailable;
+    [ObservableProperty] private string _updateMessage = "";
+
+    /// <summary>Задача авто-проверки обновления — для ожидания в тестах.</summary>
+    public Task UpdateCheckTask { get; }
 
     private async Task LoadAsync()
     {
         try { Apply(await _config.GetAsync()); }
         catch (Exception ex) { Error = ex.Message; }
+    }
+
+    private async Task CheckForUpdatesAsync()
+    {
+        try
+        {
+            var s = await _updates.CheckAsync();
+            if (s.IsLatest) return;
+            var tmpl = Localizer.Instance[LocKeys.Settings_UpdateAvailable];
+            UpdateMessage = string.IsNullOrEmpty(s.LatestVersion) ? tmpl : $"{tmpl}: {s.LatestVersion}";
+            IsUpdateAvailable = true;
+        }
+        catch { /* проверка обновления не критична — молчим */ }
     }
 
     private void Apply(VpnConfig c)
@@ -210,6 +243,22 @@ public partial class ConfigViewModel : ObservableObject
 
     [RelayCommand]
     private Task Reload() => RunAsync(() => _config.GetAsync());
+
+    [RelayCommand]
+    private async Task ExportLogs()
+    {
+        var folder = await _pickFolder();
+        if (string.IsNullOrWhiteSpace(folder)) return;   // отмена диалога
+        if (IsBusy) return;
+        IsBusy = true; Error = null; StatusText = null;
+        try
+        {
+            var path = await _logs.ExportAsync(folder);
+            StatusText = $"{Localizer.Instance[LocKeys.Settings_LogsExported]}: {path}";
+        }
+        catch (Exception ex) { Error = ex.Message; }
+        finally { IsBusy = false; }
+    }
 
     private async Task RunAsync(Func<Task<VpnConfig>> action)
     {

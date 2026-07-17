@@ -7,9 +7,11 @@ using Vantah.App.Tests.Fakes;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
 using Vantah.Core.Localization;
+using Vantah.Core.Logs;
 using Vantah.Core.Models;
 using Vantah.Core.Settings;
 using Vantah.Core.State;
+using Vantah.Core.Update;
 using Xunit;
 
 /// <summary>
@@ -27,11 +29,19 @@ public class ConfigViewTests
 
     // LanguageStore пишет в ~/.config/vantah/language — путь уводим в temp,
     // иначе прогон тестов перезаписал бы настоящий выбор языка пользователя.
-    private static ConfigViewModel Vm(FakeConfigService svc, AppStateStore? store = null) =>
+    private static ConfigViewModel Vm(
+        FakeConfigService svc,
+        AppStateStore? store = null,
+        IUpdateChecker? updates = null,
+        ILogExporter? logs = null,
+        Func<Task<string?>>? folderPicker = null) =>
         new(svc,
             store ?? new AppStateStore(),
             new LanguageStore(Path.Combine(
-                Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "language")));
+                Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "language")),
+            updates ?? new FakeUpdateChecker(),
+            logs ?? new FakeLogExporter(),
+            folderPicker ?? (() => Task.FromResult<string?>(null)));
 
     /// <summary>Кнопки самой формы: ровно <see cref="Button"/>, без ToggleButton/RepeatButton из шаблонов.</summary>
     private static Button[] OwnButtons(Window window) =>
@@ -164,7 +174,8 @@ public class ConfigViewTests
         Assert.NotNull(vm.StatusText);
     }
 
-    // Собственные кнопки формы: порт, хост, save-auth, clear-auth, DNS, интерфейс, route-скрипт, обновить = 8.
+    // Собственные кнопки формы: порт, хост, save-auth, clear-auth, DNS, интерфейс,
+    // route-скрипт, обновить, выгрузить логи = 9.
     [AvaloniaFact]
     public void All_own_buttons_still_wired()
     {
@@ -173,7 +184,7 @@ public class ConfigViewTests
 
         var buttons = OwnButtons(window);
 
-        Assert.Equal(8, buttons.Length);
+        Assert.Equal(9, buttons.Length);
         Assert.All(buttons, b => Assert.NotNull(b.Command));
     }
 
@@ -256,7 +267,9 @@ public class ConfigViewTests
     {
         // Свой путь, а не ~/.config/vantah/language: прогон тестов не должен трогать настоящий выбор.
         var path = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "language");
-        var vm = new ConfigViewModel(new FakeConfigService(), new AppStateStore(), new LanguageStore(path));
+        var vm = new ConfigViewModel(
+            new FakeConfigService(), new AppStateStore(), new LanguageStore(path),
+            new FakeUpdateChecker(), new FakeLogExporter(), () => Task.FromResult<string?>(null));
         var window = Show(vm);
 
         var combo = window.GetVisualDescendants().OfType<ComboBox>()
@@ -323,11 +336,63 @@ public class ConfigViewTests
         var window = Show(vm);
 
         var banner = window.GetVisualDescendants().OfType<Border>()
-            .First(b => b.Child is TextBlock);
+            .First(b => b.Child is TextBlock t &&
+                        t.Text == Localizer.Instance[LocKeys.Settings_ConnectedWarning]);
         Assert.False(banner.IsEffectivelyVisible);
 
         vm.IsConnectedWarningVisible = true;
 
         Assert.True(banner.IsEffectivelyVisible);
+    }
+
+    [AvaloniaFact]
+    public async Task Update_banner_shown_when_a_newer_version_exists()
+    {
+        var vm = Vm(new FakeConfigService(),
+                    updates: new FakeUpdateChecker(new UpdateStatus(false, "1.5.2")));
+        Show(vm);
+
+        await vm.UpdateCheckTask;
+
+        Assert.True(vm.IsUpdateAvailable);
+        Assert.Contains("1.5.2", vm.UpdateMessage);
+    }
+
+    [AvaloniaFact]
+    public async Task No_update_banner_when_latest()
+    {
+        var vm = Vm(new FakeConfigService(), updates: new FakeUpdateChecker(new UpdateStatus(true, null)));
+        Show(vm);
+
+        await vm.UpdateCheckTask;
+
+        Assert.False(vm.IsUpdateAvailable);
+    }
+
+    [AvaloniaFact]
+    public async Task Exporting_logs_uses_the_picked_folder()
+    {
+        var logs = new FakeLogExporter();
+        var vm = Vm(new FakeConfigService(), logs: logs,
+                    folderPicker: () => Task.FromResult<string?>("/tmp/vantah-logs"));
+        Show(vm);
+
+        await vm.ExportLogsCommand.ExecuteAsync(null);
+
+        Assert.Contains("/tmp/vantah-logs", logs.Exported);
+        Assert.NotNull(vm.StatusText);
+    }
+
+    [AvaloniaFact]
+    public async Task Cancelled_folder_pick_exports_nothing()
+    {
+        var logs = new FakeLogExporter();
+        var vm = Vm(new FakeConfigService(), logs: logs,
+                    folderPicker: () => Task.FromResult<string?>(null));
+        Show(vm);
+
+        await vm.ExportLogsCommand.ExecuteAsync(null);
+
+        Assert.Empty(logs.Exported);
     }
 }

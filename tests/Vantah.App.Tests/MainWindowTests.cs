@@ -56,7 +56,9 @@ public class MainWindowTests
             new LicenseViewModel(vpn),
             new AboutViewModel(vpn),
             new ProcessesViewModel(new StubMonitor()),
-            new ConfigViewModel(new FakeConfigService(), store, new LanguageStore(Path.Combine(temp, "language"))));
+            new ConfigViewModel(
+                new FakeConfigService(), store, new LanguageStore(Path.Combine(temp, "language")),
+                new FakeUpdateChecker(), new FakeLogExporter(), () => Task.FromResult<string?>(null)));
     }
 
     private static MainWindow Show()

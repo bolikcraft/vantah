@@ -408,6 +408,15 @@
   <data name="Settings_ErrorEmptyHost" xml:space="preserve">
     <value>Enter a SOCKS host</value>
   </data>
+  <data name="Settings_UpdateAvailable" xml:space="preserve">
+    <value>A new version of adguardvpn-cli is available</value>
+  </data>
+  <data name="Settings_ExportLogs" xml:space="preserve">
+    <value>Export logs…</value>
+  </data>
+  <data name="Settings_LogsExported" xml:space="preserve">
+    <value>Logs saved</value>
+  </data>
 
   <!-- Меню «☰» -->
   <data name="Menu_Tooltip" xml:space="preserve">

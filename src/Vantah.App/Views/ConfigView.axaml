@@ -28,6 +28,11 @@
                    Text="{Binding [Settings_ConnectedWarning], Source={x:Static loc:Localizer.Instance}}"/>
       </Border>
 
+      <Border Background="#333B82F6" CornerRadius="6" Padding="10"
+              IsVisible="{Binding IsUpdateAvailable}">
+        <TextBlock TextWrapping="Wrap" Text="{Binding UpdateMessage}"/>
+      </Border>
+
       <StackPanel Spacing="4">
         <TextBlock FontWeight="SemiBold"
                    Text="{Binding [Settings_Mode], Source={x:Static loc:Localizer.Instance}}"/>
@@ -128,6 +133,8 @@
       <StackPanel Orientation="Horizontal" Spacing="8">
         <Button Command="{Binding ReloadCommand}" IsEnabled="{Binding !IsBusy}"
                 Content="{Binding [Common_Refresh], Source={x:Static loc:Localizer.Instance}}"/>
+        <Button Command="{Binding ExportLogsCommand}" IsEnabled="{Binding !IsBusy}"
+                Content="{Binding [Settings_ExportLogs], Source={x:Static loc:Localizer.Instance}}"/>
         <TextBlock VerticalAlignment="Center" Foreground="MediumSeaGreen" Text="{Binding StatusText}"
                    IsVisible="{Binding StatusText, Converter={x:Static ObjectConverters.IsNotNull}}"/>
       </StackPanel>

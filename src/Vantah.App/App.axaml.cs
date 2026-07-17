@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -20,6 +21,7 @@ using Vantah.Core.Logs;
 using Vantah.Core.Settings;
 using Vantah.Core.State;
 using Vantah.Core.Traffic;
+using Vantah.Core.Update;
 using Vantah.Core.Vpn;
 
 namespace Vantah.App;
@@ -71,6 +73,12 @@ public partial class App : Application
             // Настройки самого adguardvpn-cli (config show / set-*) — не путать с `config` выше,
             // это INI-конфиг Vantah (~/.config/vantah/vantah.conf).
             var vpnConfig = new ConfigService(runner);
+            var updateChecker = new UpdateChecker(runner);
+            var logExporter = new LogExporter(runner);
+
+            // Пикер папки для выгрузки логов работает через StorageProvider окна, а окно
+            // создаётся ниже — вьюмодели передаём отложенную ссылку, замыкание её увидит позже.
+            Window? mainWindowRef = null;
 
             var mainVm = new MainWindowViewModel(
                 new StatusViewModel(coordinator, store, logReader, new HistoryViewModel(coordinator, store)),
@@ -79,9 +87,12 @@ public partial class App : Application
                 new LicenseViewModel(vpn),
                 new AboutViewModel(vpn),
                 new ProcessesViewModel(processes),
-                new ConfigViewModel(vpnConfig, store, languageStore));
+                new ConfigViewModel(
+                    vpnConfig, store, languageStore, updateChecker, logExporter,
+                    () => PickLogFolderAsync(mainWindowRef)));
 
             var window = new MainWindow { DataContext = mainVm };
+            mainWindowRef = window;
             desktop.MainWindow = window;
 
             // Системный трей + сворачивание окна вместо выхода. Иконки цветные (серый /
@@ -104,5 +115,18 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    // Папка для выгрузки логов — через системный диалог окна; без окна (или без поддержки
+    // выбора папки) выгрузку не предлагаем, ExportLogsCommand просто ничего не сделает.
+    private static async Task<string?> PickLogFolderAsync(Window? owner)
+    {
+        if (owner?.StorageProvider is not { CanPickFolder: true } sp) return null;
+        var folders = await sp.OpenFolderPickerAsync(new Avalonia.Platform.Storage.FolderPickerOpenOptions
+        {
+            Title = Localizer.Instance[LocKeys.Settings_ExportLogs],
+            AllowMultiple = false,
+        });
+        return folders.Count > 0 ? folders[0].Path.LocalPath : null;
     }
 }
