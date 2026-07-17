@@ -70,7 +70,7 @@ public sealed class VpnCoordinator(
         store.Set(s => s with { Connection = ConnectionState.Connecting, Error = null });
         try
         {
-            var status = await vpn.ConnectAsync(location, fastest, ct);
+            var status = await vpn.ConnectAsync(location, fastest, ct: ct);
             TrackHistory(status);
             store.Set(s => s with
             {

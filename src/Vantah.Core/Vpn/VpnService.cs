@@ -23,11 +23,16 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
         return LocationsParser.Parse(r.Stdout);
     }
 
-    public async Task<VpnStatus> ConnectAsync(string? location, bool fastest, CancellationToken ct = default)
+    public async Task<VpnStatus> ConnectAsync(
+        string? location, bool fastest,
+        IpVersionPreference ipVersion = IpVersionPreference.Auto,
+        CancellationToken ct = default)
     {
         var args = new List<string> { "connect" };
         if (fastest) args.Add("-f");
         else if (!string.IsNullOrWhiteSpace(location)) { args.Add("-l"); args.Add(location); }
+        if (ipVersion == IpVersionPreference.IPv4Only) args.Add("-4");
+        else if (ipVersion == IpVersionPreference.IPv6Only) args.Add("-6");
         args.Add("-y");
 
         var r = await cli.RunAsync(args.ToArray(), ConnectTimeout, ct);
