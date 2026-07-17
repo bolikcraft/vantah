@@ -15,12 +15,12 @@ public sealed class DialogWindow : Window
     /// самых окон («Настройки»), поэтому заголовок обязан переехать на новый язык сразу, а не
     /// дожидаться закрытия и переоткрытия.
     /// </param>
-    public DialogWindow(Func<string> title, Control content)
+    public DialogWindow(Func<string> title, Control content, double width = 560, double height = 720)
     {
         Title = title();
         Content = content;
-        Width = 560;
-        Height = 720;
+        Width = width;
+        Height = height;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
         // Отписки нет намеренно: окон конечное число (по одному на пункт меню), закрытие их не

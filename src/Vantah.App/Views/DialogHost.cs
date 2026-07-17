@@ -19,11 +19,12 @@ public sealed class DialogHost
     /// выбрасывал бы свежесозданную вью. Заголовок — тоже фабрика: окно живёт до конца сессии
     /// и обязано пережить смену языка интерфейса.
     /// </summary>
-    public DialogWindow Open(string key, Func<string> title, Func<Control> createContent, Window owner)
+    public DialogWindow Open(string key, Func<string> title, Func<Control> createContent, Window owner,
+                             double width = 560, double height = 720)
     {
         if (!_windows.TryGetValue(key, out var window))
         {
-            window = new DialogWindow(title, createContent());
+            window = new DialogWindow(title, createContent(), width, height);
             _windows[key] = window;
         }
 

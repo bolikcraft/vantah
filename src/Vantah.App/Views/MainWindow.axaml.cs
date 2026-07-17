@@ -18,8 +18,11 @@ public partial class MainWindow : Window
     private void OnProcessesClick(object? sender, RoutedEventArgs e) =>
         Open("processes", LocKeys.Menu_Processes, vm => new ProcessesView { DataContext = vm.Processes });
 
+    // Настройки шире и выше прочих служебных окон: карточки секций раскладываются в две колонки,
+    // а это требует ~800px по ширине — при узком окне они схлопнулись бы в одну колонку со скроллом.
     private void OnSettingsClick(object? sender, RoutedEventArgs e) =>
-        Open("settings", LocKeys.Menu_Settings, vm => new ConfigView { DataContext = vm.Config });
+        Open("settings", LocKeys.Menu_Settings, vm => new ConfigView { DataContext = vm.Config },
+             width: 820, height: 820);
 
     private void OnLicenseClick(object? sender, RoutedEventArgs e) =>
         Open("license", LocKeys.Menu_License, vm => new LicenseView { DataContext = vm.License });
@@ -36,7 +39,8 @@ public partial class MainWindow : Window
     /// Вьюмодель берём из DataContext ровно один раз — в момент клика: фабрика контента выполняется
     /// позже и лениво (только при первом открытии окна), и читать DataContext оттуда нельзя.
     /// </summary>
-    private void Open(string key, string titleKey, Func<MainWindowViewModel, Control> createContent)
+    private void Open(string key, string titleKey, Func<MainWindowViewModel, Control> createContent,
+                     double width = 560, double height = 720)
     {
         if (Vm is not { } vm) return;
 
@@ -47,6 +51,8 @@ public partial class MainWindow : Window
                 key,
                 () => Localizer.Instance[titleKey].TrimEnd('…'),
                 () => createContent(vm),
-                this));
+                this,
+                width,
+                height));
     }
 }
