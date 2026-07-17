@@ -179,4 +179,50 @@ public class ConfigServiceTests
 
         Assert.Contains("not logged in", ex.Message);
     }
+
+    [Fact]
+    public async Task SetBoundIfOverride_passes_interface()
+    {
+        var cli = new FakeCliRunner().Enqueue("").Enqueue(Show);
+        var svc = new ConfigService(cli);
+
+        await svc.SetBoundIfOverrideAsync("eth0");
+
+        Assert.Equal(new[] { "config", "set-bound-if-override", "eth0" }, cli.Calls[0]);
+    }
+
+    // Пустая строка = отключить override; CLI объявляет пустой аргумент явно.
+    [Fact]
+    public async Task SetBoundIfOverride_empty_disables()
+    {
+        var cli = new FakeCliRunner().Enqueue("").Enqueue(Show);
+        var svc = new ConfigService(cli);
+
+        await svc.SetBoundIfOverrideAsync("");
+
+        Assert.Equal(new[] { "config", "set-bound-if-override", "" }, cli.Calls[0]);
+    }
+
+    [Fact]
+    public async Task CreateRouteScript_returns_cli_output()
+    {
+        var cli = new FakeCliRunner().Enqueue("Route script created at /etc/adguardvpn/route.sh");
+        var svc = new ConfigService(cli);
+
+        var output = await svc.CreateRouteScriptAsync();
+
+        Assert.Equal(new[] { "config", "create-route-script" }, cli.Calls[0]);
+        Assert.Contains("route.sh", output);
+    }
+
+    [Fact]
+    public async Task CreateRouteScript_throws_on_failure()
+    {
+        var cli = new FakeCliRunner().Enqueue(new CliResult(1, "", "permission denied"));
+        var svc = new ConfigService(cli);
+
+        var ex = await Assert.ThrowsAsync<ConfigCommandException>(() => svc.CreateRouteScriptAsync());
+
+        Assert.Contains("permission denied", ex.Message);
+    }
 }

@@ -25,4 +25,7 @@ public interface IConfigService
     Task<VpnConfig> SetCrashReportingAsync(bool on, CancellationToken ct = default);
     Task<VpnConfig> SetTelemetryAsync(bool on, CancellationToken ct = default);
     Task<VpnConfig> SetShowHintsAsync(bool on, CancellationToken ct = default);
+    Task<VpnConfig> SetBoundIfOverrideAsync(string iface, CancellationToken ct = default);
+    /// <summary>Генерирует route-скрипт; возвращает вывод CLI (путь/сообщение). Конфиг не меняет.</summary>
+    Task<string> CreateRouteScriptAsync(CancellationToken ct = default);
 }

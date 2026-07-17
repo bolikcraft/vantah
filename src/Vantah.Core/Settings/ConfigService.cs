@@ -83,6 +83,18 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
     public Task<VpnConfig> SetShowHintsAsync(bool on, CancellationToken ct = default) =>
         ApplyAsync(["config", "set-show-hints", OnOff(on)], ct);
 
+    public Task<VpnConfig> SetBoundIfOverrideAsync(string iface, CancellationToken ct = default) =>
+        ApplyAsync(["config", "set-bound-if-override", iface], ct);
+
+    public async Task<string> CreateRouteScriptAsync(CancellationToken ct = default)
+    {
+        var r = await cli.RunAsync(["config", "create-route-script"], Timeout, ct);
+        if (!r.Ok)
+            throw new ConfigCommandException(
+                FirstNonEmpty(r.Stderr, r.Stdout, "create-route-script завершился с ошибкой"));
+        return FirstNonEmpty(r.Stdout, r.Stderr, "");
+    }
+
     private async Task<VpnConfig> ApplyAsync(string[] args, CancellationToken ct)
     {
         var r = await cli.RunAsync(args, Timeout, ct);

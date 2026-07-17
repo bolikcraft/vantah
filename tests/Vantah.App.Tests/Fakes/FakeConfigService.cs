@@ -75,4 +75,13 @@ public sealed class FakeConfigService(VpnConfig? current = null) : IConfigServic
 
     public Task<VpnConfig> SetShowHintsAsync(bool on, CancellationToken ct = default) =>
         Record($"set-show-hints:{on}");
+
+    public Task<VpnConfig> SetBoundIfOverrideAsync(string iface, CancellationToken ct = default) =>
+        Record($"set-bound-if-override:{iface}");
+
+    public Task<string> CreateRouteScriptAsync(CancellationToken ct = default)
+    {
+        Calls.Add("create-route-script");
+        return Task.FromResult("route script created");
+    }
 }
