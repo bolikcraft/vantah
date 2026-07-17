@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -8,6 +9,7 @@ using Vantah.App.Services;
 using Vantah.Core.Logs;
 using Vantah.Core.Models;
 using Vantah.Core.State;
+using Vantah.Core.Vpn;
 
 namespace Vantah.App.ViewModels;
 
@@ -16,6 +18,7 @@ public partial class StatusViewModel : ObservableObject
     private readonly VpnCoordinator _coordinator;
     private readonly VpnLogReader _logReader;
     private readonly AppStateStore _store;
+    private readonly IpVersionStore _ipVersionStore;
 
     [ObservableProperty] private string _connectionText = Localizer.Instance[LocKeys.Status_Disconnected];
     [ObservableProperty] private string? _location;
@@ -38,12 +41,26 @@ public partial class StatusViewModel : ObservableObject
     // История подключений — под-панель на вкладке Статус.
     public HistoryViewModel History { get; }
 
-    public StatusViewModel(VpnCoordinator coordinator, AppStateStore store, VpnLogReader logReader, HistoryViewModel history)
+    public IReadOnlyList<IpVersionPreference> IpVersionOptions { get; } =
+        [IpVersionPreference.Auto, IpVersionPreference.IPv4Only, IpVersionPreference.IPv6Only];
+
+    [ObservableProperty] private IpVersionPreference _selectedIpVersion;
+
+    partial void OnSelectedIpVersionChanged(IpVersionPreference value) =>
+        _ipVersionStore.Save(value);
+
+    public StatusViewModel(
+        VpnCoordinator coordinator, AppStateStore store, VpnLogReader logReader,
+        HistoryViewModel history, IpVersionStore ipVersionStore)
     {
         _coordinator = coordinator;
         _logReader = logReader;
         _store = store;
+        _ipVersionStore = ipVersionStore;
         History = history;
+        // В обход сеттера: иначе конструктор тут же перезаписал бы файл только что прочитанным
+        // значением (лишняя запись при каждом старте).
+        _selectedIpVersion = ipVersionStore.Load();
         store.Changed += (_, s) => Dispatcher.UIThread.Post(() => Apply(s));
         Apply(store.Current);
 

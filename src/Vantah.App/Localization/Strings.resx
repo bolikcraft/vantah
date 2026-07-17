@@ -157,6 +157,9 @@
     <value>{0} — {1} → {2}</value>
     <comment>{0} — локация, {1} — начало, {2} — конец сессии.</comment>
   </data>
+  <data name="Status_IpVersion" xml:space="preserve">
+    <value>Версия IP при подключении</value>
+  </data>
 
   <!-- Вкладка «Локации» -->
   <data name="Locations_SearchPlaceholder" xml:space="preserve">

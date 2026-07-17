@@ -82,7 +82,8 @@ public partial class App : Application
             Window? mainWindowRef = null;
 
             var mainVm = new MainWindowViewModel(
-                new StatusViewModel(coordinator, store, logReader, new HistoryViewModel(coordinator, store)),
+                new StatusViewModel(coordinator, store, logReader,
+                    new HistoryViewModel(coordinator, store), ipVersionStore),
                 new LocationsViewModel(vpn, coordinator, favorites, store),
                 new DomainsViewModel(exclusions, exclusionsStore, store),
                 new LicenseViewModel(vpn),

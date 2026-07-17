@@ -35,6 +35,7 @@ public class MainWindowTests
         var store = new AppStateStore();
         var runner = new FakeCliRunner();
         var vpn = new VpnService(runner);
+        var ipVersionStore = new IpVersionStore(Path.Combine(temp, "ip-version"));
         var coordinator = new VpnCoordinator(
             vpn,
             new TrafficMonitor(new FakeTrafficReader()),
@@ -42,7 +43,7 @@ public class MainWindowTests
             new ConnectionHistoryTracker(
                 new ConnectionHistoryStore(Path.Combine(temp, "history")),
                 new ActiveSessionStore(Path.Combine(temp, "connection-active"))),
-            new IpVersionStore(Path.Combine(temp, "ip-version")));
+            ipVersionStore);
 
         var exclusionsStore = new ExclusionsStore(Path.Combine(temp, "site-exclusions"));
 
@@ -51,7 +52,8 @@ public class MainWindowTests
                 coordinator,
                 store,
                 new VpnLogReader(Path.Combine(temp, "vpn.log")),
-                new HistoryViewModel(coordinator, store)),
+                new HistoryViewModel(coordinator, store),
+                ipVersionStore),
             new LocationsViewModel(vpn, coordinator, new FavoritesStore(Path.Combine(temp, "favorites.json")), store),
             new DomainsViewModel(new ExclusionsService(runner, exclusionsStore), exclusionsStore, store),
             new LicenseViewModel(vpn),
