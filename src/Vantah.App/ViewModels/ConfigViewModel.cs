@@ -77,6 +77,10 @@ public partial class ConfigViewModel : ObservableObject
     [ObservableProperty] private bool _postQuantum;
     [ObservableProperty] private bool _showNotifications;
     [ObservableProperty] private bool _debugLogging;
+    [ObservableProperty] private bool _crashReporting;
+    [ObservableProperty] private bool _telemetry;
+    [ObservableProperty] private bool _showHints;
+    [ObservableProperty] private string _interfaceOverride = "";
     [ObservableProperty] private string _selectedProtocol = "auto";
     [ObservableProperty] private string _selectedChannel = "release";
     [ObservableProperty] private string _selectedRouting = "auto";
@@ -108,6 +112,10 @@ public partial class ConfigViewModel : ObservableObject
             PostQuantum = c.PostQuantum;
             ShowNotifications = c.ShowNotifications;
             DebugLogging = c.DebugLogging;
+            CrashReporting = c.CrashReporting;
+            Telemetry = c.SendAnonymizedUsageData;
+            ShowHints = c.ShowHints;
+            InterfaceOverride = c.OutboundInterfaceOverride ?? "";
             SelectedProtocol = c.Protocol.ToString().ToLowerInvariant();
             SelectedChannel = c.UpdateChannel.ToString().ToLowerInvariant();
             SelectedRouting = c.TunnelRoutingMode.ToString().ToLowerInvariant();
@@ -129,6 +137,15 @@ public partial class ConfigViewModel : ObservableObject
 
     partial void OnDebugLoggingChanged(bool value) =>
         AutoApply(() => _config.SetDebugLoggingAsync(value));
+
+    partial void OnCrashReportingChanged(bool value) =>
+        AutoApply(() => _config.SetCrashReportingAsync(value));
+
+    partial void OnTelemetryChanged(bool value) =>
+        AutoApply(() => _config.SetTelemetryAsync(value));
+
+    partial void OnShowHintsChanged(bool value) =>
+        AutoApply(() => _config.SetShowHintsAsync(value));
 
     partial void OnSelectedProtocolChanged(string value) =>
         AutoApply(() => _config.SetProtocolAsync(ParseProtocol(value)));
@@ -175,6 +192,11 @@ public partial class ConfigViewModel : ObservableObject
         string.IsNullOrWhiteSpace(DnsUpstream)
             ? RunAsync(() => _config.ResetDnsAsync())
             : RunAsync(() => _config.SetDnsAsync(DnsUpstream.Trim()));
+
+    // Пустое поле — осознанное отключение override; CLI принимает пустой аргумент.
+    [RelayCommand]
+    private Task ApplyInterfaceOverride() =>
+        RunAsync(() => _config.SetBoundIfOverrideAsync(InterfaceOverride.Trim()));
 
     [RelayCommand]
     private Task Reload() => RunAsync(() => _config.GetAsync());

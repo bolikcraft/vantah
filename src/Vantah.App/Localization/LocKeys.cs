@@ -131,6 +131,11 @@ public static class LocKeys
     public const string Settings_PostQuantum = "Settings_PostQuantum";
     public const string Settings_ShowNotifications = "Settings_ShowNotifications";
     public const string Settings_DebugLogging = "Settings_DebugLogging";
+    public const string Settings_CrashReporting = "Settings_CrashReporting";
+    public const string Settings_Telemetry = "Settings_Telemetry";
+    public const string Settings_ShowHints = "Settings_ShowHints";
+    public const string Settings_InterfaceOverride = "Settings_InterfaceOverride";
+    public const string Settings_InterfacePlaceholder = "Settings_InterfacePlaceholder";
     public const string Settings_ErrorInvalidPort = "Settings_ErrorInvalidPort";
     public const string Settings_ErrorEmptyHost = "Settings_ErrorEmptyHost";
 

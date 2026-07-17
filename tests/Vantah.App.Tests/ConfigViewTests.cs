@@ -253,6 +253,44 @@ public class ConfigViewTests
     }
 
     [AvaloniaFact]
+    public void Toggling_crash_reporting_applies_it()
+    {
+        var svc = new FakeConfigService();
+        var vm = Vm(svc);
+        Show(vm);
+
+        vm.CrashReporting = true;
+
+        Assert.Contains("set-crash-reporting:True", svc.Calls);
+    }
+
+    [AvaloniaFact]
+    public void Toggling_telemetry_applies_it()
+    {
+        var svc = new FakeConfigService();
+        var vm = Vm(svc);
+        Show(vm);
+
+        vm.Telemetry = false;   // стартовое значение может быть false → no-op
+        vm.Telemetry = true;
+
+        Assert.Contains("set-telemetry:True", svc.Calls);
+    }
+
+    [AvaloniaFact]
+    public async Task Applying_interface_override_sends_trimmed_value()
+    {
+        var svc = new FakeConfigService();
+        var vm = Vm(svc);
+        Show(vm);
+
+        vm.InterfaceOverride = "  eth0  ";
+        await vm.ApplyInterfaceOverrideCommand.ExecuteAsync(null);
+
+        Assert.Contains("set-bound-if-override:eth0", svc.Calls);
+    }
+
+    [AvaloniaFact]
     public void Warning_banner_appears_only_while_connected()
     {
         var store = new AppStateStore();

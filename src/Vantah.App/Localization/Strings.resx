@@ -384,6 +384,21 @@
   <data name="Settings_DebugLogging" xml:space="preserve">
     <value>Отладочное логирование</value>
   </data>
+  <data name="Settings_CrashReporting" xml:space="preserve">
+    <value>Отправлять отчёты о сбоях</value>
+  </data>
+  <data name="Settings_Telemetry" xml:space="preserve">
+    <value>Отправлять анонимную статистику</value>
+  </data>
+  <data name="Settings_ShowHints" xml:space="preserve">
+    <value>Показывать подсказки после команд</value>
+  </data>
+  <data name="Settings_InterfaceOverride" xml:space="preserve">
+    <value>Сетевой интерфейс для VPN-трафика</value>
+  </data>
+  <data name="Settings_InterfacePlaceholder" xml:space="preserve">
+    <value>напр. eth0 (пусто — по умолчанию)</value>
+  </data>
   <data name="Settings_ErrorInvalidPort" xml:space="preserve">
     <value>Порт SOCKS должен быть числом от 1 до 65535</value>
   </data>
