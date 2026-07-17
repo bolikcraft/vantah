@@ -14,7 +14,8 @@ public sealed class VpnCoordinator(
     IVpnService vpn,
     TrafficMonitor traffic,
     AppStateStore store,
-    ConnectionHistoryTracker history)
+    ConnectionHistoryTracker history,
+    IpVersionStore ipVersionStore)
 {
     private DateTime _lastPollUtc = DateTime.UtcNow;
     private volatile bool _operationInFlight;
@@ -70,7 +71,7 @@ public sealed class VpnCoordinator(
         store.Set(s => s with { Connection = ConnectionState.Connecting, Error = null });
         try
         {
-            var status = await vpn.ConnectAsync(location, fastest, ct: ct);
+            var status = await vpn.ConnectAsync(location, fastest, ipVersionStore.Load(), ct);
             TrackHistory(status);
             store.Set(s => s with
             {

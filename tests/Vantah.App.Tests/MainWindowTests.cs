@@ -41,7 +41,8 @@ public class MainWindowTests
             store,
             new ConnectionHistoryTracker(
                 new ConnectionHistoryStore(Path.Combine(temp, "history")),
-                new ActiveSessionStore(Path.Combine(temp, "connection-active"))));
+                new ActiveSessionStore(Path.Combine(temp, "connection-active"))),
+            new IpVersionStore(Path.Combine(temp, "ip-version")));
 
         var exclusionsStore = new ExclusionsStore(Path.Combine(temp, "site-exclusions"));
 

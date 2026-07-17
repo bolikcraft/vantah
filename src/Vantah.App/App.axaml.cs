@@ -65,7 +65,8 @@ public partial class App : Application
             var historyStore = new ConnectionHistoryStore();
             var activeStore = new ActiveSessionStore();
             var history = new ConnectionHistoryTracker(historyStore, activeStore);
-            var coordinator = new VpnCoordinator(vpn, traffic, store, history);
+            var ipVersionStore = new IpVersionStore();
+            var coordinator = new VpnCoordinator(vpn, traffic, store, history, ipVersionStore);
             var favorites = new FavoritesStore();
             var exclusionsStore = new ExclusionsStore();
             var exclusions = new ExclusionsService(runner, exclusionsStore);
