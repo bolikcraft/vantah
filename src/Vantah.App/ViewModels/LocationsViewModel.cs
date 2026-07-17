@@ -44,6 +44,9 @@ public partial class LocationsViewModel : ObservableObject
 
     public ObservableCollection<LocationItemViewModel> Items { get; } = new();
 
+    /// <summary>Строки-заглушки «скелетона» на время загрузки (значения не важны, важно их число).</summary>
+    public IReadOnlyList<int> SkeletonRows { get; } = Enumerable.Range(0, 9).ToList();
+
     public string IsoHeader => Header(LocKeys.Locations_Col_Iso, LocationSortKey.Iso);
     public string CityHeader => Header(LocKeys.Locations_Col_City, LocationSortKey.City);
     public string CountryHeader => Header(LocKeys.Locations_Col_Country, LocationSortKey.Country);

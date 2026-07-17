@@ -15,6 +15,19 @@
     <Style Selector="ListBoxItem">
       <Setter Property="Padding" Value="0"/>
     </Style>
+    <!-- Плитка-заглушка «скелетона»: нейтральный серый, читаемый в обеих темах, с мягкой пульсацией. -->
+    <Style Selector="Border.skeleton">
+      <Setter Property="Background" Value="#26808080"/>
+      <Setter Property="CornerRadius" Value="4"/>
+      <Style.Animations>
+        <Animation Duration="0:0:1.3" IterationCount="INFINITE">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.35"/></KeyFrame>
+          <KeyFrame Cue="50%"><Setter Property="Opacity" Value="0.85"/></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.35"/></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+
     <!-- Плоские кнопки-заголовки колонок. -->
     <Style Selector="Button.header">
       <Setter Property="Background" Value="Transparent"/>
@@ -83,10 +96,24 @@
       </ListBox.ItemTemplate>
     </ListBox>
 
-      <!-- Пока грузим — «Загрузка локаций…» по центру поверх (пустого) списка. -->
-      <TextBlock IsVisible="{Binding IsLoading}" Opacity="0.7"
-                 HorizontalAlignment="Center" VerticalAlignment="Center"
-                 Text="{Binding [Locations_Loading], Source={x:Static loc:Localizer.Instance}}"/>
+      <!-- Пока грузим — строки-«скелетоны», повторяющие раскладку колонок, вместо пустоты. -->
+      <ItemsControl IsVisible="{Binding IsLoading}" ItemsSource="{Binding SkeletonRows}"
+                    VerticalAlignment="Top"
+                    ToolTip.Tip="{Binding [Locations_Loading], Source={x:Static loc:Localizer.Instance}}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="36,34,48,*,*,120,120,110" Height="34" Margin="4,3">
+              <Border Grid.Column="1" Classes="skeleton" Width="24" Height="16" VerticalAlignment="Center"/>
+              <Border Grid.Column="2" Classes="skeleton" Height="12" Margin="6,0" VerticalAlignment="Center"/>
+              <Border Grid.Column="3" Classes="skeleton" Height="12" Margin="6,0" VerticalAlignment="Center"/>
+              <Border Grid.Column="4" Classes="skeleton" Height="12" Margin="6,0" VerticalAlignment="Center"/>
+              <Border Grid.Column="6" Classes="skeleton" Height="12" Width="44" Margin="6,0"
+                      HorizontalAlignment="Right" VerticalAlignment="Center"/>
+              <Border Grid.Column="7" Classes="skeleton" Height="26" Width="92" VerticalAlignment="Center"/>
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
 
       <!-- Сбой загрузки — текст ошибки и кнопка «Обновить» вместо молчаливой пустоты. -->
       <StackPanel IsVisible="{Binding LoadError, Converter={x:Static ObjectConverters.IsNotNull}}"
