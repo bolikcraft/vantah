@@ -74,6 +74,15 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
     public Task<VpnConfig> SetDebugLoggingAsync(bool on, CancellationToken ct = default) =>
         ApplyAsync(["config", "set-debug-logging", OnOff(on)], ct);
 
+    public Task<VpnConfig> SetCrashReportingAsync(bool on, CancellationToken ct = default) =>
+        ApplyAsync(["config", "set-crash-reporting", OnOff(on)], ct);
+
+    public Task<VpnConfig> SetTelemetryAsync(bool on, CancellationToken ct = default) =>
+        ApplyAsync(["config", "set-telemetry", OnOff(on)], ct);
+
+    public Task<VpnConfig> SetShowHintsAsync(bool on, CancellationToken ct = default) =>
+        ApplyAsync(["config", "set-show-hints", OnOff(on)], ct);
+
     private async Task<VpnConfig> ApplyAsync(string[] args, CancellationToken ct)
     {
         var r = await cli.RunAsync(args, Timeout, ct);

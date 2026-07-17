@@ -124,6 +124,39 @@ public class ConfigServiceTests
     }
 
     [Fact]
+    public async Task SetCrashReporting_passes_on_off()
+    {
+        var cli = new FakeCliRunner().Enqueue("").Enqueue(Show);
+        var svc = new ConfigService(cli);
+
+        await svc.SetCrashReportingAsync(true);
+
+        Assert.Equal(new[] { "config", "set-crash-reporting", "on" }, cli.Calls[0]);
+    }
+
+    [Fact]
+    public async Task SetTelemetry_passes_on_off()
+    {
+        var cli = new FakeCliRunner().Enqueue("").Enqueue(Show);
+        var svc = new ConfigService(cli);
+
+        await svc.SetTelemetryAsync(false);
+
+        Assert.Equal(new[] { "config", "set-telemetry", "off" }, cli.Calls[0]);
+    }
+
+    [Fact]
+    public async Task SetShowHints_passes_on_off()
+    {
+        var cli = new FakeCliRunner().Enqueue("").Enqueue(Show);
+        var svc = new ConfigService(cli);
+
+        await svc.SetShowHintsAsync(true);
+
+        Assert.Equal(new[] { "config", "set-show-hints", "on" }, cli.Calls[0]);
+    }
+
+    [Fact]
     public async Task Failed_set_throws_with_stderr()
     {
         var cli = new FakeCliRunner().Enqueue(new CliResult(1, "", "invalid port"));

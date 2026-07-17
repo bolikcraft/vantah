@@ -22,4 +22,7 @@ public interface IConfigService
     Task<VpnConfig> SetUpdateChannelAsync(UpdateChannel channel, CancellationToken ct = default);
     Task<VpnConfig> SetShowNotificationsAsync(bool on, CancellationToken ct = default);
     Task<VpnConfig> SetDebugLoggingAsync(bool on, CancellationToken ct = default);
+    Task<VpnConfig> SetCrashReportingAsync(bool on, CancellationToken ct = default);
+    Task<VpnConfig> SetTelemetryAsync(bool on, CancellationToken ct = default);
+    Task<VpnConfig> SetShowHintsAsync(bool on, CancellationToken ct = default);
 }

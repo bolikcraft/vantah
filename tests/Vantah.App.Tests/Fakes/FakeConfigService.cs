@@ -66,4 +66,13 @@ public sealed class FakeConfigService(VpnConfig? current = null) : IConfigServic
 
     public Task<VpnConfig> SetDebugLoggingAsync(bool on, CancellationToken ct = default) =>
         Record($"set-debug-logging:{on}");
+
+    public Task<VpnConfig> SetCrashReportingAsync(bool on, CancellationToken ct = default) =>
+        Record($"set-crash-reporting:{on}");
+
+    public Task<VpnConfig> SetTelemetryAsync(bool on, CancellationToken ct = default) =>
+        Record($"set-telemetry:{on}");
+
+    public Task<VpnConfig> SetShowHintsAsync(bool on, CancellationToken ct = default) =>
+        Record($"set-show-hints:{on}");
 }
