@@ -43,7 +43,8 @@ public class MainWindowTests
             new ConnectionHistoryTracker(
                 new ConnectionHistoryStore(Path.Combine(temp, "history")),
                 new ActiveSessionStore(Path.Combine(temp, "connection-active"))),
-            ipVersionStore);
+            ipVersionStore,
+            new FakeAuthService());
 
         var exclusionsStore = new ExclusionsStore(Path.Combine(temp, "site-exclusions"));
 

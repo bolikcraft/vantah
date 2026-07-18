@@ -11,6 +11,7 @@ using Vantah.App.Services;
 using Vantah.App.Tray;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
+using Vantah.Core.Auth;
 using Vantah.Core.Cli;
 using Vantah.Core.Config;
 using Vantah.Core.Exclusions;
@@ -66,7 +67,10 @@ public partial class App : Application
             var activeStore = new ActiveSessionStore();
             var history = new ConnectionHistoryTracker(historyStore, activeStore);
             var ipVersionStore = new IpVersionStore();
-            var coordinator = new VpnCoordinator(vpn, traffic, store, history, ipVersionStore);
+            // CliRunner реализует и ICliRunner, и IInteractiveCliRunner: обычные команды и
+            // интерактивный login идут через один и тот же процесс-раннер.
+            var auth = new AuthService(runner, runner);
+            var coordinator = new VpnCoordinator(vpn, traffic, store, history, ipVersionStore, auth);
             var favorites = new FavoritesStore();
             var exclusionsStore = new ExclusionsStore();
             var exclusions = new ExclusionsService(runner, exclusionsStore);

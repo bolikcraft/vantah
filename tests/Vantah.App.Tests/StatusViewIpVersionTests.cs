@@ -47,7 +47,7 @@ public class StatusViewIpVersionTests
         var history = new ConnectionHistoryTracker(
             new ConnectionHistoryStore(Path.Combine(dir, "connections-history")),
             new ActiveSessionStore(Path.Combine(dir, "connection-active")));
-        var coord = new VpnCoordinator(new FakeVpnService(), traffic, store, history, ipStore);
+        var coord = new VpnCoordinator(new FakeVpnService(), traffic, store, history, ipStore, new FakeAuthService());
         var logReader = new VpnLogReader(Path.Combine(dir, "vpn.log"));
         return new StatusViewModel(coord, store, logReader,
             new HistoryViewModel(coord, store), ipStore);

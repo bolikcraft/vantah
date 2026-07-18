@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Vantah.Core.Auth;
 using Vantah.Core.History;
 using Vantah.Core.Models;
 using Vantah.Core.State;
@@ -15,7 +16,8 @@ public sealed class VpnCoordinator(
     TrafficMonitor traffic,
     AppStateStore store,
     ConnectionHistoryTracker history,
-    IpVersionStore ipVersionStore)
+    IpVersionStore ipVersionStore,
+    IAuthService auth)
 {
     private DateTime _lastPollUtc = DateTime.UtcNow;
     private volatile bool _operationInFlight;
@@ -27,11 +29,26 @@ public sealed class VpnCoordinator(
     /// <summary>Завершённые сессии для UI (newest-first, cap 12).</summary>
     public IReadOnlyList<ConnectionHistoryEntry> PreviousConnections => history.Previous;
 
+    /// <summary>Зонд состояния логина (через `license`). Обновляет снапшот, чтобы UI гейтил
+    /// форму входа. Ошибки глотаем: CLI/сеть недоступны — не роняем UI, оставляем прежнее.</summary>
+    public async Task RefreshLoginStateAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            var state = await auth.GetLoginStateAsync(ct);
+            store.Set(s => s with { LoginState = state });
+        }
+        catch { /* оставляем прежнее состояние */ }
+    }
+
     public async Task PollOnceAsync(CancellationToken ct = default)
     {
         // Во время connect/disconnect (CLI может работать долго) опрос
         // не должен перетереть состояние обратно в Disconnected.
         if (_operationInFlight) return;
+
+        // Держим состояние логина в актуальном виде: форма входа появляется/исчезает сама.
+        await RefreshLoginStateAsync(ct);
 
         try
         {

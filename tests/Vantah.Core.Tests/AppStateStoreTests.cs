@@ -31,4 +31,13 @@ public class AppStateStoreTests
         store.Set(s => s with { ExclusionsCount = 7 });
         Assert.Equal(7, store.Current.ExclusionsCount);
     }
+
+    [Fact]
+    public void LoginState_defaults_to_unknown_and_is_settable()
+    {
+        var store = new Vantah.Core.State.AppStateStore();
+        Assert.Equal(LoginState.Unknown, store.Current.LoginState);
+        store.Set(s => s with { LoginState = LoginState.LoggedIn });
+        Assert.Equal(LoginState.LoggedIn, store.Current.LoginState);
+    }
 }

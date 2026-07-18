@@ -111,7 +111,8 @@ public class TrayIconControllerTests
             new ConnectionHistoryTracker(
                 new ConnectionHistoryStore(Path.Combine(temp, "history")),
                 new ActiveSessionStore(Path.Combine(temp, "connection-active"))),
-            new IpVersionStore(Path.Combine(temp, "ip-version")));
+            new IpVersionStore(Path.Combine(temp, "ip-version")),
+            new Fakes.FakeAuthService());
 
         return new TrayIconController(
             coordinator,

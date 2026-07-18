@@ -59,7 +59,7 @@ public class LocationsViewTests
             new ConnectionHistoryStore(Path.Combine(dir, "connections-history")),
             new ActiveSessionStore(Path.Combine(dir, "connection-active")));
         var ipStore = new IpVersionStore(Path.Combine(dir, "ip-version"));
-        var coord = new VpnCoordinator(vpn, traffic, store, history, ipStore);
+        var coord = new VpnCoordinator(vpn, traffic, store, history, ipStore, new FakeAuthService());
         var favorites = new FavoritesStore(Path.Combine(dir, "favorites"));
         return new LocationsViewModel(vpn, coord, favorites, store);
     }

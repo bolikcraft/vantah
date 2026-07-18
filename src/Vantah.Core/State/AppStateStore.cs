@@ -13,6 +13,7 @@ public sealed record AppSnapshot
     public int ExclusionsCount { get; init; }
     public string? LocationDisplay { get; init; }              // «Amsterdam, Netherlands» (человекочитаемо)
     public SiteExclusionMode ExclusionsMode { get; init; }     // текущий режим исключений
+    public LoginState LoginState { get; init; } = LoginState.Unknown;
 }
 
 public sealed class AppStateStore

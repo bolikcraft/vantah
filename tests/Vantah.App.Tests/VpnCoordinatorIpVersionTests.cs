@@ -33,6 +33,6 @@ public class VpnCoordinatorIpVersionTests
         var history = new ConnectionHistoryTracker(
             new ConnectionHistoryStore(Path.Combine(dir, "connections-history")),
             new ActiveSessionStore(Path.Combine(dir, "connection-active")));
-        return new VpnCoordinator(vpn, traffic, store, history, ipStore);
+        return new VpnCoordinator(vpn, traffic, store, history, ipStore, new FakeAuthService());
     }
 }
