@@ -1,0 +1,56 @@
+using Vantah.Core.Autostart;
+using Xunit;
+
+public class AutostartServiceTests
+{
+    private static string TempDir() =>
+        Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "autostart");
+
+    private static AutostartService Make(string dir) =>
+        new(dir, "/home/u/.local/bin/vantah", "vantah");
+
+    [Fact]
+    public void Disabled_by_default()
+    {
+        Assert.False(Make(TempDir()).IsEnabled());
+    }
+
+    [Fact]
+    public void Enable_writes_desktop_with_exec_and_icon()
+    {
+        var dir = TempDir();
+        var svc = Make(dir);
+        svc.Enable();
+
+        var file = Path.Combine(dir, "vantah.desktop");
+        Assert.True(File.Exists(file));
+        var text = File.ReadAllText(file);
+        Assert.Contains("Exec=/home/u/.local/bin/vantah", text);
+        Assert.Contains("Icon=vantah", text);
+        Assert.Contains("X-GNOME-Autostart-enabled=true", text);
+        Assert.True(svc.IsEnabled());
+    }
+
+    [Fact]
+    public void Disable_removes_the_file()
+    {
+        var dir = TempDir();
+        var svc = Make(dir);
+        svc.Enable();
+        svc.Disable();
+        Assert.False(svc.IsEnabled());
+    }
+
+    [Fact]
+    public void Enable_and_disable_are_idempotent()
+    {
+        var dir = TempDir();
+        var svc = Make(dir);
+        svc.Enable();
+        svc.Enable();            // не бросает
+        Assert.True(svc.IsEnabled());
+        svc.Disable();
+        svc.Disable();           // не бросает
+        Assert.False(svc.IsEnabled());
+    }
+}
