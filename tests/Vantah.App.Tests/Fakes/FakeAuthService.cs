@@ -11,10 +11,13 @@ public sealed class FakeAuthService : IAuthService
 
     public Task<LoginState> GetLoginStateAsync(CancellationToken ct = default) => Task.FromResult(State);
 
-    public Task<LoginResult> LoginAsync(string email, SecureCredential password, Func<string?> twoFactorProvider, CancellationToken ct = default)
+    public DeviceCodePrompt Prompt { get; set; } = new("https://example.test/device_code?user_code=TEST-CODE", "TEST-CODE", 600);
+    public LoginResult NextResult { get; set; } = LoginResult.Ok();
+
+    public Task<LoginResult> LoginAsync(Action<DeviceCodePrompt> onPrompt, CancellationToken ct = default)
     {
-        password.Clear();
-        return Task.FromResult(LoginResult.Ok());
+        onPrompt(Prompt);
+        return Task.FromResult(NextResult);
     }
 
     public Task LogoutAsync(CancellationToken ct = default) { LogoutCalls++; return Task.CompletedTask; }

@@ -85,6 +85,8 @@ public partial class App : Application
             // создаётся ниже — вьюмодели передаём отложенную ссылку, замыкание её увидит позже.
             Window? mainWindowRef = null;
 
+            var login = new LoginViewModel(auth, coordinator);
+
             var mainVm = new MainWindowViewModel(
                 new StatusViewModel(coordinator, store, logReader,
                     new HistoryViewModel(coordinator, store), ipVersionStore),
@@ -96,12 +98,14 @@ public partial class App : Application
                 new ConfigViewModel(
                     vpnConfig, store, languageStore, updateChecker, logExporter,
                     () => PickLogFolderAsync(mainWindowRef)),
-                new LoginViewModel(auth, coordinator),
+                login,
                 auth, coordinator, store);
 
             var window = new MainWindow { DataContext = mainVm };
             mainWindowRef = window;
             desktop.MainWindow = window;
+            // Ссылку авторизации открываем системным браузером через Launcher окна.
+            login.BrowserOpener = url => window.Launcher.LaunchUriAsync(new Uri(url));
 
             // Системный трей + сворачивание окна вместо выхода. Иконки цветные (серый /
             // янтарный / зелёный) — знак среднего тона читается и на светлой, и на тёмной

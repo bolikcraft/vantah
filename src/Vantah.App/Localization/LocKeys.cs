@@ -148,14 +148,13 @@ public static class LocKeys
     // Выбор языка
     public const string Lang_Label = "Lang_Label";
 
-    // Экран входа
+    // Экран входа (device-code через браузер)
     public const string Login_Title = "Login_Title";
-    public const string Login_Email = "Login_Email";
-    public const string Login_Password = "Login_Password";
-    public const string Login_TwoFactor = "Login_TwoFactor";
-    public const string Login_Submit = "Login_Submit";
     public const string Login_Logout = "Login_Logout";
-    public const string Login_EmptyEmail = "Login_EmptyEmail";
-    public const string Login_EmptyPassword = "Login_EmptyPassword";
-    public const string Login_Timeout = "Login_Timeout";
+    public const string Login_Intro = "Login_Intro";
+    public const string Login_Start = "Login_Start";
+    public const string Login_OpenBrowser = "Login_OpenBrowser";
+    public const string Login_Cancel = "Login_Cancel";
+    public const string Login_Waiting = "Login_Waiting";
+    public const string Login_CodeLabel = "Login_CodeLabel";
 }

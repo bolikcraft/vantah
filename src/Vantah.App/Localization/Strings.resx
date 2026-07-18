@@ -446,32 +446,29 @@
     <value>Язык</value>
   </data>
 
-  <!-- Экран входа -->
+  <!-- Экран входа (device-code через браузер) -->
   <data name="Login_Title" xml:space="preserve">
     <value>Вход в AdGuard VPN</value>
-  </data>
-  <data name="Login_Email" xml:space="preserve">
-    <value>Email</value>
-  </data>
-  <data name="Login_Password" xml:space="preserve">
-    <value>Пароль</value>
-  </data>
-  <data name="Login_TwoFactor" xml:space="preserve">
-    <value>Код 2FA (если запрошен)</value>
-  </data>
-  <data name="Login_Submit" xml:space="preserve">
-    <value>Войти</value>
   </data>
   <data name="Login_Logout" xml:space="preserve">
     <value>Выйти</value>
   </data>
-  <data name="Login_EmptyEmail" xml:space="preserve">
-    <value>Введите email</value>
+  <data name="Login_Intro" xml:space="preserve">
+    <value>Вход выполняется через браузер. Нажмите «Войти» — откроется страница авторизации AdGuard.</value>
   </data>
-  <data name="Login_EmptyPassword" xml:space="preserve">
-    <value>Введите пароль</value>
+  <data name="Login_Start" xml:space="preserve">
+    <value>Войти</value>
   </data>
-  <data name="Login_Timeout" xml:space="preserve">
-    <value>Превышено время ожидания входа</value>
+  <data name="Login_OpenBrowser" xml:space="preserve">
+    <value>Открыть в браузере</value>
+  </data>
+  <data name="Login_Cancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="Login_Waiting" xml:space="preserve">
+    <value>Ожидание подтверждения в браузере…</value>
+  </data>
+  <data name="Login_CodeLabel" xml:space="preserve">
+    <value>Код:</value>
   </data>
 </root>
