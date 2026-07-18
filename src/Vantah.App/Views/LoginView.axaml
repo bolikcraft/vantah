@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:Vantah.App.ViewModels"
+             xmlns:loc="clr-namespace:Vantah.App.Localization"
+             x:DataType="vm:LoginViewModel"
+             x:Class="Vantah.App.Views.LoginView">
+  <StackPanel Margin="32" Spacing="12" MaxWidth="340"
+              HorizontalAlignment="Center" VerticalAlignment="Center">
+    <TextBlock Text="{Binding [Login_Title], Source={x:Static loc:Localizer.Instance}}"
+               FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+
+    <TextBox PlaceholderText="{Binding [Login_Email], Source={x:Static loc:Localizer.Instance}}"
+             Text="{Binding Email}"/>
+
+    <TextBox x:Name="PasswordBox" PasswordChar="•"
+             PlaceholderText="{Binding [Login_Password], Source={x:Static loc:Localizer.Instance}}"/>
+
+    <TextBox PlaceholderText="{Binding [Login_TwoFactor], Source={x:Static loc:Localizer.Instance}}"
+             Text="{Binding TwoFactorCode}"/>
+
+    <Button Content="{Binding [Login_Submit], Source={x:Static loc:Localizer.Instance}}"
+            Command="{Binding SubmitCommand}" IsEnabled="{Binding !IsBusy}"
+            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+
+    <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Height="4"/>
+
+    <TextBlock Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap"
+               HorizontalAlignment="Center"
+               IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+  </StackPanel>
+</UserControl>

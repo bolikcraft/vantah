@@ -30,6 +30,11 @@ public partial class MainWindow : Window
     private void OnAboutClick(object? sender, RoutedEventArgs e) =>
         Open("about", LocKeys.Menu_About, vm => new AboutView { DataContext = vm.About });
 
+    // Выход — не диалог, а команда вьюмодели. Пункты MenuFlyout не наследуют DataContext окна
+    // (грабли «MenuFlyout ≠ Flyout»), поэтому Command в разметке к ним не привязать: дёргаем
+    // команду из code-behind, как и остальные пункты меню.
+    private void OnLogoutClick(object? sender, RoutedEventArgs e) => Vm?.LogoutCommand.Execute(null);
+
     /// <summary>
     /// Открытие откладываем на следующий такт диспетчера: Avalonia поднимает Click ДО того, как
     /// закроет MenuFlyout, и окно, показанное прямо из обработчика, всплывает поверх ещё открытого

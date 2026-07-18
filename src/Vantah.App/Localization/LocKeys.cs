@@ -147,4 +147,14 @@ public static class LocKeys
 
     // Выбор языка
     public const string Lang_Label = "Lang_Label";
+
+    // Экран входа
+    public const string Login_Title = "Login_Title";
+    public const string Login_Email = "Login_Email";
+    public const string Login_Password = "Login_Password";
+    public const string Login_TwoFactor = "Login_TwoFactor";
+    public const string Login_Submit = "Login_Submit";
+    public const string Login_Logout = "Login_Logout";
+    public const string Login_EmptyEmail = "Login_EmptyEmail";
+    public const string Login_EmptyPassword = "Login_EmptyPassword";
 }

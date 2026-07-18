@@ -95,7 +95,9 @@ public partial class App : Application
                 new ProcessesViewModel(processes),
                 new ConfigViewModel(
                     vpnConfig, store, languageStore, updateChecker, logExporter,
-                    () => PickLogFolderAsync(mainWindowRef)));
+                    () => PickLogFolderAsync(mainWindowRef)),
+                new LoginViewModel(auth, coordinator),
+                auth, coordinator, store);
 
             var window = new MainWindow { DataContext = mainVm };
             mainWindowRef = window;

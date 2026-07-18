@@ -30,6 +30,16 @@
 
   <Grid>
 
+    <!-- Пока не выполнен вход — форма входа поверх всего, рабочий UI скрыт.
+         Гейт держим на обёртке: у самой LoginView DataContext = Login, и IsLoggedIn
+         (свойство MainWindowViewModel) на ней бы не разрешился. -->
+    <Border IsVisible="{Binding !IsLoggedIn}">
+      <v:LoginView DataContext="{Binding Login}"/>
+    </Border>
+
+    <!-- Рабочий UI виден только при выполненном входе. -->
+    <Grid IsVisible="{Binding IsLoggedIn}">
+
     <!-- Служебные экраны («Процессы», «Настройки», «Лицензия», «О программе») живут не во вкладках,
          а в меню «☰» и открываются отдельными окнами: в полосе остаются три рабочие вкладки. -->
     <TabControl SelectedIndex="{Binding SelectedTab, Mode=TwoWay}">
@@ -64,9 +74,14 @@
                     Click="OnLicenseClick"/>
           <MenuItem Header="{Binding [Menu_About], Source={x:Static loc:Localizer.Instance}}"
                     Click="OnAboutClick"/>
+          <Separator/>
+          <MenuItem Header="{Binding [Login_Logout], Source={x:Static loc:Localizer.Instance}}"
+                    Click="OnLogoutClick"/>
         </MenuFlyout>
       </Button.Flyout>
     </Button>
+
+    </Grid>
 
   </Grid>
 

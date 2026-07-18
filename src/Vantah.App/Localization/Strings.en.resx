@@ -445,4 +445,30 @@
   <data name="Lang_Label" xml:space="preserve">
     <value>Language</value>
   </data>
+
+  <!-- Экран входа -->
+  <data name="Login_Title" xml:space="preserve">
+    <value>Sign in to AdGuard VPN</value>
+  </data>
+  <data name="Login_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Login_TwoFactor" xml:space="preserve">
+    <value>2FA code (if requested)</value>
+  </data>
+  <data name="Login_Submit" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="Login_Logout" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="Login_EmptyEmail" xml:space="preserve">
+    <value>Enter email</value>
+  </data>
+  <data name="Login_EmptyPassword" xml:space="preserve">
+    <value>Enter password</value>
+  </data>
 </root>

@@ -1,9 +1,20 @@
+using System;
+using System.Threading.Tasks;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Vantah.App.Services;
+using Vantah.Core.Auth;
+using Vantah.Core.Models;
+using Vantah.Core.State;
 
 namespace Vantah.App.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
+    private readonly IAuthService _auth;
+    private readonly VpnCoordinator _coordinator;
+
     public StatusViewModel Status { get; }
     public LocationsViewModel Locations { get; }
     public DomainsViewModel Domains { get; }
@@ -11,6 +22,11 @@ public partial class MainWindowViewModel : ObservableObject
     public AboutViewModel About { get; }
     public ProcessesViewModel Processes { get; }
     public ConfigViewModel Config { get; }
+    public LoginViewModel Login { get; }
+
+    // Гейт формы входа. Гейтимся по «!= LoggedOut» (а не «== LoggedIn»), чтобы при Unknown
+    // (CLI недоступен/зонд не прошёл) не мигать формой входа зря.
+    [ObservableProperty] private bool _isLoggedIn = true;
 
     // Индекс активной вкладки (Статус=0, Локации=1, Домены=2) — двусторонняя привязка к TabControl;
     // на индексы завязано меню трея, поэтому новые вкладки добавляем в конец. Служебные экраны
@@ -24,7 +40,11 @@ public partial class MainWindowViewModel : ObservableObject
         LicenseViewModel license,
         AboutViewModel about,
         ProcessesViewModel processes,
-        ConfigViewModel config)
+        ConfigViewModel config,
+        LoginViewModel login,
+        IAuthService auth,
+        VpnCoordinator coordinator,
+        AppStateStore store)
     {
         Status = status;
         Locations = locations;
@@ -33,5 +53,26 @@ public partial class MainWindowViewModel : ObservableObject
         About = about;
         Processes = processes;
         Config = config;
+        Login = login;
+        _auth = auth;
+        _coordinator = coordinator;
+
+        store.Changed += (_, s) => Dispatcher.UIThread.Post(
+            () => IsLoggedIn = s.LoginState != LoginState.LoggedOut);
+        IsLoggedIn = store.Current.LoginState != LoginState.LoggedOut;
+    }
+
+    [RelayCommand]
+    private async Task LogoutAsync()
+    {
+        try
+        {
+            await _auth.LogoutAsync();
+            await _coordinator.RefreshLoginStateAsync();   // гейт покажет форму входа
+        }
+        catch
+        {
+            // Разлогин упал — состояние не меняем; следующий опрос всё равно сверит логин.
+        }
     }
 }

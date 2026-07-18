@@ -36,6 +36,7 @@ public class MainWindowTests
         var runner = new FakeCliRunner();
         var vpn = new VpnService(runner);
         var ipVersionStore = new IpVersionStore(Path.Combine(temp, "ip-version"));
+        var auth = new FakeAuthService();
         var coordinator = new VpnCoordinator(
             vpn,
             new TrafficMonitor(new FakeTrafficReader()),
@@ -44,7 +45,7 @@ public class MainWindowTests
                 new ConnectionHistoryStore(Path.Combine(temp, "history")),
                 new ActiveSessionStore(Path.Combine(temp, "connection-active"))),
             ipVersionStore,
-            new FakeAuthService());
+            auth);
 
         var exclusionsStore = new ExclusionsStore(Path.Combine(temp, "site-exclusions"));
 
@@ -62,7 +63,9 @@ public class MainWindowTests
             new ProcessesViewModel(new StubMonitor()),
             new ConfigViewModel(
                 new FakeConfigService(), store, new LanguageStore(Path.Combine(temp, "language")),
-                new FakeUpdateChecker(), new FakeLogExporter(), () => Task.FromResult<string?>(null)));
+                new FakeUpdateChecker(), new FakeLogExporter(), () => Task.FromResult<string?>(null)),
+            new LoginViewModel(auth, coordinator),
+            auth, coordinator, store);
     }
 
     private static MainWindow Show()
@@ -76,8 +79,12 @@ public class MainWindowTests
     /// Полоса вкладок самого окна: берём TabControl из корневой сетки, а не первый попавшийся
     /// в дереве — свои TabControl есть и внутри вложенных вью.
     /// </summary>
+    // Рабочий UI (вкладки + меню) обёрнут во вложенный Grid, который гейтится по логину;
+    // рядом лежит форма входа. Берём именно этот внутренний Grid, а не первый TabControl в дереве
+    // (свои TabControl есть и внутри вложенных вью).
     private static TabItem[] Tabs(MainWindow window) =>
-        ((Grid)window.Content!).Children.OfType<TabControl>().Single().Items.OfType<TabItem>().ToArray();
+        ((Grid)window.Content!).Children.OfType<Grid>().Single()
+            .Children.OfType<TabControl>().Single().Items.OfType<TabItem>().ToArray();
 
     /// <summary>Пункты меню «☰» — объекты MenuFlyout, они существуют и до раскрытия флайаута.</summary>
     private static MenuItem[] MenuItems(MainWindow window)
@@ -157,7 +164,7 @@ public class MainWindowTests
     }
 
     [AvaloniaFact]
-    public void The_menu_lists_the_four_service_screens()
+    public void The_menu_lists_service_screens_and_logout()
     {
         var window = Show();
 
@@ -168,6 +175,7 @@ public class MainWindowTests
                 Localizer.Instance[LocKeys.Menu_Settings],
                 Localizer.Instance[LocKeys.Menu_License],
                 Localizer.Instance[LocKeys.Menu_About],
+                Localizer.Instance[LocKeys.Login_Logout],
             ],
             headers);
     }
