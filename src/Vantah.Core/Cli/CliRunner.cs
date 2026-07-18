@@ -77,7 +77,15 @@ public sealed class CliRunner(string executable = CliOptionsResolver.DefaultExec
         foreach (var a in args) psi.ArgumentList.Add(a);
 
         var proc = new Process { StartInfo = psi };
-        proc.Start();
+        try
+        {
+            proc.Start();
+        }
+        catch
+        {
+            proc.Dispose();
+            throw;
+        }
         return Task.FromResult<IInteractiveCliSession>(new ProcessInteractiveSession(proc));
     }
 

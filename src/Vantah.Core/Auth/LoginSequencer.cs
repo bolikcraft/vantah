@@ -26,6 +26,7 @@ public sealed class LoginSequencer(IInteractiveCliRunner runner)
         {
             var sentEmail = false;
             var sentPassword = false;
+            var sentTwoFactor = false;
             string? chunk;
             while ((chunk = await session.ReadAsync(token)) is not null)
             {
@@ -45,7 +46,9 @@ public sealed class LoginSequencer(IInteractiveCliRunner runner)
                     return LoginResult.Fail("Аккаунт временно заблокирован, попробуйте позже");
                 if (Has(chunk, "failed to log in"))
                     return LoginResult.Fail("Не удалось войти");
-                if (Has(chunk, "logged in"))
+                // Якорим на «logged in as», иначе подстрока «logged in» сработала бы и на
+                // «not logged in». Иные формулировки успеха ловит фолбэк по коду возврата ниже.
+                if (Has(chunk, "logged in as"))
                     return LoginResult.Ok();
 
                 // Приглашения ввода.
@@ -61,11 +64,15 @@ public sealed class LoginSequencer(IInteractiveCliRunner runner)
                     password.Clear();                     // занулить сразу после отправки
                     sentPassword = true;
                 }
-                else if (Has(chunk, "2fa") || Has(chunk, "verification code") ||
-                         Has(chunk, "authenticator") || Has(chunk, "enter the code"))
+                else if (!sentTwoFactor &&
+                         (Has(chunk, "2fa") || Has(chunk, "verification code") ||
+                          Has(chunk, "authenticator") || Has(chunk, "enter the code")))
                 {
+                    // Флаг защищает от повторной выдачи того же кода, если приглашение придёт
+                    // несколькими чанками: у нас всё равно один код, второй раз слать бессмысленно.
                     var code = twoFactorProvider() ?? "";
                     await session.WriteLineAsync(code, token);
+                    sentTwoFactor = true;
                 }
             }
 

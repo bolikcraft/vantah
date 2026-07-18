@@ -157,4 +157,5 @@ public static class LocKeys
     public const string Login_Logout = "Login_Logout";
     public const string Login_EmptyEmail = "Login_EmptyEmail";
     public const string Login_EmptyPassword = "Login_EmptyPassword";
+    public const string Login_Timeout = "Login_Timeout";
 }

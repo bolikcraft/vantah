@@ -67,6 +67,11 @@ public partial class LoginViewModel : ObservableObject
                 Error = result.Message;   // причина из CLI, без эха пароля
             }
         }
+        catch (OperationCanceledException)
+        {
+            // Общий таймаут входа (2 мин) — не показываем англоязычное «A task was canceled».
+            Error = Localizer.Instance[LocKeys.Login_Timeout];
+        }
         catch (Exception ex)
         {
             Error = ex.Message;

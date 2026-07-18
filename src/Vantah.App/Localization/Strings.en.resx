@@ -471,4 +471,7 @@
   <data name="Login_EmptyPassword" xml:space="preserve">
     <value>Enter password</value>
   </data>
+  <data name="Login_Timeout" xml:space="preserve">
+    <value>Login timed out</value>
+  </data>
 </root>
