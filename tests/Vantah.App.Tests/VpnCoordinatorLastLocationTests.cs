@@ -13,7 +13,7 @@ public class VpnCoordinatorLastLocationTests
     public async Task Saves_the_manually_picked_location_after_connect()
     {
         var (coord, lastStore) = Make(connectedCity: "AMSTERDAM");
-        await coord.ConnectAsync("Amsterdam", fastest: false);
+        await coord.ConnectAsync("Amsterdam", fastest: false, TestContext.Current.CancellationToken);
         Assert.Equal("Amsterdam", lastStore.Load());
     }
 
@@ -21,7 +21,7 @@ public class VpnCoordinatorLastLocationTests
     public async Task Saves_the_status_city_after_a_fastest_connect()
     {
         var (coord, lastStore) = Make(connectedCity: "BERLIN");
-        await coord.ConnectAsync(null, fastest: true);
+        await coord.ConnectAsync(null, fastest: true, TestContext.Current.CancellationToken);
         Assert.Equal("BERLIN", lastStore.Load());
     }
 
@@ -29,7 +29,7 @@ public class VpnCoordinatorLastLocationTests
     public async Task Does_not_save_when_connect_fails_to_connect()
     {
         var (coord, lastStore) = Make(connectedCity: null);
-        await coord.ConnectAsync("Amsterdam", fastest: false);
+        await coord.ConnectAsync("Amsterdam", fastest: false, TestContext.Current.CancellationToken);
         Assert.Null(lastStore.Load());
     }
 

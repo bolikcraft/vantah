@@ -20,7 +20,7 @@ public class VpnCoordinatorIpVersionTests
         var vpn = new FakeVpnService();
         var coord = MakeCoordinator(vpn, ipStore);
 
-        await coord.ConnectAsync("Amsterdam", fastest: false);
+        await coord.ConnectAsync("Amsterdam", fastest: false, TestContext.Current.CancellationToken);
 
         Assert.Equal(IpVersionPreference.IPv4Only, vpn.Connects[0].Ip);
     }
