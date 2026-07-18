@@ -423,6 +423,21 @@
   <data name="Settings_LogsExported" xml:space="preserve">
     <value>Logs saved</value>
   </data>
+  <data name="Settings_StartupSection" xml:space="preserve">
+    <value>Startup</value>
+  </data>
+  <data name="Settings_AutoConnect" xml:space="preserve">
+    <value>Auto-connect on launch</value>
+  </data>
+  <data name="Settings_AutoConnectLast" xml:space="preserve">
+    <value>Last location</value>
+  </data>
+  <data name="Settings_AutoConnectFastest" xml:space="preserve">
+    <value>Fastest</value>
+  </data>
+  <data name="Settings_Autostart" xml:space="preserve">
+    <value>Launch on system login</value>
+  </data>
 
   <!-- Меню «☰» -->
   <data name="Menu_Tooltip" xml:space="preserve">

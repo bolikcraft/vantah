@@ -74,7 +74,7 @@ public class ConfigViewTests
         Assert.Equal("script", vm.SelectedRouting);
 
         var boxes = window.GetVisualDescendants().OfType<CheckBox>().ToArray();
-        Assert.Equal(7, boxes.Length);
+        Assert.Equal(9, boxes.Length);   // +2 за карточку «Запуск»: автоподключение и автозапуск
         Assert.Contains(boxes, b => b.IsChecked == true);   // post-quantum и debug пришли включёнными
     }
 
