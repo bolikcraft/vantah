@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
@@ -12,6 +13,7 @@ using Vantah.App.Tray;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
 using Vantah.Core.Auth;
+using Vantah.Core.Autostart;
 using Vantah.Core.Cli;
 using Vantah.Core.Config;
 using Vantah.Core.Exclusions;
@@ -80,6 +82,10 @@ public partial class App : Application
             var vpnConfig = new ConfigService(runner);
             var updateChecker = new UpdateChecker(runner);
             var logExporter = new LogExporter(runner);
+            var autoConnectStore = new AutoConnectStore();
+            var autostart = new AutostartService(
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "autostart"),
+                Environment.ProcessPath ?? "vantah", "vantah");
 
             // Пикер папки для выгрузки логов работает через StorageProvider окна, а окно
             // создаётся ниже — вьюмодели передаём отложенную ссылку, замыкание её увидит позже.
@@ -95,7 +101,8 @@ public partial class App : Application
                 new ProcessesViewModel(processes),
                 new ConfigViewModel(
                     vpnConfig, store, languageStore, updateChecker, logExporter,
-                    () => PickLogFolderAsync(mainWindowRef)),
+                    () => PickLogFolderAsync(mainWindowRef),
+                    autoConnectStore, autostart),
                 new LoginViewModel(auth, coordinator),
                 auth, coordinator, store);
 

@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Localization;
+using Vantah.Core.Autostart;
 using Vantah.Core.Localization;
 using Vantah.Core.Logs;
 using Vantah.Core.Models;
 using Vantah.Core.Settings;
 using Vantah.Core.State;
 using Vantah.Core.Update;
+using Vantah.Core.Vpn;
 
 namespace Vantah.App.ViewModels;
 
@@ -29,6 +32,9 @@ public partial class ConfigViewModel : ObservableObject
     private readonly IUpdateChecker _updates;
     private readonly ILogExporter _logs;
     private readonly Func<Task<string?>> _pickFolder;
+    private readonly AutoConnectStore _autoConnect;
+    private readonly AutostartService _autostart;
+    private bool _lastRadioWasFastest;
 
     // Подавляет авто-применение, пока форму заполняем программно: иначе загрузка конфига
     // тут же отправила бы обратно в CLI всё, что только что из него прочитали.
@@ -40,13 +46,22 @@ public partial class ConfigViewModel : ObservableObject
         LanguageStore languageStore,
         IUpdateChecker updates,
         ILogExporter logs,
-        Func<Task<string?>> pickFolder)
+        Func<Task<string?>> pickFolder,
+        AutoConnectStore? autoConnect = null,
+        AutostartService? autostart = null)
     {
         _config = config;
         _languageStore = languageStore;
         _updates = updates;
         _logs = logs;
         _pickFolder = pickFolder;
+        // Опциональны ради старых мест создания вьюмодели (тесты других вкладок), которым
+        // автоподключение/автозапуск не интересны: без явных зависимостей — дефолтные пути,
+        // как в App.axaml.cs. Тем, кому поведение важно (наш тест), передают свои — на temp.
+        _autoConnect = autoConnect ?? new AutoConnectStore();
+        _autostart = autostart ?? new AutostartService(
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "autostart"),
+            Environment.ProcessPath ?? "vantah", "vantah");
 
         // Пишем в backing-поле, а не в свойство: стартовый язык — не выбор пользователя,
         // сохранять его в ~/.config/vantah/language незачем.
@@ -56,6 +71,19 @@ public partial class ConfigViewModel : ObservableObject
         store.Changed += (_, s) => Dispatcher.UIThread.Post(() =>
             IsConnectedWarningVisible = s.Connection == ConnectionState.Connected);
         IsConnectedWarningVisible = store.Current.Connection == ConnectionState.Connected;
+
+        // Автоподключение и автозапуск читаются не из CLI, а из своих локальных хранилищ —
+        // грузим их так же под _loading, чтобы инициализация формы не улетела обратно записью.
+        _loading = true;
+        try
+        {
+            var mode = _autoConnect.Load();
+            AutoConnectEnabled = mode != AutoConnectMode.Off;
+            AutoConnectUseFastest = mode == AutoConnectMode.Fastest;
+            _lastRadioWasFastest = AutoConnectUseFastest;
+            AutostartEnabled = _autostart.IsEnabled();
+        }
+        finally { _loading = false; }
 
         _ = LoadAsync();
         UpdateCheckTask = CheckForUpdatesAsync();
@@ -106,6 +134,37 @@ public partial class ConfigViewModel : ObservableObject
     [ObservableProperty] private bool _isConnectedWarningVisible;
     [ObservableProperty] private bool _isUpdateAvailable;
     [ObservableProperty] private string _updateMessage = "";
+
+    [ObservableProperty] private bool _autoConnectEnabled;
+    [ObservableProperty] private bool _autoConnectUseFastest;
+    [ObservableProperty] private bool _autostartEnabled;
+
+    partial void OnAutoConnectEnabledChanged(bool value) => PersistAutoConnect();
+
+    partial void OnAutoConnectUseFastestChanged(bool value)
+    {
+        if (_loading) return;
+        _lastRadioWasFastest = value;
+        PersistAutoConnect();
+    }
+
+    partial void OnAutostartEnabledChanged(bool value)
+    {
+        if (_loading) return;
+        if (value) _autostart.Enable(); else _autostart.Disable();
+    }
+
+    // Единственный источник истины — AutoConnectStore: чекбокс и радиокнопка «сжимаются»
+    // в один AutoConnectMode. Выключенный чекбокс — всегда Off, независимо от радиокнопки;
+    // включённый — Fastest либо LastUsed (последний выбор радиокнопки, по умолчанию LastUsed).
+    private void PersistAutoConnect()
+    {
+        if (_loading) return;
+        var mode = !AutoConnectEnabled
+            ? AutoConnectMode.Off
+            : (_lastRadioWasFastest ? AutoConnectMode.Fastest : AutoConnectMode.LastUsed);
+        _autoConnect.Save(mode);
+    }
 
     /// <summary>Задача авто-проверки обновления — для ожидания в тестах.</summary>
     public Task UpdateCheckTask { get; }
