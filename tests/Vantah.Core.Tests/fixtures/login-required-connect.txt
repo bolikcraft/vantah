@@ -1,0 +1,1 @@
+Before connecting to a location, you must log in by running `adguardvpn-cli login`

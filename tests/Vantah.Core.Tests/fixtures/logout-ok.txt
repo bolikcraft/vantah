@@ -1,0 +1,1 @@
+You are now logged out. You can log in by running `adguardvpn-cli login`
