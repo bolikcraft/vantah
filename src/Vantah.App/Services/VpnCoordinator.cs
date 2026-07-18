@@ -91,7 +91,11 @@ public sealed class VpnCoordinator(
         {
             var status = await vpn.ConnectAsync(location, fastest, ipVersionStore.Load(), ct);
             TrackHistory(status);
-            if (status.IsConnected) lastLocation?.Save(location ?? status.Location);
+            if (status.IsConnected)
+            {
+                try { lastLocation?.Save(location ?? status.Location); }
+                catch { /* best-effort persist, не роняем состояние подключения */ }
+            }
             store.Set(s => s with
             {
                 Connection = status.IsConnected ? ConnectionState.Connected : ConnectionState.Disconnected,
