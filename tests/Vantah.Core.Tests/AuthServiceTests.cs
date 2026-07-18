@@ -55,12 +55,50 @@ public class AuthServiceTests
     }
 
     [Fact]
-    public async Task Login_delegates_to_sequencer_and_returns_result()
+    public async Task Login_reports_device_code_prompt_and_succeeds_on_exit_zero()
     {
         var cli = new FakeCliRunner();
-        var session = new FakeInteractiveSession("Enter username: ", "Enter password: ", "Logged in", null);
+        var session = new FakeInteractiveSession(
+            "You need to authorize in your browser. The following link will be available for 1673 seconds: " +
+            "https://host.test/device_code?user_code=FKGB-NNBQ\n",
+            "b - Open link in browser\n",
+            null) { ExitCode = 0 };
         var auth = NewAuth(cli, session);
-        var result = await auth.LoginAsync("user@example.com", new SecureCredential("p4ss".ToCharArray()), () => null);
+
+        DeviceCodePrompt? seen = null;
+        var result = await auth.LoginAsync(p => seen = p);
+
         Assert.True(result.Success);
+        Assert.NotNull(seen);
+        Assert.Equal("https://host.test/device_code?user_code=FKGB-NNBQ", seen!.Url);
+        Assert.Equal("FKGB-NNBQ", seen.UserCode);
+    }
+
+    [Fact]
+    public async Task Login_reports_failure_when_process_exits_nonzero_and_not_logged_in()
+    {
+        var cli = new FakeCliRunner().Enqueue("Please log in to view your license info");   // зонд: не залогинен
+        var session = new FakeInteractiveSession(
+            "The following link will be available for 60 seconds: https://host.test/d?user_code=AAAA-BBBB\n",
+            null) { ExitCode = 1 };
+        var auth = NewAuth(cli, session);
+
+        var result = await auth.LoginAsync(_ => { });
+        Assert.False(result.Success);
+    }
+
+    [Fact]
+    public async Task Login_cancellation_reports_cancelled()
+    {
+        var cli = new FakeCliRunner();
+        var session = new FakeInteractiveSession(
+            "The following link will be available for 60 seconds: https://host.test/d?user_code=AAAA-BBBB\n");
+        // Нет завершающего null → ReadAsync вернёт null сразу (очередь пуста) — эмулируем отмену явно.
+        var auth = NewAuth(cli, session);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        var result = await auth.LoginAsync(_ => { }, cts.Token);
+        Assert.False(result.Success);
+        Assert.Contains("отмен", result.Message, System.StringComparison.OrdinalIgnoreCase);
     }
 }

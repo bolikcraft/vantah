@@ -11,8 +11,11 @@ public sealed class FakeInteractiveSession : IInteractiveCliSession
 
     public FakeInteractiveSession(params string?[] output) => _output = new(output);
 
-    public Task<string?> ReadAsync(CancellationToken ct = default) =>
-        Task.FromResult(_output.Count > 0 ? _output.Dequeue() : null);
+    public Task<string?> ReadAsync(CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();   // как реальная сессия — отмена прерывает чтение
+        return Task.FromResult(_output.Count > 0 ? _output.Dequeue() : null);
+    }
 
     public Task WriteLineAsync(string line, CancellationToken ct = default) { Written.Add(line); return Task.CompletedTask; }
     public Task WriteLineAsync(char[] chars, CancellationToken ct = default) { Written.Add(new string(chars)); return Task.CompletedTask; }
