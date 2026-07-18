@@ -72,7 +72,8 @@ public partial class App : Application
             // CliRunner реализует и ICliRunner, и IInteractiveCliRunner: обычные команды и
             // интерактивный login идут через один и тот же процесс-раннер.
             var auth = new AuthService(runner, runner);
-            var coordinator = new VpnCoordinator(vpn, traffic, store, history, ipVersionStore, auth);
+            var lastLocationStore = new LastLocationStore();
+            var coordinator = new VpnCoordinator(vpn, traffic, store, history, ipVersionStore, auth, lastLocationStore);
             var favorites = new FavoritesStore();
             var exclusionsStore = new ExclusionsStore();
             var exclusions = new ExclusionsService(runner, exclusionsStore);
@@ -126,10 +127,27 @@ public partial class App : Application
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
             timer.Tick += async (_, _) => await coordinator.PollOnceAsync();
             timer.Start();
-            _ = coordinator.PollOnceAsync(); // первый опрос сразу
+            // Первый опрос синхронно, затем план автоподключения: только если залогинены и сейчас
+            // отключены; уже поднятый VPN не трогаем.
+            _ = InitialConnectAsync(coordinator, store, autoConnectStore, lastLocationStore);
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    // Автоподключение на старте: сперва опрашиваем реальное состояние CLI (снапшот мог быть
+    // устаревшим/пустым), затем решаем по плану — коннектимся, только если залогинены и сейчас
+    // отключены; уже поднятый VPN не трогаем.
+    private static async Task InitialConnectAsync(
+        VpnCoordinator coordinator, AppStateStore store,
+        AutoConnectStore autoConnect, LastLocationStore lastLocation)
+    {
+        await coordinator.PollOnceAsync();
+        var action = AutoConnectPlanner.Plan(
+            store.Current.Connection, store.Current.LoginState,
+            autoConnect.Load(), lastLocation.Load());
+        if (action.ShouldConnect)
+            await coordinator.ConnectAsync(action.Location, action.Fastest);
     }
 
     // Папка для выгрузки логов — через системный диалог окна; без окна (или без поддержки
