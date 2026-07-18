@@ -144,6 +144,11 @@ public static class LocKeys
     public const string Settings_UpdateAvailable = "Settings_UpdateAvailable";
     public const string Settings_ExportLogs = "Settings_ExportLogs";
     public const string Settings_LogsExported = "Settings_LogsExported";
+    public const string Settings_StartupSection = "Settings_StartupSection";
+    public const string Settings_AutoConnect = "Settings_AutoConnect";
+    public const string Settings_AutoConnectLast = "Settings_AutoConnectLast";
+    public const string Settings_AutoConnectFastest = "Settings_AutoConnectFastest";
+    public const string Settings_Autostart = "Settings_Autostart";
 
     // Выбор языка
     public const string Lang_Label = "Lang_Label";

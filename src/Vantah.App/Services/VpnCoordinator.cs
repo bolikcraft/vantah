@@ -17,7 +17,8 @@ public sealed class VpnCoordinator(
     AppStateStore store,
     ConnectionHistoryTracker history,
     IpVersionStore ipVersionStore,
-    IAuthService auth)
+    IAuthService auth,
+    LastLocationStore? lastLocation = null)
 {
     private DateTime _lastPollUtc = DateTime.UtcNow;
     private volatile bool _operationInFlight;
@@ -90,6 +91,11 @@ public sealed class VpnCoordinator(
         {
             var status = await vpn.ConnectAsync(location, fastest, ipVersionStore.Load(), ct);
             TrackHistory(status);
+            if (status.IsConnected)
+            {
+                try { lastLocation?.Save(location ?? status.Location); }
+                catch { /* best-effort persist, не роняем состояние подключения */ }
+            }
             store.Set(s => s with
             {
                 Connection = status.IsConnected ? ConnectionState.Connected : ConnectionState.Disconnected,
