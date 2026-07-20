@@ -24,7 +24,7 @@ public sealed class AutostartService
             "[Desktop Entry]\n" +
             "Type=Application\n" +
             "Name=Vantah\n" +
-            $"Exec={_execCommand}\n" +
+            $"Exec={QuoteExec(_execCommand)}\n" +
             $"Icon={_iconName}\n" +
             "Terminal=false\n" +
             "StartupWMClass=Vantah.App\n" +
@@ -35,5 +35,11 @@ public sealed class AutostartService
     public void Disable()
     {
         if (File.Exists(_file)) File.Delete(_file);
+    }
+
+    private static string QuoteExec(string path)
+    {
+        var escaped = path.Replace("\\", "\\\\").Replace("\"", "\\\"");
+        return $"\"{escaped}\"";
     }
 }
