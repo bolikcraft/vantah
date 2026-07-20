@@ -1,143 +1,144 @@
 # Vantah
 
-Vantah — десктопный GUI-клиент для Linux (окно + иконка в системном трее),
-представляющий собой удобную обёртку над официальной утилитой командной строки
-`adguardvpn-cli`. Vantah сам по себе **не реализует VPN** — он лишь запускает
-`adguardvpn-cli` как внешний процесс, разбирает его вывод и показывает состояние
-в графическом интерфейсе.
+Vantah is a desktop GUI client for Linux (a window plus a system-tray icon) that
+acts as a convenient front-end for the official `adguardvpn-cli` command-line
+tool. Vantah does **not** implement a VPN itself — it merely runs `adguardvpn-cli`
+as an external process, parses its output, and shows the state in a graphical
+interface.
 
-> **О названии и правовой стороне.** Vantah — независимый неофициальный проект.
-> Он **не связан** с компанией AdGuard, не разрабатывается, не спонсируется и не
-> одобряется ею, не является её продуктом и никак с ней не аффилирован.
+> **Naming and legal notice.** Vantah is an independent, unofficial project. It
+> is **not** affiliated with AdGuard, and is not developed, sponsored, or
+> endorsed by them; it is not an AdGuard product.
 >
-> Vantah **не включает, не встраивает и не распространяет** `adguardvpn-cli` или
-> любое другое программное обеспечение AdGuard. Утилиту `adguardvpn-cli`
-> пользователь устанавливает самостоятельно; её использование регулируется
-> собственными лицензией и условиями AdGuard, а для работы требуется действующий
-> аккаунт/подписка AdGuard VPN.
+> Vantah does **not** include, bundle, or distribute `adguardvpn-cli` or any
+> other AdGuard software. You install `adguardvpn-cli` yourself; its use is
+> governed by AdGuard's own license and terms, and a valid AdGuard VPN
+> account/subscription is required.
 >
-> «AdGuard», «AdGuard VPN» и связанные обозначения — товарные знаки их
-> правообладателей. В этом проекте они используются исключительно номинативно —
-> чтобы указать на совместимость с `adguardvpn-cli`, — и не подразумевают ни
-> аффилированности, ни одобрения со стороны правообладателей. В названии «Vantah»
-> намеренно нет слова «AdGuard».
+> "AdGuard", "AdGuard VPN", and related marks are trademarks of their respective
+> owners. They are used here purely nominatively — to indicate compatibility with
+> `adguardvpn-cli` — and imply neither affiliation nor endorsement by the
+> trademark owners. The name "Vantah" deliberately does not contain the word
+> "AdGuard".
 
-## Требования
+## Requirements
 
-- Установленная и доступная в `PATH` утилита `adguardvpn-cli`.
-- Действующий аккаунт/подписка AdGuard VPN. Войти можно прямо из интерфейса
-  Vantah (по коду устройства — через браузер) либо заранее в терминале:
+- The `adguardvpn-cli` tool installed and available on your `PATH`.
+- A valid AdGuard VPN account/subscription. You can sign in directly from the
+  Vantah interface (device-code flow via your browser) or beforehand in a
+  terminal:
 
   ```bash
   adguardvpn-cli login
   ```
 
-## Возможности
+## Features
 
-- **Подключение.** Подключить / отключить, «самая быстрая локация», выбор
-  протокола IP (IPv4 / IPv6). Понятный прогресс (`Подключаюсь…` → `Подключено`).
-- **Локации.** Список с пингом, поиском и избранным.
-- **Статус и трафик.** Живой счётчик скорости и объёма, история подключений,
-  хвост лога прямо в интерфейсе.
-- **Исключения сайтов.** Режимы general / selective, добавление, удаление,
-  импорт и экспорт списка доменов.
-- **Настройки `adguardvpn-cli`.** Режим TUN/SOCKS, порт/хост/логин/пароль SOCKS,
-  DNS-апстрим, протокол, режим маршрутизации, системный DNS, пост-квантовая
-  криптография, уведомления, телеметрия и отчёты о сбоях и др.
-- **Аккаунт.** Вход прямо из интерфейса (по коду устройства через браузер),
-  сведения о лицензии, выход.
-- **Автоматизация.** Автозапуск при входе в систему и автоподключение
-  (самая быстрая или последняя локация).
-- **Удобства.** Системный трей (окно и трей — одно состояние), смена языка
-  интерфейса, проверка обновлений CLI, экспорт логов, просмотр и завершение
-  процессов CLI.
+- **Connection.** Connect / disconnect, "fastest location", IP protocol choice
+  (IPv4 / IPv6). Clear progress (`Connecting…` → `Connected`).
+- **Locations.** List with ping, search, and favorites.
+- **Status and traffic.** Live speed and volume counters, connection history, and
+  a live log tail right in the UI.
+- **Site exclusions.** General / selective modes; add, remove, import, and export
+  the domain list.
+- **`adguardvpn-cli` settings.** TUN/SOCKS mode, SOCKS port/host/username/password,
+  DNS upstream, protocol, tunnel routing mode, system DNS, post-quantum
+  cryptography, notifications, telemetry and crash reporting, and more.
+- **Account.** Sign in directly from the UI (device-code flow via the browser),
+  license details, sign out.
+- **Automation.** Autostart on login and auto-connect (fastest or last-used
+  location).
+- **Convenience.** System tray (window and tray share one state), UI language
+  switching, CLI update checks, log export, and viewing/terminating CLI
+  processes.
 
-## Сборка и запуск для разработки
+## Building and running for development
 
-Нужен **.NET 10 SDK**.
+Requires the **.NET 10 SDK**.
 
 ```bash
 dotnet build
 dotnet run --project src/Vantah.App
 ```
 
-Обычные `dotnet build` / `dotnet run` собирают framework-dependent сборку
-(быстро, без привязки к конкретному рантайму ОС).
+A plain `dotnet build` / `dotnet run` produces a framework-dependent build (fast,
+not tied to a specific OS runtime).
 
-## Сборка одного самодостаточного файла
+## Building a single self-contained file
 
-Самодостаточный (self-contained) single-file бинарник под Linux собирается
-одной командой:
+A self-contained, single-file binary for Linux is built with one command:
 
 ```bash
 dotnet publish src/Vantah.App -c Release -r linux-x64
 ```
 
-Результат — единственный исполняемый файл (рантайм .NET и нативные библиотеки
-вшиты внутрь), который лежит здесь:
+The result is a single executable (the .NET runtime and native libraries are
+embedded), located here:
 
 ```
 src/Vantah.App/bin/Release/net10.0/linux-x64/publish/Vantah.App
 ```
 
-Размер бинарника — около 100 МБ (self-contained, без тримминга: Avalonia и
-XAML на рефлексии не тримятся безопасно). Флаги single-file / self-contained
-включаются автоматически, когда задан `-r <RID>`; без RID сборка остаётся
-обычной framework-dependent — поэтому повседневная разработка не замедляется.
+The binary is around 100 MB (self-contained, no trimming: Avalonia and
+reflection-based XAML cannot be trimmed safely). The single-file / self-contained
+flags are enabled automatically when an `-r <RID>` is provided; without a RID the
+build stays a regular framework-dependent one, so day-to-day development is not
+slowed down.
 
-## Установка в меню приложений
+## Installing into the application menu
 
-Чтобы Vantah появился в меню (GNOME, KDE, любой другой DE) с иконкой и
-запускался кликом:
+To make Vantah appear in the menu (GNOME, KDE, any other DE) with an icon and
+launch on click:
 
 ```bash
 packaging/install.sh
 ```
 
-Скрипт публикует самодостаточный бинарник, кладёт его в `~/.local/lib/vantah`
-со ссылкой `~/.local/bin/vantah`, ставит иконки в `~/.local/share/icons/hicolor`
-и [`vantah.desktop`](packaging/vantah.desktop) в `~/.local/share/applications`,
-после чего обновляет кэши меню и иконок. Root не нужен. Системная установка —
-`PREFIX=/usr/local packaging/install.sh` (от root), удаление —
-`packaging/install.sh --uninstall`.
+The script publishes the self-contained binary, places it in `~/.local/lib/vantah`
+with a `~/.local/bin/vantah` symlink, installs icons into
+`~/.local/share/icons/hicolor` and [`vantah.desktop`](packaging/vantah.desktop)
+into `~/.local/share/applications`, then refreshes the menu and icon caches. Root
+is not required. For a system-wide install use `PREFIX=/usr/local
+packaging/install.sh` (as root); to uninstall, run `packaging/install.sh
+--uninstall`.
 
-## Технологии
+## Tech stack
 
 - C# / .NET 10 (`net10.0`).
-- Avalonia 12 + FluentAvalonia (тема оформления).
+- Avalonia 12 + FluentAvalonia (theme).
 - CommunityToolkit.Mvvm (MVVM).
-- xUnit — тесты ядра (`Vantah.Core`).
+- xUnit — tests for the core (`Vantah.Core`).
 
-Проект **только для Linux**. Для Windows и macOS у AdGuard есть официальные
-GUI-клиенты VPN, поэтому дублировать их смысла нет.
+The project is **Linux-only**. AdGuard already ships official VPN GUI clients for
+Windows and macOS, so there is no point duplicating them.
 
-## Планы
+## Roadmap
 
-- Детект утечки IP-адреса и региона — проверка, что трафик действительно идёт
-  через VPN.
-- Упаковка и распространение: AppImage, rpm/deb (сейчас есть `packaging/install.sh`
-  и интеграция в меню приложений).
+- IP-address and region leak detection — verifying that traffic actually goes
+  through the VPN.
+- Packaging and distribution: AppImage, rpm/deb (currently there is
+  `packaging/install.sh` plus application-menu integration).
 
-## Лицензия
+## License
 
-Vantah распространяется на условиях лицензии **MIT** — полный текст в файле
-[LICENSE](LICENSE). Коротко: программу можно свободно использовать, изменять и
-распространять при условии сохранения текста лицензии и уведомления об авторских
-правах. Программа предоставляется «КАК ЕСТЬ», без каких-либо гарантий.
+Vantah is distributed under the **MIT** license — full text in the
+[LICENSE](LICENSE) file. In short: you may freely use, modify, and distribute the
+software provided you keep the license text and copyright notice. The software is
+provided "AS IS", without any warranty.
 
-Лицензия MIT распространяется **только на сам код Vantah**. Утилита
-`adguardvpn-cli` и другое программное обеспечение AdGuard под её действие не
-подпадают и распространяются на собственных условиях AdGuard.
+The MIT license covers **only Vantah's own code**. The `adguardvpn-cli` tool and
+other AdGuard software are not covered by it and are distributed under AdGuard's
+own terms.
 
-## Отказ от ответственности
+## Disclaimer
 
-Программное обеспечение предоставляется «как есть» (AS IS), без гарантий любого
-рода — явных или подразумеваемых, включая, помимо прочего, гарантии пригодности
-для определённой цели и ненарушения прав. Вы используете Vantah на собственный
-риск; авторы и правообладатели не несут ответственности за любые претензии,
-убытки или иной ущерб, возникшие в связи с использованием программы.
+The software is provided "AS IS", without warranty of any kind, express or
+implied, including but not limited to the warranties of fitness for a particular
+purpose and non-infringement. You use Vantah at your own risk; the authors and
+copyright holders are not liable for any claim, damages, or other loss arising
+from the use of the software.
 
-Vantah — сетевой инструмент, управляющий VPN-подключением через внешнюю утилиту
-`adguardvpn-cli`. Пользователь самостоятельно отвечает за соблюдение применимого
-законодательства своей юрисдикции, а также лицензии и условий использования
-AdGuard.
+Vantah is a networking tool that manages a VPN connection through the external
+`adguardvpn-cli` utility. You are solely responsible for complying with the
+applicable laws of your jurisdiction, as well as with AdGuard's license and terms
+of use.
