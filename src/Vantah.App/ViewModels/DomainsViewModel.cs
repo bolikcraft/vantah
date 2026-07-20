@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.Core.Exclusions;
@@ -63,7 +62,7 @@ public partial class DomainsViewModel : ObservableObject
             // внешний процесс). Items и радио-свойства привязаны к UI, поэтому их правку выполняем
             // строго на UI-потоке — иначе Avalonia роняет cross-thread исключение и вкладка молча
             // остаётся пустой (headless-тесты этого не ловят: там продолжение всегда на UI-потоке).
-            await RunOnUiThread(() =>
+            await UiThread.RunAsync(() =>
             {
                 _mode = snap.Mode;
                 _switchingMode = true;
@@ -79,28 +78,12 @@ public partial class DomainsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await RunOnUiThread(() => Error = ex.Message);
+            await UiThread.RunAsync(() => Error = ex.Message);
         }
         finally
         {
-            await RunOnUiThread(() => IsBusy = false);
+            await UiThread.RunAsync(() => IsBusy = false);
         }
-    }
-
-    // Dispatcher.UIThread.InvokeAsync ВСЕГДА ставит колбэк в очередь диспетчера, даже если вызван
-    // с UI-потока (это подтверждено эмпирически, а не документацией) — то есть без ожидания эта
-    // работа не выполнится до следующего awaited выражения. Синхронные headless-тесты, где
-    // фейк-сервис отвечает мгновенно, ожидают, что список заполнен сразу после конструктора.
-    // Поэтому если мы уже на UI-потоке — выполняем действие сразу; маршалим только когда
-    // действительно не на UI-потоке (как бывает у реального CliRunner, ждущего внешний процесс).
-    private static Task RunOnUiThread(Action action)
-    {
-        if (Dispatcher.UIThread.CheckAccess())
-        {
-            action();
-            return Task.CompletedTask;
-        }
-        return Dispatcher.UIThread.InvokeAsync(action).GetTask();
     }
 
     private void ApplyFilter()

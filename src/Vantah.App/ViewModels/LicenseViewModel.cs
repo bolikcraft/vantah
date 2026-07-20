@@ -55,7 +55,7 @@ public partial class LicenseViewModel : ObservableObject
             // их правку выполняем строго на UI-потоке — иначе Avalonia роняет cross-thread
             // исключение и вкладка молча остаётся с дефолтами (headless-тесты этого не ловят:
             // там продолжение всегда на UI-потоке).
-            await RunOnUiThread(() =>
+            await UiThread.RunAsync(() =>
             {
                 if (IsBlank(license))
                 {
@@ -77,7 +77,7 @@ public partial class LicenseViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await RunOnUiThread(() =>
+            await UiThread.RunAsync(() =>
             {
                 Clear();
                 SetTexts(status: null, error: LocKeys.License_ErrorFormat, errorArgument: ex.Message);
@@ -85,24 +85,8 @@ public partial class LicenseViewModel : ObservableObject
         }
         finally
         {
-            await RunOnUiThread(() => IsBusy = false);
+            await UiThread.RunAsync(() => IsBusy = false);
         }
-    }
-
-    // Dispatcher.UIThread.InvokeAsync ВСЕГДА ставит колбэк в очередь диспетчера, даже если вызван
-    // с UI-потока (это подтверждено эмпирически, а не документацией) — то есть без ожидания эта
-    // работа не выполнится до следующего awaited выражения. Синхронные проверки, где фейк-сервис
-    // отвечает мгновенно, ожидают, что поля заполнены сразу после конструктора. Поэтому если мы
-    // уже на UI-потоке — выполняем действие сразу; маршалим только когда действительно не на
-    // UI-потоке (как бывает у реального CliRunner, ждущего внешний процесс).
-    private static Task RunOnUiThread(Action action)
-    {
-        if (Dispatcher.UIThread.CheckAccess())
-        {
-            action();
-            return Task.CompletedTask;
-        }
-        return Dispatcher.UIThread.InvokeAsync(action).GetTask();
     }
 
     private void Clear()
