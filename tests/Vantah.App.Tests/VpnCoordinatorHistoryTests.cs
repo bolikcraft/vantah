@@ -19,27 +19,11 @@ namespace Vantah.App.Tests;
 /// </summary>
 public class VpnCoordinatorHistoryTests
 {
-    // Раннер с очередью ответов на `status` — аналог Vantah.Core.Tests.Fakes.FakeCliRunner,
-    // но App.Tests не ссылается на Core.Tests, так что заводим здесь свой.
-    private sealed class QueuedCliRunner : ICliRunner
-    {
-        private readonly Queue<CliResult> _responses = new();
-        public List<string[]> Calls { get; } = [];
-
-        public QueuedCliRunner Enqueue(CliResult r) { _responses.Enqueue(r); return this; }
-
-        public Task<CliResult> RunAsync(string[] args, TimeSpan? timeout = null, CancellationToken ct = default)
-        {
-            Calls.Add(args);
-            return Task.FromResult(_responses.Count > 0 ? _responses.Dequeue() : new CliResult(0, "", ""));
-        }
-    }
-
     [AvaloniaFact]
     public async Task Transient_status_failure_does_not_finalize_active_history_session()
     {
         var dir = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
-        var cli = new QueuedCliRunner()
+        var cli = new FakeCliRunner()
             .Enqueue(new CliResult(0, "Connected to AMSTERDAM in TUN mode, running on tun0", ""))
             .Enqueue(new CliResult(1, "", "daemon hiccup"));
         var vpn = new VpnService(cli);
