@@ -315,4 +315,53 @@ public class ConnectionHistoryTrackerTests
         }
         finally { Cleanup(path); }
     }
+
+    // --- Диск отвалился: персист истории — best-effort, не должен ронять соединение ---
+
+    // Родительский каталог путей сторов на самом деле является ФАЙЛОМ: Directory.CreateDirectory
+    // внутри Store.Save() бросит IOException. Так проверяем реальное поведение без моков.
+    private static (ConnectionHistoryTracker tracker, string root) NewTrackerWithBrokenDisk()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var blocker = Path.Combine(root, "blocker");
+        File.WriteAllText(blocker, ""); // это ФАЙЛ, не каталог
+
+        var histStore = new ConnectionHistoryStore(Path.Combine(blocker, "hist"));
+        var activeStore = new ActiveSessionStore(Path.Combine(blocker, "active"));
+        return (new ConnectionHistoryTracker(histStore, activeStore), root);
+    }
+
+    [Fact]
+    public void OnConnected_swallows_store_io_failure()
+    {
+        var (tracker, root) = NewTrackerWithBrokenDisk();
+        try
+        {
+            var ex = Record.Exception(() => tracker.OnConnected("Amsterdam", "NL", 10, DateTimeOffset.UtcNow));
+
+            Assert.Null(ex);                    // персист упал, но наружу не бросили
+            Assert.NotNull(tracker.Active);      // in-memory состояние в норме
+            Assert.Equal("Amsterdam", tracker.Active!.City);
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Fact]
+    public void OnDisconnected_swallows_store_io_failure()
+    {
+        var (tracker, root) = NewTrackerWithBrokenDisk();
+        try
+        {
+            tracker.OnConnected("Amsterdam", "NL", 10, At(0)); // персист активной сессии тоже упадёт
+
+            var ex = Record.Exception(() => tracker.OnDisconnected(At(30)));
+
+            Assert.Null(ex);                     // финализация (Store.Save истории) не бросает
+            Assert.Null(tracker.Active);
+            Assert.Single(tracker.Previous);      // in-memory история обновлена, несмотря на сбой диска
+            Assert.Equal("Amsterdam", tracker.Previous[0].City);
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
 }

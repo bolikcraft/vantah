@@ -129,11 +129,10 @@ public partial class App : Application
 
             // Таймер-опрос статуса/трафика.
             var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
-            timer.Tick += async (_, _) => await coordinator.PollOnceAsync();
-            timer.Start();
-            // Первый опрос синхронно, затем план автоподключения: только если залогинены и сейчас
-            // отключены; уже поднятый VPN не трогаем.
-            _ = InitialConnectAsync(coordinator, store, autoConnectStore, lastLocationStore);
+            timer.Tick += (_, _) => _ = SafePollAsync(coordinator);
+            // Первичный опрос + автоконнект, затем запускаем периодический опрос — без гонки со стартом.
+            _ = InitialConnectAsync(coordinator, store, autoConnectStore, lastLocationStore)
+                    .ContinueWith(_ => Dispatcher.UIThread.Post(timer.Start), TaskScheduler.Default);
         }
 
         base.OnFrameworkInitializationCompleted();
@@ -152,6 +151,14 @@ public partial class App : Application
             autoConnect.Load(), lastLocation.Load());
         if (action.ShouldConnect)
             await coordinator.ConnectAsync(action.Location, action.Fastest);
+    }
+
+    // Тик таймера-опроса — fire-and-forget: необработанное исключение в async void уронило бы
+    // UI-поток, поэтому глушим его здесь и просто пропускаем один тик.
+    private static async Task SafePollAsync(VpnCoordinator coordinator)
+    {
+        try { await coordinator.PollOnceAsync(); }
+        catch { /* тик опроса не должен ронять UI-поток */ }
     }
 
     // Папка для выгрузки логов — через системный диалог окна; без окна (или без поддержки

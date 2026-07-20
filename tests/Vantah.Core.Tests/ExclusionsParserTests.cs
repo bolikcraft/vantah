@@ -54,4 +54,19 @@ public class ExclusionsParserTests
         Assert.Contains("kalk.pro", snap.Domains);
         Assert.Contains("45.139.16.61", snap.Domains);
     }
+
+    [Fact]
+    public void Non_domain_noise_lines_are_ignored()
+    {
+        var raw = "Exclusions for general mode:\n" +
+                  "example.com\n" +
+                  "No exclusions configured\n" +
+                  "Type a domain to add\n" +
+                  "sub.test.org\n";
+        var domains = ExclusionsParser.Parse(raw).Domains;
+        Assert.Contains("example.com", domains);
+        Assert.Contains("sub.test.org", domains);
+        Assert.DoesNotContain("No exclusions configured", domains);
+        Assert.DoesNotContain("Type a domain to add", domains);
+    }
 }

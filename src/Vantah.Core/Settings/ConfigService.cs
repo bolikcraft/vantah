@@ -38,11 +38,23 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
     public Task<VpnConfig> SetSocksHostAsync(string host, CancellationToken ct = default) =>
         ApplyAsync(["config", "set-socks-host", host], ct);
 
+    /// <summary>
+    /// Устанавливает SOCKS-логин. ВНИМАНИЕ: adguardvpn-cli принимает значение только позиционным
+    /// аргументом, поэтому на время выполнения команды оно видно другим локальным пользователям
+    /// через /proc/&lt;pid&gt;/cmdline и <c>ps</c>. Ограничение CLI.
+    /// </summary>
     public Task<VpnConfig> SetSocksUsernameAsync(string username, CancellationToken ct = default) =>
         ApplyAsync(["config", "set-socks-username", username], ct);
 
+    /// <summary>
+    /// Устанавливает SOCKS-пароль. ВНИМАНИЕ: adguardvpn-cli принимает пароль только позиционным
+    /// аргументом (флага stdin нет; интерактивный промпт требует TTY, обычный pipe не подходит —
+    /// нужен был бы PTY). Поэтому на время выполнения команды пароль виден другим локальным
+    /// пользователям через /proc/&lt;pid&gt;/cmdline и <c>ps</c>. Ограничение CLI; безопасная передача
+    /// потребовала бы PTY-реализации (вне текущего объёма).
+    /// </summary>
     public Task<VpnConfig> SetSocksPasswordAsync(string password, CancellationToken ct = default) =>
-        ApplyAsync(["config", "set-socks-password", password], ct);
+        ApplySensitiveAsync(["config", "set-socks-password", password], "set-socks-password", ct);
 
     public Task<VpnConfig> ClearSocksAuthAsync(CancellationToken ct = default) =>
         ApplyAsync(["config", "clear-socks-auth"], ct);
@@ -101,6 +113,29 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
         if (!r.Ok)
             throw new ConfigCommandException(
                 FirstNonEmpty(r.Stderr, r.Stdout, $"{string.Join(' ', args)} завершился с ошибкой"));
+        return await GetAsync(ct);
+    }
+
+    /// <summary>
+    /// Как <see cref="ApplyAsync"/>, но для команд с чувствительными аргументами (пароль):
+    /// в fallback-сообщении об ошибке и в сообщении о таймауте используется <paramref name="safeLabel"/>,
+    /// а не сами <paramref name="args"/> — иначе, например, пароль из set-socks-password попал бы
+    /// в текст <see cref="ConfigCommandException"/> (fallback) либо <see cref="TimeoutException"/>
+    /// (её бросает <c>CliRunner</c>, включая args в сообщение), а оттуда — в UI/логи.
+    /// </summary>
+    private async Task<VpnConfig> ApplySensitiveAsync(string[] args, string safeLabel, CancellationToken ct)
+    {
+        CliResult r;
+        try
+        {
+            r = await cli.RunAsync(args, Timeout, ct);
+        }
+        catch (TimeoutException)
+        {
+            throw new ConfigCommandException($"{safeLabel} превысил таймаут");
+        }
+        if (!r.Ok)
+            throw new ConfigCommandException(FirstNonEmpty(r.Stderr, r.Stdout, $"{safeLabel} завершился с ошибкой"));
         return await GetAsync(ct);
     }
 

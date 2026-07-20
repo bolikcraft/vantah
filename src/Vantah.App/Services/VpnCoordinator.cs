@@ -21,7 +21,11 @@ public sealed class VpnCoordinator(
     LastLocationStore? lastLocation = null)
 {
     private DateTime _lastPollUtc = DateTime.UtcNow;
+    // _opGate сериализует операции; _operationInFlight гейтит опрос — самодостаточен,
+    // не завязан на счётчик семафора.
+    private readonly SemaphoreSlim _opGate = new(1, 1);
     private volatile bool _operationInFlight;
+    private int _pollInFlight;
     private volatile IReadOnlyList<Location> _knownLocations = Array.Empty<Location>();
 
     /// <summary>Список известных локаций для обогащения истории Country/Ping (город → страна/пинг).</summary>
@@ -48,89 +52,124 @@ public sealed class VpnCoordinator(
         // не должен перетереть состояние обратно в Disconnected.
         if (_operationInFlight) return;
 
-        // Держим состояние логина в актуальном виде: форма входа появляется/исчезает сама.
-        await RefreshLoginStateAsync(ct);
-
+        // Single-flight: не даём двум опросам перекрыться (напр. таймер тикнул раньше,
+        // чем предыдущий опрос успел завершиться).
+        if (Interlocked.Exchange(ref _pollInFlight, 1) == 1) return;
         try
         {
-            var status = await vpn.GetStatusAsync(ct);
-            var now = DateTime.UtcNow;
-            var elapsed = (now - _lastPollUtc).TotalSeconds;
-            _lastPollUtc = now;
+            // Держим состояние логина в актуальном виде: форма входа появляется/исчезает сама.
+            await RefreshLoginStateAsync(ct);
 
-            TrafficSample? sample = null;
-            if (status.IsConnected && status.Interface is { } iface)
-                sample = traffic.Poll(iface, elapsed);
-            else
-                traffic.Reset();
-
-            TrackHistory(status);
-
-            store.Set(s => s with
+            try
             {
-                Connection = status.IsConnected ? ConnectionState.Connected : ConnectionState.Disconnected,
-                Location = status.Location,
-                LocationDisplay = ResolveLocationDisplay(status),
-                Mode = status.Mode,
-                Interface = status.Interface,
-                Traffic = sample,
-                Error = null,
-            });
+                var status = await vpn.GetStatusAsync(ct);
+                var now = DateTime.UtcNow;
+                var elapsed = (now - _lastPollUtc).TotalSeconds;
+                _lastPollUtc = now;
+
+                TrafficSample? sample = null;
+                if (status.IsConnected && status.Interface is { } iface)
+                    sample = traffic.Poll(iface, elapsed);
+                else
+                    traffic.Reset();
+
+                TrackHistory(status);
+
+                store.Set(s => s with
+                {
+                    Connection = status.IsConnected ? ConnectionState.Connected : ConnectionState.Disconnected,
+                    Location = status.Location,
+                    LocationDisplay = ResolveLocationDisplay(status),
+                    Mode = status.Mode,
+                    Interface = status.Interface,
+                    Traffic = sample,
+                    Error = null,
+                });
+            }
+            catch (Exception ex)
+            {
+                store.Set(s => s with { Connection = ConnectionState.Error, Error = ex.Message });
+            }
         }
-        catch (Exception ex)
+        finally
         {
-            store.Set(s => s with { Connection = ConnectionState.Error, Error = ex.Message });
+            Interlocked.Exchange(ref _pollInFlight, 0);
         }
     }
 
     public async Task ConnectAsync(string? location, bool fastest, CancellationToken ct = default)
     {
-        _operationInFlight = true;
-        store.Set(s => s with { Connection = ConnectionState.Connecting, Error = null });
+        // Семафор сериализует connect/disconnect: два быстрых клика не запустят
+        // две параллельные операции CLI, второй вызов дождётся завершения первого.
+        await _opGate.WaitAsync(ct);
         try
         {
-            var status = await vpn.ConnectAsync(location, fastest, ipVersionStore.Load(), ct);
-            TrackHistory(status);
-            if (status.IsConnected)
+            _operationInFlight = true;
+            store.Set(s => s with { Connection = ConnectionState.Connecting, Error = null });
+            try
             {
-                try { lastLocation?.Save(location ?? status.Location); }
-                catch { /* best-effort persist, не роняем состояние подключения */ }
+                var status = await vpn.ConnectAsync(location, fastest, ipVersionStore.Load(), ct);
+                TrackHistory(status);
+                if (status.IsConnected)
+                {
+                    try { lastLocation?.Save(location ?? status.Location); }
+                    catch { /* best-effort persist, не роняем состояние подключения */ }
+                }
+                store.Set(s => s with
+                {
+                    Connection = status.IsConnected ? ConnectionState.Connected : ConnectionState.Disconnected,
+                    Location = status.Location, LocationDisplay = ResolveLocationDisplay(status),
+                    Mode = status.Mode, Interface = status.Interface, Error = null,
+                });
             }
-            store.Set(s => s with
+            catch (OperationCanceledException)
             {
-                Connection = status.IsConnected ? ConnectionState.Connected : ConnectionState.Disconnected,
-                Location = status.Location, LocationDisplay = ResolveLocationDisplay(status),
-                Mode = status.Mode, Interface = status.Interface, Error = null,
-            });
-        }
-        catch (Exception ex)
-        {
-            store.Set(s => s with { Connection = ConnectionState.Error, Error = ex.Message });
+                // Отмена — не ошибка: состояние осознанно остаётся Connecting, следующий тик
+                // PollOnceAsync перепишет его реальным GetStatus; в Error не уходим намеренно.
+                throw;
+            }
+            catch (Exception ex)
+            {
+                store.Set(s => s with { Connection = ConnectionState.Error, Error = ex.Message });
+            }
         }
         finally
         {
             _operationInFlight = false;
+            _opGate.Release();
         }
     }
 
     public async Task DisconnectAsync(CancellationToken ct = default)
     {
-        _operationInFlight = true;
-        store.Set(s => s with { Connection = ConnectionState.Disconnecting, Error = null });
+        // Семафор сериализует connect/disconnect: см. комментарий в ConnectAsync.
+        await _opGate.WaitAsync(ct);
         try
         {
-            await vpn.DisconnectAsync(ct);
-            traffic.Reset();
-            history.OnDisconnected(DateTimeOffset.UtcNow);
-            store.Set(s => s with { Connection = ConnectionState.Disconnected, Location = null, LocationDisplay = null, Interface = null, Traffic = null });
-        }
-        catch (Exception ex)
-        {
-            store.Set(s => s with { Connection = ConnectionState.Error, Error = ex.Message });
+            _operationInFlight = true;
+            store.Set(s => s with { Connection = ConnectionState.Disconnecting, Error = null });
+            try
+            {
+                await vpn.DisconnectAsync(ct);
+                traffic.Reset();
+                history.OnDisconnected(DateTimeOffset.UtcNow);
+                store.Set(s => s with { Connection = ConnectionState.Disconnected, Location = null, LocationDisplay = null, Interface = null, Traffic = null });
+            }
+            catch (OperationCanceledException)
+            {
+                // Отмена — не ошибка: состояние осознанно остаётся Disconnecting, следующий тик
+                // PollOnceAsync перепишет его реальным GetStatus; в Error не уходим намеренно.
+                throw;
+            }
+            catch (Exception ex)
+            {
+                store.Set(s => s with { Connection = ConnectionState.Error, Error = ex.Message });
+            }
         }
         finally
         {
             _operationInFlight = false;
+            _opGate.Release();
         }
     }
 

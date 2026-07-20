@@ -25,7 +25,7 @@ public class AutostartServiceTests
         var file = Path.Combine(dir, "vantah.desktop");
         Assert.True(File.Exists(file));
         var text = File.ReadAllText(file);
-        Assert.Contains("Exec=/home/u/.local/bin/vantah", text);
+        Assert.Contains("Exec=\"/home/u/.local/bin/vantah\"", text);
         Assert.Contains("Icon=vantah", text);
         Assert.Contains("X-GNOME-Autostart-enabled=true", text);
         Assert.True(svc.IsEnabled());
@@ -52,5 +52,15 @@ public class AutostartServiceTests
         svc.Disable();
         svc.Disable();           // не бросает
         Assert.False(svc.IsEnabled());
+    }
+
+    [Fact]
+    public void Exec_with_spaces_is_double_quoted()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
+        var svc = new AutostartService(dir, "/home/user/My Apps/vantah", "vantah");
+        svc.Enable();
+        var content = File.ReadAllText(Path.Combine(dir, "vantah.desktop"));
+        Assert.Contains("Exec=\"/home/user/My Apps/vantah\"", content);
     }
 }

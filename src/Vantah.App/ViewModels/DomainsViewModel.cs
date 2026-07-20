@@ -29,12 +29,15 @@ public partial class DomainsViewModel : ObservableObject
 
     public ObservableCollection<DomainItemViewModel> Items { get; } = new();
 
+    /// <summary>Текущая (пере)загрузка списка исключений — чтобы её можно было дождаться в тестах.</summary>
+    public Task LoadTask { get; private set; } = Task.CompletedTask;
+
     public DomainsViewModel(IExclusionsService exclusions, ExclusionsStore store, AppStateStore appState)
     {
         _exclusions = exclusions;
         _store = store;
         _appState = appState;
-        _ = ReloadAsync();
+        LoadTask = ReloadAsync();
     }
 
     partial void OnQueryChanged(string value) => ApplyFilter();
@@ -55,19 +58,32 @@ public partial class DomainsViewModel : ObservableObject
         {
             IsBusy = true; Error = null;
             var snap = await _exclusions.GetAsync();
-            _mode = snap.Mode;
-            _switchingMode = true;
-            IsGeneral = snap.Mode == SiteExclusionMode.General;
-            IsSelective = snap.Mode == SiteExclusionMode.Selective;
-            _switchingMode = false;
+            // Продолжение после await может оказаться на потоке пула (реальный CliRunner ждёт
+            // внешний процесс). Items и радио-свойства привязаны к UI, поэтому их правку выполняем
+            // строго на UI-потоке — иначе Avalonia роняет cross-thread исключение и вкладка молча
+            // остаётся пустой (headless-тесты этого не ловят: там продолжение всегда на UI-потоке).
+            await UiThread.RunAsync(() =>
+            {
+                _mode = snap.Mode;
+                _switchingMode = true;
+                IsGeneral = snap.Mode == SiteExclusionMode.General;
+                IsSelective = snap.Mode == SiteExclusionMode.Selective;
+                _switchingMode = false;
 
-            _all.Clear();
-            _all.AddRange(snap.Domains);
-            ApplyFilter();
-            _appState.Set(s => s with { ExclusionsCount = _all.Count, ExclusionsMode = _mode });
+                _all.Clear();
+                _all.AddRange(snap.Domains);
+                ApplyFilter();
+                _appState.Set(s => s with { ExclusionsCount = _all.Count, ExclusionsMode = _mode });
+            });
         }
-        catch (Exception ex) { Error = ex.Message; }
-        finally { IsBusy = false; }
+        catch (Exception ex)
+        {
+            await UiThread.RunAsync(() => Error = ex.Message);
+        }
+        finally
+        {
+            await UiThread.RunAsync(() => IsBusy = false);
+        }
     }
 
     private void ApplyFilter()

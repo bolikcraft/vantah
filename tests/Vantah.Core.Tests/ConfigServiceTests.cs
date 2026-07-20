@@ -225,4 +225,52 @@ public class ConfigServiceTests
 
         Assert.Contains("permission denied", ex.Message);
     }
+
+    // Пароль не должен попадать в текст исключения — ни через stderr (тут его и так нет),
+    // ни через fallback-сообщение об ошибке.
+    [Fact]
+    public async Task Socks_password_is_not_leaked_in_error_message()
+    {
+        var cli = new FakeCliRunner().Enqueue(new CliResult(1, "", "internal error"));
+        var svc = new ConfigService(cli);
+
+        var ex = await Assert.ThrowsAsync<ConfigCommandException>(() => svc.SetSocksPasswordAsync("S3cr3t!"));
+
+        Assert.DoesNotContain("S3cr3t!", ex.Message);
+    }
+
+    // И stderr, и stdout пустые — срабатывает fallback-сообщение. Оно должно содержать
+    // безопасную метку команды, а не реальные args (в которых пароль).
+    [Fact]
+    public async Task Socks_password_fallback_message_uses_safe_label()
+    {
+        var cli = new FakeCliRunner().Enqueue(new CliResult(1, "", ""));
+        var svc = new ConfigService(cli);
+
+        var ex = await Assert.ThrowsAsync<ConfigCommandException>(() => svc.SetSocksPasswordAsync("S3cr3t!"));
+
+        Assert.DoesNotContain("S3cr3t!", ex.Message);
+        Assert.Contains("set-socks-password", ex.Message);
+    }
+
+    // CliRunner при таймауте бросает TimeoutException, включающую args (и пароль) в текст —
+    // ApplySensitiveAsync должен перехватывать это и переизлагать безопасным сообщением.
+    [Fact]
+    public async Task Socks_password_is_not_leaked_on_timeout()
+    {
+        var cli = new ThrowingTimeoutRunner();
+        var svc = new ConfigService(cli);
+
+        var ex = await Assert.ThrowsAsync<ConfigCommandException>(() => svc.SetSocksPasswordAsync("S3cr3t!"));
+
+        Assert.DoesNotContain("S3cr3t!", ex.Message);
+        Assert.Contains("set-socks-password", ex.Message);
+    }
+
+    private sealed class ThrowingTimeoutRunner : ICliRunner
+    {
+        public Task<CliResult> RunAsync(string[] args, TimeSpan? timeout = null, CancellationToken ct = default) =>
+            throw new TimeoutException(
+                $"adguardvpn-cli {string.Join(' ', args)} превысил таймаут");
+    }
 }

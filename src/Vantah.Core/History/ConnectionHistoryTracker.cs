@@ -124,14 +124,27 @@ public sealed class ConnectionHistoryTracker
                 _completed.Count - ConnectionHistoryStore.MaxEntries);
         _active = null;
         _restored = false;
-        _store.Save(_completed);
+        // Персист истории — best-effort: сбой диска (нет места/прав) не должен ронять
+        // состояние соединения наружу (см. VpnCoordinator.TrackHistory). In-memory состояние
+        // (_completed уже обновлён выше) остаётся корректным, теряем только запись на диск.
+        try { _store.Save(_completed); }
+        catch (IOException) { /* best-effort персист истории: сбой диска не роняет соединение */ }
+        catch (UnauthorizedAccessException) { /* аналогично */ }
         _activeStore.Clear();
     }
 
     private void PersistActiveLocked()
     {
-        _activeStore.Save(new ActiveSessionState(_active!, _lastSeenAt));
-        _persistedLastSeen = _lastSeenAt;
+        try
+        {
+            _activeStore.Save(new ActiveSessionState(_active!, _lastSeenAt));
+            // _persistedLastSeen двигаем ТОЛЬКО при успехе: если Save упал, следующий
+            // heartbeat (или финализация) должен повторить попытку записи, а не решить,
+            // что диск уже в курсе актуального _lastSeenAt.
+            _persistedLastSeen = _lastSeenAt;
+        }
+        catch (IOException) { /* best-effort персист: сбой диска не роняет состояние соединения */ }
+        catch (UnauthorizedAccessException) { /* аналогично */ }
     }
 
     private static bool SameCity(string city1, string city2) =>
