@@ -118,13 +118,22 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
 
     /// <summary>
     /// Как <see cref="ApplyAsync"/>, но для команд с чувствительными аргументами (пароль):
-    /// в fallback-сообщении об ошибке используется <paramref name="safeLabel"/>, а не сами
-    /// <paramref name="args"/> — иначе, например, пароль из set-socks-password попал бы в текст
-    /// <see cref="ConfigCommandException"/>, а оттуда — в UI/логи.
+    /// в fallback-сообщении об ошибке и в сообщении о таймауте используется <paramref name="safeLabel"/>,
+    /// а не сами <paramref name="args"/> — иначе, например, пароль из set-socks-password попал бы
+    /// в текст <see cref="ConfigCommandException"/> (fallback) либо <see cref="TimeoutException"/>
+    /// (её бросает <c>CliRunner</c>, включая args в сообщение), а оттуда — в UI/логи.
     /// </summary>
     private async Task<VpnConfig> ApplySensitiveAsync(string[] args, string safeLabel, CancellationToken ct)
     {
-        var r = await cli.RunAsync(args, Timeout, ct);
+        CliResult r;
+        try
+        {
+            r = await cli.RunAsync(args, Timeout, ct);
+        }
+        catch (TimeoutException)
+        {
+            throw new ConfigCommandException($"{safeLabel} превысил таймаут");
+        }
         if (!r.Ok)
             throw new ConfigCommandException(FirstNonEmpty(r.Stderr, r.Stdout, $"{safeLabel} завершился с ошибкой"));
         return await GetAsync(ct);
