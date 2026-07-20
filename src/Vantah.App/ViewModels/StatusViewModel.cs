@@ -79,7 +79,24 @@ public partial class StatusViewModel : ObservableObject
         timer.Start();
     }
 
-    private void RefreshLog() => Log = string.Join('\n', _logReader.ReadTail());
+    // Последняя (пере)загрузка хвоста лога — чтобы её можно было дождаться в тестах.
+    public Task LogRefreshTask { get; private set; } = Task.CompletedTask;
+
+    private void RefreshLog() => LogRefreshTask = RefreshLogAsync();
+
+    private async Task RefreshLogAsync()
+    {
+        try
+        {
+            var tail = await Task.Run(() => _logReader.ReadTail());
+            var text = string.Join('\n', tail);
+            await Dispatcher.UIThread.InvokeAsync(() => Log = text);
+        }
+        catch
+        {
+            // чтение лога не критично
+        }
+    }
 
     private void Apply(AppSnapshot s)
     {
