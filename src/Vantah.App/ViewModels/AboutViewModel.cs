@@ -11,7 +11,7 @@ namespace Vantah.App.ViewModels;
 
 public partial class AboutViewModel : ObservableObject
 {
-    public const string RepositoryUrl = "https://gitlab.com/bolikcraft/vantah";
+    public const string RepositoryUrl = "https://github.com/bolikcraft/vantah";
 
     private const string DefaultVersion = "1.0.0";
 
