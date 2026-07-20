@@ -39,7 +39,13 @@ public sealed class AutostartService
 
     private static string QuoteExec(string path)
     {
-        var escaped = path.Replace("\\", "\\\\").Replace("\"", "\\\"");
+        // Экранирование по freedesktop desktop-entry spec (ключ Exec, значение в двойных кавычках):
+        // спецсимволы " \ $ ` предваряются обратным слэшем. Порядок важен: \ первым.
+        var escaped = path
+            .Replace("\\", "\\\\")
+            .Replace("\"", "\\\"")
+            .Replace("$", "\\$")
+            .Replace("`", "\\`");
         return $"\"{escaped}\"";
     }
 }
