@@ -13,6 +13,12 @@ public static class LoginStateParser
         "your session has expired", // протухшая сессия
     };
 
+    // Явный маркер успешного логина (реальный вывод `license`, см. fixtures/license.txt).
+    private static readonly string[] LoggedInMarkers =
+    {
+        "logged in as",
+    };
+
     public static LoginState Parse(string cliOutput)
     {
         if (string.IsNullOrWhiteSpace(cliOutput)) return LoginState.Unknown;
@@ -20,6 +26,11 @@ public static class LoginStateParser
         foreach (var m in LoggedOutMarkers)
             if (text.Contains(m, StringComparison.OrdinalIgnoreCase))
                 return LoginState.LoggedOut;
-        return LoginState.LoggedIn;
+        foreach (var m in LoggedInMarkers)
+            if (text.Contains(m, StringComparison.OrdinalIgnoreCase))
+                return LoginState.LoggedIn;
+        // Неизвестный/нераспознанный вывод (напр. локализация без LC_ALL=C, или новая
+        // версия CLI с другими формулировками) — НЕ считаем это подтверждённым логином.
+        return LoginState.Unknown;
     }
 }

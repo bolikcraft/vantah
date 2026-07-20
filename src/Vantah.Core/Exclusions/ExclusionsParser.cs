@@ -1,3 +1,4 @@
+using System.Linq;
 using Vantah.Core.Cli;
 using Vantah.Core.Models;
 
@@ -22,9 +23,16 @@ public static class ExclusionsParser
                     : SiteExclusionMode.General;
                 continue;
             }
-            domains.Add(line);
+            if (LooksLikeDomain(line))
+                domains.Add(line);
         }
 
         return new ExclusionsSnapshot(mode, DomainNormalizer.Normalize(domains));
     }
+
+    // Отсеивает строки-«шум» CLI (напр. «No exclusions configured», «Type a domain to add»),
+    // которые не являются доменом/wildcard-доменом/IP-исключением.
+    private static bool LooksLikeDomain(string s) =>
+        s.Length <= 253 && !s.Contains(' ') && s.Contains('.') &&
+        s.All(c => char.IsLetterOrDigit(c) || c is '.' or '-' or '_' or '*');
 }

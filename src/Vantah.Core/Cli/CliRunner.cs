@@ -16,6 +16,8 @@ public sealed class CliRunner(string executable = CliOptionsResolver.DefaultExec
             RedirectStandardError = true,
             UseShellExecute = false,
         };
+        psi.Environment["LC_ALL"] = "C";
+        psi.Environment["LANG"] = "C";
         foreach (var a in args) psi.ArgumentList.Add(a);
 
         using var proc = new Process { StartInfo = psi };
@@ -74,6 +76,8 @@ public sealed class CliRunner(string executable = CliOptionsResolver.DefaultExec
             RedirectStandardError = true,
             UseShellExecute = false,
         };
+        psi.Environment["LC_ALL"] = "C";
+        psi.Environment["LANG"] = "C";
         foreach (var a in args) psi.ArgumentList.Add(a);
 
         var proc = new Process { StartInfo = psi };

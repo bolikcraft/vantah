@@ -42,4 +42,11 @@ public class LoginStateParserTests
     {
         Assert.Equal(LoginState.Unknown, LoginStateParser.Parse(""));
     }
+
+    [Fact]
+    public void Unrecognized_output_is_unknown_not_logged_in()
+    {
+        Assert.Equal(LoginState.Unknown, LoginStateParser.Parse("some unexpected error text"));
+        Assert.Equal(LoginState.Unknown, LoginStateParser.Parse(""));
+    }
 }
