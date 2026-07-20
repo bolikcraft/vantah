@@ -14,12 +14,18 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
     public async Task<VpnStatus> GetStatusAsync(CancellationToken ct = default)
     {
         var r = await cli.RunAsync(["status"], QuickTimeout, ct);
+        // Транзиентный сбой (демон/сеть моргнули) иначе молча парсился бы как «отключено»
+        // и рвал бы активную сессию истории — сбой ловим по коду возврата.
+        if (!r.Ok)
+            throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, "status завершился с ошибкой"));
         return StatusParser.Parse(r.Stdout);
     }
 
     public async Task<IReadOnlyList<Location>> GetLocationsAsync(int count = 300, CancellationToken ct = default)
     {
         var r = await cli.RunAsync(["list-locations", count.ToString()], QuickTimeout, ct);
+        if (!r.Ok)
+            throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, "list-locations завершился с ошибкой"));
         return LocationsParser.Parse(r.Stdout);
     }
 

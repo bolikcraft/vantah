@@ -40,6 +40,28 @@ public class VpnServiceTests
     }
 
     [Fact]
+    public async Task GetStatus_failure_throws_with_stderr()
+    {
+        // Транзиентный сбой `status` (демон/сеть моргнули) не должен молча парситься
+        // как «отключено» — иначе координатор рвёт активную сессию истории.
+        var cli = new FakeCliRunner().Enqueue(new Vantah.Core.Cli.CliResult(1, "", "daemon hiccup"));
+        var svc = new VpnService(cli);
+
+        var ex = await Assert.ThrowsAsync<VpnCommandException>(() => svc.GetStatusAsync());
+        Assert.Contains("daemon hiccup", ex.Message);
+    }
+
+    [Fact]
+    public async Task GetLocations_failure_throws_with_stderr()
+    {
+        var cli = new FakeCliRunner().Enqueue(new Vantah.Core.Cli.CliResult(1, "", "network unreachable"));
+        var svc = new VpnService(cli);
+
+        var ex = await Assert.ThrowsAsync<VpnCommandException>(() => svc.GetLocationsAsync());
+        Assert.Contains("network unreachable", ex.Message);
+    }
+
+    [Fact]
     public async Task GetLocations_parses_output()
     {
         var cli = new FakeCliRunner().Enqueue("EE    Estonia              Tallinn                        24\n");
