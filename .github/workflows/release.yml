@@ -55,9 +55,9 @@ jobs:
       - name: Build AppImage
         run: |
           VER="${{ steps.ver.outputs.version }}"
-          # appimagetool из AppImageKit release 13 (pinned, проверенная стабильная версия)
+          # appimagetool из репозитория AppImage/appimagetool, pinned релиз 1.9.1
           curl -fsSL -o appimagetool \
-            https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage
+            https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage
           chmod +x appimagetool
 
           APPDIR=AppDir
