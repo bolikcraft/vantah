@@ -21,7 +21,10 @@ public sealed class VpnCoordinator(
     LastLocationStore? lastLocation = null)
 {
     private DateTime _lastPollUtc = DateTime.UtcNow;
+    // _opGate сериализует операции; _operationInFlight гейтит опрос — самодостаточен,
+    // не завязан на счётчик семафора.
     private readonly SemaphoreSlim _opGate = new(1, 1);
+    private volatile bool _operationInFlight;
     private int _pollInFlight;
     private volatile IReadOnlyList<Location> _knownLocations = Array.Empty<Location>();
 
@@ -47,7 +50,7 @@ public sealed class VpnCoordinator(
     {
         // Во время connect/disconnect (CLI может работать долго) опрос
         // не должен перетереть состояние обратно в Disconnected.
-        if (_opGate.CurrentCount == 0) return;
+        if (_operationInFlight) return;
 
         // Single-flight: не даём двум опросам перекрыться (напр. таймер тикнул раньше,
         // чем предыдущий опрос успел завершиться).
@@ -101,6 +104,7 @@ public sealed class VpnCoordinator(
         await _opGate.WaitAsync(ct);
         try
         {
+            _operationInFlight = true;
             store.Set(s => s with { Connection = ConnectionState.Connecting, Error = null });
             try
             {
@@ -120,7 +124,8 @@ public sealed class VpnCoordinator(
             }
             catch (OperationCanceledException)
             {
-                // Отмена — не ошибка: не перетираем состояние в Error.
+                // Отмена — не ошибка: состояние осознанно остаётся Connecting, следующий тик
+                // PollOnceAsync перепишет его реальным GetStatus; в Error не уходим намеренно.
                 throw;
             }
             catch (Exception ex)
@@ -130,6 +135,7 @@ public sealed class VpnCoordinator(
         }
         finally
         {
+            _operationInFlight = false;
             _opGate.Release();
         }
     }
@@ -140,6 +146,7 @@ public sealed class VpnCoordinator(
         await _opGate.WaitAsync(ct);
         try
         {
+            _operationInFlight = true;
             store.Set(s => s with { Connection = ConnectionState.Disconnecting, Error = null });
             try
             {
@@ -150,7 +157,8 @@ public sealed class VpnCoordinator(
             }
             catch (OperationCanceledException)
             {
-                // Отмена — не ошибка: не перетираем состояние в Error.
+                // Отмена — не ошибка: состояние осознанно остаётся Disconnecting, следующий тик
+                // PollOnceAsync перепишет его реальным GetStatus; в Error не уходим намеренно.
                 throw;
             }
             catch (Exception ex)
@@ -160,6 +168,7 @@ public sealed class VpnCoordinator(
         }
         finally
         {
+            _operationInFlight = false;
             _opGate.Release();
         }
     }
