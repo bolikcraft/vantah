@@ -31,11 +31,14 @@ public partial class LicenseViewModel : ObservableObject
     [ObservableProperty] private string? _error;
     [ObservableProperty] private bool _isBusy;
 
+    /// <summary>Текущая (пере)загрузка лицензии — чтобы её можно было дождаться в тестах.</summary>
+    public Task LoadTask { get; private set; } = Task.CompletedTask;
+
     public LicenseViewModel(IVpnService vpn)
     {
         _vpn = vpn;
         Localizer.Instance.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(RefreshTexts);
-        _ = RefreshAsync(CancellationToken.None);
+        LoadTask = RefreshAsync(CancellationToken.None);
     }
 
     [RelayCommand]
@@ -47,32 +50,59 @@ public partial class LicenseViewModel : ObservableObject
         try
         {
             var license = await _vpn.GetLicenseAsync(ct);
-            if (IsBlank(license))
+            // Продолжение после await может оказаться на потоке пула (реальный CliRunner ждёт
+            // внешний процесс). Email/Plan/Devices/Renewal/Status/Error привязаны к UI, поэтому
+            // их правку выполняем строго на UI-потоке — иначе Avalonia роняет cross-thread
+            // исключение и вкладка молча остаётся с дефолтами (headless-тесты этого не ловят:
+            // там продолжение всегда на UI-потоке).
+            await RunOnUiThread(() =>
             {
-                // CLI вернул нулевой код, но вывод не распарсился — LicenseParser молча отдаёт
-                // заглушку License("", "UNKNOWN", 0, null); показывать её пользователю нельзя.
-                Clear();
-                SetTexts(status: null, error: LocKeys.License_ErrorNotLoggedIn);
-                return;
-            }
+                if (IsBlank(license))
+                {
+                    // CLI вернул нулевой код, но вывод не распарсился — LicenseParser молча отдаёт
+                    // заглушку License("", "UNKNOWN", 0, null); показывать её пользователю нельзя.
+                    Clear();
+                    SetTexts(status: null, error: LocKeys.License_ErrorNotLoggedIn);
+                    return;
+                }
 
-            Email = Or(license.Email);
-            Plan = Or(license.Plan);
-            Devices = license.MaxDevices > 0
-                ? license.MaxDevices.ToString(CultureInfo.InvariantCulture)
-                : Empty;
-            Renewal = Or(license.RenewalDate);
-            SetTexts(status: null, error: null);
+                Email = Or(license.Email);
+                Plan = Or(license.Plan);
+                Devices = license.MaxDevices > 0
+                    ? license.MaxDevices.ToString(CultureInfo.InvariantCulture)
+                    : Empty;
+                Renewal = Or(license.RenewalDate);
+                SetTexts(status: null, error: null);
+            });
         }
         catch (Exception ex)
         {
-            Clear();
-            SetTexts(status: null, error: LocKeys.License_ErrorFormat, errorArgument: ex.Message);
+            await RunOnUiThread(() =>
+            {
+                Clear();
+                SetTexts(status: null, error: LocKeys.License_ErrorFormat, errorArgument: ex.Message);
+            });
         }
         finally
         {
-            IsBusy = false;
+            await RunOnUiThread(() => IsBusy = false);
         }
+    }
+
+    // Dispatcher.UIThread.InvokeAsync ВСЕГДА ставит колбэк в очередь диспетчера, даже если вызван
+    // с UI-потока (это подтверждено эмпирически, а не документацией) — то есть без ожидания эта
+    // работа не выполнится до следующего awaited выражения. Синхронные проверки, где фейк-сервис
+    // отвечает мгновенно, ожидают, что поля заполнены сразу после конструктора. Поэтому если мы
+    // уже на UI-потоке — выполняем действие сразу; маршалим только когда действительно не на
+    // UI-потоке (как бывает у реального CliRunner, ждущего внешний процесс).
+    private static Task RunOnUiThread(Action action)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            action();
+            return Task.CompletedTask;
+        }
+        return Dispatcher.UIThread.InvokeAsync(action).GetTask();
     }
 
     private void Clear()

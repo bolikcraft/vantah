@@ -85,7 +85,7 @@ public partial class ConfigViewModel : ObservableObject
         }
         finally { _loading = false; }
 
-        _ = LoadAsync();
+        LoadTask = LoadAsync();
         UpdateCheckTask = CheckForUpdatesAsync();
     }
 
@@ -169,10 +169,24 @@ public partial class ConfigViewModel : ObservableObject
     /// <summary>Задача авто-проверки обновления — для ожидания в тестах.</summary>
     public Task UpdateCheckTask { get; }
 
+    /// <summary>Текущая (пере)загрузка конфигурации — чтобы её можно было дождаться в тестах.</summary>
+    public Task LoadTask { get; private set; } = Task.CompletedTask;
+
     private async Task LoadAsync()
     {
-        try { Apply(await _config.GetAsync()); }
-        catch (Exception ex) { Error = ex.Message; }
+        try
+        {
+            var cfg = await _config.GetAsync();
+            // Продолжение после await может оказаться на потоке пула (реальный CliRunner ждёт
+            // внешний процесс). Apply правит привязанные к UI свойства, поэтому выполняем его
+            // строго на UI-потоке — иначе Avalonia роняет cross-thread исключение и форма молча
+            // остаётся с дефолтами (headless-тесты этого не ловят: там продолжение всегда на UI-потоке).
+            await RunOnUiThread(() => Apply(cfg));
+        }
+        catch (Exception ex)
+        {
+            await RunOnUiThread(() => Error = ex.Message);
+        }
     }
 
     private async Task CheckForUpdatesAsync()
@@ -181,11 +195,31 @@ public partial class ConfigViewModel : ObservableObject
         {
             var s = await _updates.CheckAsync();
             if (s.IsLatest) return;
-            var tmpl = Localizer.Instance[LocKeys.Settings_UpdateAvailable];
-            UpdateMessage = string.IsNullOrEmpty(s.LatestVersion) ? tmpl : $"{tmpl}: {s.LatestVersion}";
-            IsUpdateAvailable = true;
+            await RunOnUiThread(() =>
+            {
+                var tmpl = Localizer.Instance[LocKeys.Settings_UpdateAvailable];
+                UpdateMessage = string.IsNullOrEmpty(s.LatestVersion) ? tmpl : $"{tmpl}: {s.LatestVersion}";
+                IsUpdateAvailable = true;
+            });
         }
         catch { /* проверка обновления не критична — молчим */ }
+    }
+
+    // Dispatcher.UIThread.InvokeAsync ВСЕГДА ставит колбэк в очередь диспетчера, даже если вызван
+    // с UI-потока (это подтверждено эмпирически, а не документацией) — то есть без ожидания эта
+    // работа не выполнится до следующего awaited выражения. Из конструктора это безобидно (никто
+    // не проверяет состояние синхронно), но синхронные headless-тесты, где фейк-сервис отвечает
+    // мгновенно, ожидают, что форма заполнена сразу после конструктора. Поэтому если мы уже на
+    // UI-потоке — выполняем действие сразу; маршалим только когда действительно не на UI-потоке
+    // (как бывает у реального CliRunner, ждущего внешний процесс).
+    private static Task RunOnUiThread(Action action)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            action();
+            return Task.CompletedTask;
+        }
+        return Dispatcher.UIThread.InvokeAsync(action).GetTask();
     }
 
     private void Apply(VpnConfig c)
