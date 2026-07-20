@@ -1,0 +1,112 @@
+name: Release
+
+# Полная сборка пакетов запускается ОСОЗНАННО, а не на каждый коммит:
+#   * push тега вида v* (например v0.1.1) — собирает пакеты и публикует GitHub Release;
+#   * workflow_dispatch — ручной прогон из UI без тега (только артефакты сборки, без Release).
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # нужно action-gh-release для создания релиза и загрузки ассетов
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Determine version
+        id: ver
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            VER="${GITHUB_REF_NAME#v}"
+          else
+            VER=$(grep -oPm1 '(?<=<Version>)[^<]+' src/Vantah.App/Vantah.App.csproj)
+          fi
+          echo "version=$VER" >> "$GITHUB_OUTPUT"
+          echo "Версия сборки: $VER"
+
+      - name: Publish self-contained (linux-x64)
+        run: |
+          dotnet publish src/Vantah.App -c Release -r linux-x64 -o publish --nologo
+          # sanity-check: бинарь на месте и исполняемый
+          test -x publish/Vantah.App
+
+      - name: Package tar.gz
+        run: |
+          VER="${{ steps.ver.outputs.version }}"
+          STAGE="vantah-${VER}-linux-x64"
+          mkdir -p "$STAGE"
+          cp publish/Vantah.App "$STAGE/vantah"
+          chmod +x "$STAGE/vantah"
+          cp README.md LICENSE "$STAGE/"
+          tar -czf "${STAGE}.tar.gz" "$STAGE"
+          sha256sum "${STAGE}.tar.gz" > "${STAGE}.tar.gz.sha256"
+
+      - name: Build AppImage
+        run: |
+          VER="${{ steps.ver.outputs.version }}"
+          # appimagetool из AppImageKit release 13 (pinned, проверенная стабильная версия)
+          curl -fsSL -o appimagetool \
+            https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+
+          APPDIR=AppDir
+          rm -rf "$APPDIR"
+          mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/share/applications" "$APPDIR/usr/share/icons/hicolor"
+
+          # бинарь
+          cp publish/Vantah.App "$APPDIR/usr/bin/vantah"
+          chmod +x "$APPDIR/usr/bin/vantah"
+
+          # .desktop (в корне AppDir + по XDG-пути)
+          cp packaging/vantah.desktop "$APPDIR/vantah.desktop"
+          cp packaging/vantah.desktop "$APPDIR/usr/share/applications/vantah.desktop"
+
+          # иконки: полный набор hicolor + верхнеуровневая иконка/.DirIcon для appimagetool
+          cp -r packaging/icons/hicolor/* "$APPDIR/usr/share/icons/hicolor/"
+          cp packaging/icons/hicolor/256x256/apps/vantah.png "$APPDIR/vantah.png"
+          cp "$APPDIR/vantah.png" "$APPDIR/.DirIcon"
+
+          # AppRun: запускает бинарь относительно точки монтирования
+          cat > "$APPDIR/AppRun" <<'EOF'
+          #!/bin/sh
+          HERE="$(dirname "$(readlink -f "$0")")"
+          exec "$HERE/usr/bin/vantah" "$@"
+          EOF
+          chmod +x "$APPDIR/AppRun"
+
+          OUT="Vantah-${VER}-x86_64.AppImage"
+          # --appimage-extract-and-run: на GitHub-раннере нет FUSE, иначе appimagetool не стартует
+          ARCH=x86_64 ./appimagetool --appimage-extract-and-run "$APPDIR" "$OUT"
+          sha256sum "$OUT" > "${OUT}.sha256"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vantah-${{ steps.ver.outputs.version }}-linux-x64
+          path: |
+            vantah-*-linux-x64.tar.gz
+            vantah-*-linux-x64.tar.gz.sha256
+            Vantah-*-x86_64.AppImage
+            Vantah-*-x86_64.AppImage.sha256
+
+      - name: Publish GitHub Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Vantah v${{ steps.ver.outputs.version }}
+          files: |
+            vantah-*-linux-x64.tar.gz
+            vantah-*-linux-x64.tar.gz.sha256
+            Vantah-*-x86_64.AppImage
+            Vantah-*-x86_64.AppImage.sha256
