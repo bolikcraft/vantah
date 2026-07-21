@@ -41,7 +41,13 @@ public partial class DomainsViewModel : ObservableObject
         LoadTask = ReloadAsync();
     }
 
-    partial void OnQueryChanged(string value) => ApplyFilter();
+    partial void OnQueryChanged(string value)
+    {
+        // Правка поля — сама по себе ответ на жалобу («это не похоже на домен»): держать её
+        // на экране до следующего «Добавить» незачем.
+        Error = null;
+        ApplyFilter();
+    }
 
     partial void OnIsGeneralChanged(bool value)
     {

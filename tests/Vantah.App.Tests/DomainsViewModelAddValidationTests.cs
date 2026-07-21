@@ -87,6 +87,21 @@ public class DomainsViewModelAddValidationTests
     }
 
     [AvaloniaFact]
+    public async Task Error_disappears_as_soon_as_the_entry_is_corrected()
+    {
+        var (vm, _) = MakeVm();
+        await vm.LoadTask;
+
+        vm.Query = "exmaple";
+        await vm.AddCommand.ExecuteAsync(null);
+        Assert.NotNull(vm.Error);
+
+        vm.Query = "example.com";   // пользователь правит опечатку — жалоба больше не актуальна
+
+        Assert.Null(vm.Error);
+    }
+
+    [AvaloniaFact]
     public async Task Empty_input_neither_calls_cli_nor_sets_error()
     {
         var (vm, service) = MakeVm();
