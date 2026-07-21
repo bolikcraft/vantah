@@ -20,10 +20,19 @@ public sealed class ProcFsProcessSource(string executable, string procRoot = "/p
         var bootTime = ReadBootTime();
         if (bootTime is null) return [];
 
+        // UID, от чьего имени мы работаем. Если прочитать не удалось (урезанный procfs, нет status) —
+        // не фильтруем вовсе: лучше показать лишнее, чем скрыть свой же туннель и оставить его висеть.
+        var ownUid = ReadUid(Path.Combine(procRoot, "self"));
+
         var found = new List<RunningProcess>();
         foreach (var dir in EnumerateDirectories())
         {
             if (!int.TryParse(Path.GetFileName(dir), out var pid)) continue; // «self», «net», …
+
+            // Чужие процессы нас не касаются: их нельзя ни диагностировать, ни убить. Исключение — root:
+            // привилегированный туннель поднимает наша же обёртка «sudo -b env … adguardvpn-cli connect»,
+            // он живёт под UID 0 и должен оставаться видимым и завершаемым (kill_cmd = pkexec kill).
+            if (ownUid is { } me && ReadUid(dir) is var uid && uid != me && uid != 0) continue;
 
             var cmdline = ReadCmdline(dir);
             if (cmdline is null || !ProcessCmdline.Matches(cmdline, executable)) continue;
@@ -57,6 +66,22 @@ public sealed class ProcFsProcessSource(string executable, string procRoot = "/p
             if (!line.StartsWith("btime ", StringComparison.Ordinal)) continue;
             if (long.TryParse(line.AsSpan(6).Trim(), out var seconds))
                 return DateTimeOffset.FromUnixTimeSeconds(seconds);
+        }
+
+        return null;
+    }
+
+    /// <summary>Реальный UID процесса из /proc/PID/status (строка «Uid:\t&lt;real&gt;\t&lt;eff&gt;…»).</summary>
+    private static int? ReadUid(string dir)
+    {
+        var status = ReadText(Path.Combine(dir, "status"));
+        if (status is null) return null;
+
+        foreach (var line in status.Split('\n'))
+        {
+            if (!line.StartsWith("Uid:", StringComparison.Ordinal)) continue;
+            var parts = line[4..].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length > 0 && int.TryParse(parts[0], out var uid) ? uid : null;
         }
 
         return null;

@@ -19,10 +19,18 @@ public class ProcFsProcessSourceTests : IDisposable
 
     public void Dispose() => Directory.Delete(_root, recursive: true);
 
+    /// <summary>Свой /proc/self/status: по нему источник узнаёт UID, от чьего имени он работает.</summary>
+    private void FakeSelf(int uid) => WriteStatus(Directory.CreateDirectory(Path.Combine(_root, "self")).FullName, uid);
+
+    private static void WriteStatus(string dir, int uid) =>
+        File.WriteAllText(Path.Combine(dir, "status"), $"Name:\tx\nState:\tS\nUid:\t{uid}\t{uid}\t{uid}\t{uid}\nGid:\t{uid}\t{uid}\t{uid}\t{uid}\n");
+
     /// <param name="startedAfterBootSec">Сколько секунд после загрузки стартовал процесс.</param>
-    private void FakeProcess(int pid, string[] cmdline, string comm = "adguardvpn-cli", int startedAfterBootSec = 0)
+    /// <param name="uid">Владелец процесса; null — файла status нет (как у процесса, умершего мид-скан).</param>
+    private void FakeProcess(int pid, string[] cmdline, string comm = "adguardvpn-cli", int startedAfterBootSec = 0, int? uid = null)
     {
         var dir = Directory.CreateDirectory(Path.Combine(_root, pid.ToString())).FullName;
+        if (uid is { } owner) WriteStatus(dir, owner);
         // cmdline — аргументы, разделённые NUL, с завершающим NUL.
         File.WriteAllText(Path.Combine(dir, "cmdline"), string.Concat(cmdline.Select(a => a + '\0')));
 
@@ -87,6 +95,37 @@ public class ProcFsProcessSourceTests : IDisposable
         FakeProcess(11, [Exe, "connect"], startedAfterBootSec: 100);
 
         Assert.Equal([11, 10], Source().Scan().Select(p => p.Pid));
+    }
+
+    [Fact]
+    public void Scan_skips_processes_owned_by_other_users()
+    {
+        FakeSelf(uid: 1000);
+        FakeProcess(101, [Exe, "connect"], uid: 1000);
+        FakeProcess(202, [Exe, "connect"], uid: 1001); // чужой пользователь — не наше дело
+
+        var found = Assert.Single(Source().Scan());
+
+        Assert.Equal(101, found.Pid);
+    }
+
+    [Fact]
+    public void Scan_keeps_the_root_tunnel_because_it_is_started_by_our_own_sudo_wrapper()
+    {
+        FakeSelf(uid: 1000);
+        FakeProcess(300, ["sudo", "-b", "env", Exe, "connect"], comm: "sudo", uid: 0);
+        FakeProcess(301, [Exe, "connect", "--no-fork"], uid: 0);
+
+        Assert.Equal([300, 301], Source().Scan().Select(p => p.Pid));
+    }
+
+    [Fact]
+    public void Scan_does_not_filter_by_uid_when_own_uid_is_unreadable()
+    {
+        // status недоступен (контейнер с урезанным procfs) — лучше показать всё, чем ничего.
+        FakeProcess(400, [Exe, "status"], uid: 1001);
+
+        Assert.Equal([400], Source().Scan().Select(p => p.Pid));
     }
 
     [Fact]

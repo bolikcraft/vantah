@@ -43,6 +43,19 @@ public class ProcessCmdlineTests
         Assert.False(ProcessCmdline.Matches(["tail", "-f", "/var/log/adguardvpn-cli.log"], Exe));
     }
 
+    [Theory]
+    [InlineData(new object[] { new[] { "vim", "adguardvpn-cli" } })]          // редактируем файл с таким именем
+    [InlineData(new object[] { new[] { "tail", "-f", "adguardvpn-cli" } })]
+    public void Editor_opening_a_file_named_like_cli_is_not_a_cli_process(string[] cmdline)
+        => Assert.False(ProcessCmdline.Matches(cmdline, "adguardvpn-cli"));
+
+    [Theory]
+    [InlineData(new object[] { new[] { "adguardvpn-cli", "connect" } })]                      // прямой запуск
+    [InlineData(new object[] { new[] { "sudo", "-b", "env", "adguardvpn-cli", "connect" } })] // обёртка привилегий
+    [InlineData(new object[] { new[] { "/usr/local/bin/adguardvpn-cli", "status" } })]
+    public void Real_cli_invocations_match(string[] cmdline)
+        => Assert.True(ProcessCmdline.Matches(cmdline, "adguardvpn-cli"));
+
     [Fact]
     public void Empty_cmdline_is_not_a_match()
     {
