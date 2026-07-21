@@ -58,7 +58,7 @@ public sealed class SystemProcessMonitor : IProcessMonitor, IDisposable
         var target = Snapshot().FirstOrDefault(p => p.Id == id);
         if (target is null) return false;
 
-        var killed = await _killer.KillAsync(target.Pid, ct);
+        var killed = await KillConfirmedAsync(target, _source.Scan(), ct);
         Refresh(); // строка убитого процесса должна исчезнуть сразу, не дожидаясь такта таймера
         return killed;
     }
@@ -68,8 +68,29 @@ public sealed class SystemProcessMonitor : IProcessMonitor, IDisposable
     {
         // Записи независимы — бьём параллельно, иначе N процессов = N × grace-таймаут убийцы.
         ct.ThrowIfCancellationRequested();
-        await Task.WhenAll(Snapshot().Select(p => KillAsync(p.Id, ct)));
+
+        var targets = Snapshot();
+        if (targets.Count == 0) return;
+
+        // Один свежий скан на всю пачку, а не по скану на процесс: сверка личности идёт
+        // синхронно, до первого сигнала, так что для всех целей она одинаково свежая.
+        var live = _source.Scan();
+        await Task.WhenAll(targets.Select(p => KillConfirmedAsync(p, live, ct)));
+        Refresh();
     }
+
+    /// <summary>
+    /// Бьёт процесс, только если он всё ещё присутствует в <paramref name="live"/> той же личностью
+    /// (pid + время старта). Снимок из UI отстаёт на такт таймера: за это время процесс мог умереть,
+    /// а ядро — переиспользовать pid под чужой. Тогда сигнал (тем более из привилегированной
+    /// kill-команды) прилетел бы невиновному. Полностью атомарным это не сделать — в POSIX нет
+    /// kill-by-identity без pidfd, — но окно сокращается с секунд до миллисекунд.
+    /// </summary>
+    private Task<bool> KillConfirmedAsync(
+        RunningProcess target, IReadOnlyList<RunningProcess> live, CancellationToken ct) =>
+        live.Any(p => p.Pid == target.Pid && p.StartedAt == target.StartedAt)
+            ? _killer.KillAsync(target.Pid, ct)
+            : Task.FromResult(false);
 
     public void Dispose() => Interlocked.Exchange(ref _timer, null)?.Dispose();
 
