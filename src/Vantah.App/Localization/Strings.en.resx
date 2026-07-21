@@ -128,6 +128,9 @@
   <data name="Status_Error" xml:space="preserve">
     <value>Error</value>
   </data>
+  <data name="Status_Checking" xml:space="preserve">
+    <value>Checking connection status…</value>
+  </data>
   <data name="Status_SpeedLabel" xml:space="preserve">
     <value>Speed:</value>
   </data>

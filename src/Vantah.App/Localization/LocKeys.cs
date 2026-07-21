@@ -40,6 +40,7 @@ public static class LocKeys
     public const string Status_Disconnecting = "Status_Disconnecting";
     public const string Status_Disconnected = "Status_Disconnected";
     public const string Status_Error = "Status_Error";
+    public const string Status_Checking = "Status_Checking";
     public const string Status_SpeedLabel = "Status_SpeedLabel";
     public const string Status_SessionLabel = "Status_SessionLabel";
     public const string Status_ModeFormat = "Status_ModeFormat";
