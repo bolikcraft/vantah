@@ -17,10 +17,13 @@ public class ConfigViewUpdateCheckTests
             Task.FromResult<AppUpdateInfo?>(null);
     }
 
-    private static (ConfigViewModel Vm, AppUpdateStore Store) Build()
+    private static (ConfigViewModel Vm, AppUpdateStore Store, string Path) Build(
+        AppUpdateState? saved = null)
     {
-        var root = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
-        var updateStore = new AppUpdateStore(Path.Combine(root, "appupdate.json"));
+        var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
+        var statePath = System.IO.Path.Combine(root, "appupdate.json");
+        var updateStore = new AppUpdateStore(statePath);
+        if (saved is { } s) updateStore.Save(s);
         var appUpdates = new AppUpdateService(new StubSource(), updateStore, "0.1.0");
         var vm = new ConfigViewModel(
             new FakeConfigService(), new AppStateStore(),
@@ -30,30 +33,41 @@ public class ConfigViewUpdateCheckTests
             new AutoConnectStore(Path.Combine(root, "autoconnect")),
             new AutostartService(Path.Combine(root, "autostart"), "vantah", "vantah"),
             appUpdates);
-        return (vm, updateStore);
+        return (vm, updateStore, statePath);
     }
 
     [AvaloniaFact]
     public void Checked_by_default()
     {
-        var (vm, _) = Build();
+        var (vm, _, _) = Build();
 
         Assert.True(vm.CheckAppUpdates);
     }
 
     [AvaloniaFact]
+    public void Form_reflects_a_previously_disabled_check()
+    {
+        // Регрессия, которую пользователь замечает первой: снял галку — после перезапуска
+        // она снова стоит.
+        var (vm, _, _) = Build(new AppUpdateState { Enabled = false });
+
+        Assert.False(vm.CheckAppUpdates);
+    }
+
+    [AvaloniaFact]
     public void Loading_the_form_does_not_write_the_store()
     {
-        var (_, store) = Build();
+        // Проверяем именно отсутствие файла: Load() на пустом пути вернул бы дефолты
+        // независимо от того, писала форма или нет, и такой тест не смог бы упасть.
+        var (_, _, path) = Build();
 
-        Assert.Null(store.Load().LastCheckUtc);
-        Assert.True(store.Load().Enabled);
+        Assert.False(File.Exists(path));
     }
 
     [AvaloniaFact]
     public void Unchecking_disables_the_check()
     {
-        var (vm, store) = Build();
+        var (vm, store, _) = Build();
 
         vm.CheckAppUpdates = false;
 
@@ -63,7 +77,7 @@ public class ConfigViewUpdateCheckTests
     [AvaloniaFact]
     public void Rechecking_enables_it_again()
     {
-        var (vm, store) = Build();
+        var (vm, store, _) = Build();
 
         vm.CheckAppUpdates = false;
         vm.CheckAppUpdates = true;

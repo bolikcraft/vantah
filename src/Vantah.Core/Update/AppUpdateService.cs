@@ -27,9 +27,13 @@ public sealed class AppUpdateService(IAppReleaseSource source, AppUpdateStore st
         // Неудачную проверку временем не отмечаем: иначе один старт без сети заглушил бы
         // проверку на сутки. При следующем запуске попробуем снова.
         if (release is null) return null;
-        store.Save(state with { LastCheckUtc = now });
 
-        if (string.Equals(release.Version, state.DismissedVersion, StringComparison.Ordinal)) return null;
+        // Состояние перечитываем: запрос длится до 10 секунд, и за это время пользователь мог
+        // снять галку проверки в настройках — запись снимка, снятого ДО запроса, вернула бы её.
+        var fresh = store.Load();
+        store.Save(fresh with { LastCheckUtc = now });
+
+        if (string.Equals(release.Version, fresh.DismissedVersion, StringComparison.Ordinal)) return null;
 
         var latest = ReleaseTagParser.Parse(release.Version);
         var current = ReleaseTagParser.Parse(currentVersion);

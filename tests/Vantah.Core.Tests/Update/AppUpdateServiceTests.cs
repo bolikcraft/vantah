@@ -19,6 +19,29 @@ public class AppUpdateServiceTests
         return (new AppUpdateService(source, store, current), store, source);
     }
 
+    /// <summary>Источник, который во время запроса меняет состояние — как настройки на UI-потоке.</summary>
+    private sealed class SourceThatEditsState(AppUpdateStore store, AppUpdateInfo? release) : IAppReleaseSource
+    {
+        public Task<AppUpdateInfo?> GetLatestAsync(CancellationToken ct = default)
+        {
+            store.Save(store.Load() with { Enabled = false });
+            return Task.FromResult(release);
+        }
+    }
+
+    [Fact]
+    public async Task Check_does_not_revive_a_toggle_switched_off_while_it_was_running()
+    {
+        // Запрос длится до 10 секунд: за это время пользователь может снять галку в настройках,
+        // и запись снимка состояния, снятого ДО запроса, вернула бы её обратно.
+        var store = new AppUpdateStore(TempPath());
+        var service = new AppUpdateService(new SourceThatEditsState(store, Newer), store, "0.1.0");
+
+        await service.CheckAsync(Now);
+
+        Assert.False(store.Load().Enabled);
+    }
+
     [Fact]
     public async Task First_check_reports_a_newer_release()
     {
