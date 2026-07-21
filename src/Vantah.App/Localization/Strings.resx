@@ -513,4 +513,10 @@
   <data name="Login_CodeLabel" xml:space="preserve">
     <value>Код:</value>
   </data>
+  <data name="Login_UrlLabel" xml:space="preserve">
+    <value>Если браузер не открылся, откройте ссылку вручную:</value>
+  </data>
+  <data name="Login_CopyUrl" xml:space="preserve">
+    <value>Скопировать ссылку</value>
+  </data>
 </root>

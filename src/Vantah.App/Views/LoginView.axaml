@@ -30,6 +30,19 @@
         <TextBlock Text="{Binding UserCode}" FontFamily="monospace" FontSize="18" FontWeight="Bold"/>
       </StackPanel>
 
+      <!-- Запасной путь: если браузер не открылся, ссылку видно и её можно выделить/скопировать -->
+      <StackPanel x:Name="LoginUrlBlock" Spacing="6"
+                  IsVisible="{Binding Url, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <TextBlock Text="{Binding [Login_UrlLabel], Source={x:Static loc:Localizer.Instance}}"
+                   TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center" Opacity="0.7"/>
+        <SelectableTextBlock Text="{Binding Url}" TextWrapping="Wrap"
+                             FontFamily="monospace" FontSize="12" HorizontalAlignment="Center"
+                             TextAlignment="Center"/>
+        <Button Content="{Binding [Login_CopyUrl], Source={x:Static loc:Localizer.Instance}}"
+                Command="{Binding CopyUrlCommand}"
+                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+      </StackPanel>
+
       <Button Content="{Binding [Login_OpenBrowser], Source={x:Static loc:Localizer.Instance}}"
               Command="{Binding OpenBrowserCommand}"
               HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>

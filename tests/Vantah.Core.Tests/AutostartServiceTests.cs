@@ -1,8 +1,18 @@
+// Vantah — только Linux, поэтому Unix-права доступны всегда (CA1416 предупреждает про Windows).
+#pragma warning disable CA1416
+
 using Vantah.Core.Autostart;
 using Xunit;
 
 public class AutostartServiceTests
 {
+    private const UnixFileMode Private600 = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+
+    private const UnixFileMode Open755 =
+        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+        UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+        UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
+
     private static string TempDir() =>
         Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "autostart");
 
@@ -82,6 +92,32 @@ public class AutostartServiceTests
             Assert.DoesNotContain("Hidden=true", lines);
             Assert.DoesNotContain("Exec=/usr/bin/evil", lines);
             Assert.Contains("Icon=vantahHidden=true", lines);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
+    }
+
+    /// <summary>
+    /// Запись атомарна (временный файл → rename), но ~/.config/autostart — общий каталог
+    /// freedesktop: его права поджимать нельзя, только сам .desktop получает 600.
+    /// </summary>
+    [Fact]
+    public void Enable_writes_atomically_and_leaves_shared_directory_permissions_alone()
+    {
+        var dir = TempDir();
+        var root = Path.GetDirectoryName(dir)!;   // .../vantah-tests/<guid> — убираем целиком
+        try
+        {
+            Directory.CreateDirectory(dir);
+            File.SetUnixFileMode(dir, Open755);
+
+            Make(dir).Enable();
+
+            var file = Path.Combine(dir, "vantah.desktop");
+            Assert.Contains("Exec=\"/home/u/.local/bin/vantah\"", File.ReadAllText(file));
+            Assert.Empty(Directory.GetFiles(dir, "*.tmp"));
+            Assert.Empty(Directory.GetFiles(dir, ".*.tmp"));
+            Assert.Equal(Private600, File.GetUnixFileMode(file));
+            Assert.Equal(Open755, File.GetUnixFileMode(dir));
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
     }

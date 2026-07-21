@@ -28,17 +28,21 @@ public class DomainsViewModelAddValidationTests
             return Task.CompletedTask;
         }
 
-        public Task RemoveAsync(string domain, CancellationToken ct = default) => Task.CompletedTask;
+        public Exception? RemoveThrows { get; set; }
+
+        public Task RemoveAsync(string domain, CancellationToken ct = default) =>
+            RemoveThrows is null ? Task.CompletedTask : Task.FromException(RemoveThrows);
 
         public Task SetModeAsync(SiteExclusionMode from, SiteExclusionMode to,
             IReadOnlyList<string> currentDomains, CancellationToken ct = default) => Task.CompletedTask;
     }
 
-    private static (DomainsViewModel Vm, RecordingExclusions Service) MakeVm()
+    private static (DomainsViewModel Vm, RecordingExclusions Service) MakeVm(string[]? domains = null)
     {
         var dir = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
         var store = new ExclusionsStore(Path.Combine(dir, "site-exclusions"));
-        var service = new RecordingExclusions(new ExclusionsSnapshot(SiteExclusionMode.General, []));
+        var service = new RecordingExclusions(
+            new ExclusionsSnapshot(SiteExclusionMode.General, domains ?? []));
         return (new DomainsViewModel(service, store, new AppStateStore()), service);
     }
 
@@ -84,6 +88,36 @@ public class DomainsViewModelAddValidationTests
 
         Assert.Equal(["2001:db8::1"], service.Added);
         Assert.Null(vm.Error);
+    }
+
+    [AvaloniaFact]
+    public async Task Error_disappears_as_soon_as_the_entry_is_corrected()
+    {
+        var (vm, _) = MakeVm();
+        await vm.LoadTask;
+
+        vm.Query = "exmaple";
+        await vm.AddCommand.ExecuteAsync(null);
+        Assert.NotNull(vm.Error);
+
+        vm.Query = "example.com";   // пользователь правит опечатку — жалоба больше не актуальна
+
+        Assert.Null(vm.Error);
+    }
+
+    [AvaloniaFact]
+    public async Task Error_from_a_failed_removal_survives_typing_in_the_filter()
+    {
+        var (vm, service) = MakeVm(["example.com"]);
+        await vm.LoadTask;
+        service.RemoveThrows = new InvalidOperationException("CLI недоступен");
+
+        await vm.RemoveCommand.ExecuteAsync(vm.Items[0]);
+        Assert.Equal("CLI недоступен", vm.Error);
+
+        vm.Query = "exa";   // поле — ещё и фильтр списка: поиск строки не должен глушить жалобу CLI
+
+        Assert.Equal("CLI недоступен", vm.Error);
     }
 
     [AvaloniaFact]

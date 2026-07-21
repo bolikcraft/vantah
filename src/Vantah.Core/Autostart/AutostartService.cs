@@ -1,3 +1,5 @@
+using Vantah.Core.Config;
+
 namespace Vantah.Core.Autostart;
 
 /// <summary>Автозапуск Vantah при входе в систему через freedesktop-autostart
@@ -29,7 +31,10 @@ public sealed class AutostartService
             "Terminal=false\n" +
             "StartupWMClass=Vantah.App\n" +
             "X-GNOME-Autostart-enabled=true\n";
-        File.WriteAllText(_file, content);
+        // Атомарно (временный файл → rename), иначе обрыв записи оставил бы битый автозапуск.
+        // secureDirectory: false — ~/.config/autostart общий каталог freedesktop, куда пишут все
+        // приложения и который читает сессионный менеджер; поджимать его до 700 нельзя.
+        SecureFile.WriteAllText(_file, content, secureDirectory: false);
     }
 
     public void Disable()
