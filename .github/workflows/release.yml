@@ -37,7 +37,11 @@ jobs:
 
       - name: Publish self-contained (linux-x64)
         run: |
-          dotnet publish src/Vantah.App -c Release -r linux-x64 -o publish --nologo
+          VER="${{ steps.ver.outputs.version }}"
+          # Версию передаём явно: иначе бинарь из тега v0.2.0 считает себя 0.1.0 (значение
+          # <Version> в csproj), и проверка обновлений вечно показывает плашку сама на себя.
+          dotnet publish src/Vantah.App -c Release -r linux-x64 -o publish --nologo \
+            -p:Version="$VER" -p:InformationalVersion="$VER"
           # sanity-check: бинарь на месте и исполняемый
           test -x publish/Vantah.App
 
