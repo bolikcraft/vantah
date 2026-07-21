@@ -227,6 +227,9 @@
   <data name="Domains_ClearConfirmMessage" xml:space="preserve">
     <value>Remove all domains of the current mode?</value>
   </data>
+  <data name="Domains_InvalidEntry" xml:space="preserve">
+    <value>This does not look like a domain or IP address</value>
+  </data>
 
   <!-- Вкладка «Лицензия» -->
   <data name="License_Account" xml:space="preserve">

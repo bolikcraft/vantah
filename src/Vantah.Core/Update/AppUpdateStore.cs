@@ -37,8 +37,7 @@ public sealed class AppUpdateStore
         {
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-                File.WriteAllText(_path, JsonSerializer.Serialize(state));
+                SecureFile.WriteAllText(_path, JsonSerializer.Serialize(state));
             }
             catch { /* не смогли сохранить — переживём: проверка обновлений необязательна */ }
         }

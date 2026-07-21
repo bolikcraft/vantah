@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Vantah.App.Localization;
 using Vantah.Core.Exclusions;
 using Vantah.Core.Models;
 using Vantah.Core.State;
@@ -122,7 +123,17 @@ public partial class DomainsViewModel : ObservableObject
     {
         var domain = Query.Trim();
         if (domain.Length == 0) return;
-        try { await _exclusions.AddAsync(domain); Query = ""; await ReloadAsync(); }
+
+        // Опечатка вроде «exmaple» или «not a domain» иначе молча уедет в CLI и вернётся
+        // мусорной записью в списке или невнятной ошибкой. Проверяем тем же предикатом,
+        // которым Normalize фильтрует импорт файла и вывод CLI. Ввод не затираем — его правят.
+        if (!DomainNormalizer.IsAcceptableDomain(domain))
+        {
+            Error = Localizer.Instance[LocKeys.Domains_InvalidEntry];
+            return;
+        }
+
+        try { Error = null; await _exclusions.AddAsync(domain); Query = ""; await ReloadAsync(); }
         catch (Exception ex) { Error = ex.Message; }
     }
 
