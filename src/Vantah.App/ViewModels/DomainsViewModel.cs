@@ -21,6 +21,7 @@ public partial class DomainsViewModel : ObservableObject
 
     private SiteExclusionMode _mode = SiteExclusionMode.General;
     private bool _switchingMode;   // защита от реентранта при программной установке радио
+    private bool _errorFromInput;  // текущая ошибка — про введённую строку, а не про CLI
 
     [ObservableProperty] private string _query = "";  // одно поле: ввод домена и фильтр списка
     [ObservableProperty] private bool _isGeneral = true;
@@ -44,8 +45,10 @@ public partial class DomainsViewModel : ObservableObject
     partial void OnQueryChanged(string value)
     {
         // Правка поля — сама по себе ответ на жалобу («это не похоже на домен»): держать её
-        // на экране до следующего «Добавить» незачем.
-        Error = null;
+        // на экране до следующего «Добавить» незачем. Гасим только ЭТУ жалобу: поле работает
+        // ещё и фильтром списка, а ошибка удаления/очистки/импорта к набору текста отношения
+        // не имеет — потерять её при поиске строки нельзя.
+        if (_errorFromInput) { Error = null; _errorFromInput = false; }
         ApplyFilter();
     }
 
@@ -136,6 +139,7 @@ public partial class DomainsViewModel : ObservableObject
         if (!DomainNormalizer.IsAcceptableDomain(domain))
         {
             Error = Localizer.Instance[LocKeys.Domains_InvalidEntry];
+            _errorFromInput = true;
             return;
         }
 
