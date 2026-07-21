@@ -91,6 +91,21 @@ public class ConfigViewModelThreadingTests
         Assert.Null(vm.Error);
     }
 
+    // После успешного сохранения пароль SOCKS не должен оставаться в форме (и в куче).
+    [AvaloniaFact]
+    public async Task Socks_password_is_cleared_after_successful_apply()
+    {
+        var vm = MakeVm(new VpnConfig());
+        await vm.LoadTask;
+        vm.SocksUsername = "user";
+        vm.SocksPassword = "S3cr3t!";
+
+        await vm.ApplySocksAuthCommand.ExecuteAsync(null);
+
+        Assert.Equal("", vm.SocksPassword);
+        Assert.Null(vm.Error);
+    }
+
     // Заполнение формы, привязанной к отрисованным полям, при асинхронном ответе CLI
     // не должно падать и обязано наполнить форму — это и есть регресс cross-thread правки.
     [AvaloniaFact]

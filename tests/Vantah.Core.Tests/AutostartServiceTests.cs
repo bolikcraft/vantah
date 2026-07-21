@@ -63,4 +63,25 @@ public class AutostartServiceTests
         var content = File.ReadAllText(Path.Combine(dir, "vantah.desktop"));
         Assert.Contains("Exec=\"/home/user/My Apps/vantah\"", content);
     }
+
+    // Защита в глубину: перевод строки в значении вырвался бы из своей строки .desktop
+    // и добавил произвольные ключи Desktop Entry (второй Exec=, Hidden= и т.п.).
+    [Fact]
+    public void Exec_and_icon_cannot_inject_extra_desktop_keys()
+    {
+        var dir = TempDir();
+        try
+        {
+            var svc = new AutostartService(dir, "/usr/bin/vantah\nExec=/usr/bin/evil", "vantah\nHidden=true");
+            svc.Enable();
+            var lines = File.ReadAllLines(Path.Combine(dir, "vantah.desktop"));
+
+            // Перевод строки вырезан: новых ключей не появилось, Exec остался ровно один.
+            Assert.Single(lines, l => l.StartsWith("Exec="));
+            Assert.DoesNotContain("Hidden=true", lines);
+            Assert.DoesNotContain("Exec=/usr/bin/evil", lines);
+            Assert.Contains("Icon=vantahHidden=true", lines);
+        }
+        finally { if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true); }
+    }
 }

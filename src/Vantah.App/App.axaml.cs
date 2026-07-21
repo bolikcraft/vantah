@@ -126,8 +126,17 @@ public partial class App : Application
             mainWindowRef = window;
             desktop.MainWindow = window;
             // Ссылку авторизации открываем системным браузером через Launcher окна.
-            login.BrowserOpener = url => window.Launcher.LaunchUriAsync(new Uri(url));
-            updateBanner.BrowserOpener = url => window.Launcher.LaunchUriAsync(new Uri(url));
+            // Открываем только http/https: страховка на случай изменения парсера ссылки.
+            Task OpenInBrowser(string url)
+            {
+                var uri = new Uri(url);
+                return uri.Scheme is "http" or "https"
+                    ? window.Launcher.LaunchUriAsync(uri)
+                    : Task.FromResult(false);
+            }
+
+            login.BrowserOpener = OpenInBrowser;
+            updateBanner.BrowserOpener = OpenInBrowser;
 
             // Проверка обновлений — фоном и без ожидания: старт и автоподключение она не задерживает.
             _ = CheckAppUpdateAsync(appUpdates, updateBanner);

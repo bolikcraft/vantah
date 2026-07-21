@@ -311,7 +311,10 @@ public partial class ConfigViewModel : ObservableObject
         RunAsync(async () =>
         {
             await _config.SetSocksUsernameAsync(SocksUsername.Trim());
-            return await _config.SetSocksPasswordAsync(SocksPassword);
+            var saved = await _config.SetSocksPasswordAsync(SocksPassword);
+            // Пароль сохранён — в форме он больше не нужен и не должен жить в куче дольше.
+            SocksPassword = "";
+            return saved;
         });
 
     [RelayCommand]
