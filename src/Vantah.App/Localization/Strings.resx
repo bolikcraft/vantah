@@ -481,6 +481,15 @@
     <value>Вход в AdGuard VPN</value>
   </data>
   <data name="Login_Logout" xml:space="preserve">
+    <value>Выйти…</value>
+  </data>
+  <data name="Login_LogoutConfirmTitle" xml:space="preserve">
+    <value>Выход из аккаунта</value>
+  </data>
+  <data name="Login_LogoutConfirmMessage" xml:space="preserve">
+    <value>Точно выйти из учётной записи AdGuard VPN? Соединение будет разорвано, для дальнейшей работы понадобится войти заново.</value>
+  </data>
+  <data name="Login_LogoutConfirmAction" xml:space="preserve">
     <value>Выйти</value>
   </data>
   <data name="Login_Intro" xml:space="preserve">

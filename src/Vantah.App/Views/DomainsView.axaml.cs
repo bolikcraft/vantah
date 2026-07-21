@@ -1,9 +1,6 @@
-using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
-using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using Vantah.App.Localization;
 using Vantah.App.ViewModels;
@@ -52,48 +49,9 @@ public partial class DomainsView : UserControl
     {
         if (Vm is null) return;
         var loc = Localizer.Instance;
-        if (await ConfirmAsync(loc[LocKeys.Domains_ClearConfirmTitle], loc[LocKeys.Domains_ClearConfirmMessage]))
+        if (await ConfirmDialog.ShowAsync(this,
+                loc[LocKeys.Domains_ClearConfirmTitle], loc[LocKeys.Domains_ClearConfirmMessage],
+                loc[LocKeys.Common_Clear], loc[LocKeys.Common_Cancel]))
             await Vm.ClearCommand.ExecuteAsync(null);
-    }
-
-    // Простое модальное подтверждение через Window, без зависимости от темы FluentAvalonia.
-    private async Task<bool> ConfirmAsync(string title, string message)
-    {
-        if (TopLevel.GetTopLevel(this) is not Window owner) return false;
-
-        var result = false;
-        var dialog = new Window
-        {
-            Title = title,
-            Width = 360,
-            SizeToContent = SizeToContent.Height,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            CanResize = false,
-        };
-
-        var ok = new Button { Content = Localizer.Instance[LocKeys.Common_Clear], IsDefault = true };
-        var cancel = new Button { Content = Localizer.Instance[LocKeys.Common_Cancel], IsCancel = true };
-        ok.Click += (_, _) => { result = true; dialog.Close(); };
-        cancel.Click += (_, _) => { result = false; dialog.Close(); };
-
-        dialog.Content = new StackPanel
-        {
-            Margin = new Thickness(16),
-            Spacing = 16,
-            Children =
-            {
-                new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
-                new StackPanel
-                {
-                    Orientation = Orientation.Horizontal,
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    Spacing = 8,
-                    Children = { cancel, ok },
-                },
-            },
-        };
-
-        await dialog.ShowDialog(owner);
-        return result;
     }
 }

@@ -163,6 +163,9 @@ public static class LocKeys
     // Экран входа (device-code через браузер)
     public const string Login_Title = "Login_Title";
     public const string Login_Logout = "Login_Logout";
+    public const string Login_LogoutConfirmTitle = "Login_LogoutConfirmTitle";
+    public const string Login_LogoutConfirmMessage = "Login_LogoutConfirmMessage";
+    public const string Login_LogoutConfirmAction = "Login_LogoutConfirmAction";
     public const string Login_Intro = "Login_Intro";
     public const string Login_Start = "Login_Start";
     public const string Login_OpenBrowser = "Login_OpenBrowser";
