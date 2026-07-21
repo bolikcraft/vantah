@@ -4,10 +4,28 @@
 using Vantah.Core.Config;
 using Xunit;
 
-public class SecureFileTests
+public sealed class SecureFileTests : IDisposable
 {
-    private static string TempPath() =>
-        Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "data", "file");
+    private const UnixFileMode Private600 = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+
+    private const UnixFileMode Private700 =
+        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+
+    private const UnixFileMode Open755 =
+        Private700 |
+        UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+        UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
+
+    private readonly string _root =
+        Path.Combine(Path.GetTempPath(), $"vantah-securefile-{Guid.NewGuid():N}");
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_root)) Directory.Delete(_root, recursive: true);
+    }
+
+    private string TempPath() =>
+        Path.Combine(_root, Guid.NewGuid().ToString("N"), "data", "file");
 
     [Fact]
     public void WriteAllText_creates_file_readable_only_by_owner()
@@ -15,7 +33,7 @@ public class SecureFileTests
         var path = TempPath();
         SecureFile.WriteAllText(path, "secret-ish");
         Assert.Equal("secret-ish", File.ReadAllText(path));
-        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(path));
+        Assert.Equal(Private600, File.GetUnixFileMode(path));
     }
 
     [Fact]
@@ -23,10 +41,7 @@ public class SecureFileTests
     {
         var path = TempPath();
         SecureFile.WriteAllText(path, "x");
-        var dir = Path.GetDirectoryName(path)!;
-        Assert.Equal(
-            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute,
-            File.GetUnixFileMode(dir));
+        Assert.Equal(Private700, File.GetUnixFileMode(Path.GetDirectoryName(path)!));
     }
 
     [Fact]
@@ -36,7 +51,7 @@ public class SecureFileTests
         SecureFile.WriteAllText(path, "first");
         SecureFile.WriteAllText(path, "second");
         Assert.Equal("second", File.ReadAllText(path));
-        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(path));
+        Assert.Equal(Private600, File.GetUnixFileMode(path));
     }
 
     [Fact]
@@ -45,7 +60,7 @@ public class SecureFileTests
         var path = TempPath();
         SecureFile.WriteAllLines(path, new[] { "a", "b" });
         Assert.Equal(new[] { "a", "b" }, File.ReadAllLines(path));
-        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(path));
+        Assert.Equal(Private600, File.GetUnixFileMode(path));
     }
 
     [Fact]
@@ -53,8 +68,7 @@ public class SecureFileTests
     {
         var path = TempPath();
         SecureFile.WriteAllText(path, "x");
-        var dir = Path.GetDirectoryName(path)!;
-        Assert.Empty(Directory.GetFiles(dir, "*.tmp"));
+        Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(path)!, "*.tmp"));
     }
 
     [Fact]
@@ -63,17 +77,11 @@ public class SecureFileTests
         var path = TempPath();
         var dir = Path.GetDirectoryName(path)!;
         Directory.CreateDirectory(dir);
-        File.SetUnixFileMode(
-            dir,
-            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
-            UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
-            UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        File.SetUnixFileMode(dir, Open755);
 
         SecureFile.WriteAllText(path, "x");
 
-        Assert.Equal(
-            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute,
-            File.GetUnixFileMode(dir));
+        Assert.Equal(Private700, File.GetUnixFileMode(dir));
     }
 
     [Fact]
@@ -83,8 +91,7 @@ public class SecureFileTests
         var dir = Path.GetDirectoryName(path)!;
         Directory.CreateDirectory(dir);
         var shared =
-            UnixFileMode.StickyBit |
-            UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+            UnixFileMode.StickyBit | Private700 |
             UnixFileMode.GroupRead | UnixFileMode.GroupWrite | UnixFileMode.GroupExecute |
             UnixFileMode.OtherRead | UnixFileMode.OtherWrite | UnixFileMode.OtherExecute;
         File.SetUnixFileMode(dir, shared);
@@ -92,6 +99,38 @@ public class SecureFileTests
         SecureFile.WriteAllText(path, "x");
 
         Assert.Equal(shared, File.GetUnixFileMode(dir));
-        Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(path));
+        Assert.Equal(Private600, File.GetUnixFileMode(path));
+    }
+
+    /// <summary>
+    /// Экспорт в чужой каталог (secureDirectory: false): каталог остаётся 755, но ни временный,
+    /// ни итоговый файл не наследуют umask — оба создаются сразу 600.
+    /// </summary>
+    [Fact]
+    public void WriteAllText_in_open_directory_never_widens_file_beyond_600()
+    {
+        var path = TempPath();
+        var dir = Path.GetDirectoryName(path)!;
+        Directory.CreateDirectory(dir);
+        File.SetUnixFileMode(dir, Open755);
+
+        SecureFile.WriteAllText(path, "exported", secureDirectory: false);
+
+        Assert.Equal("exported", File.ReadAllText(path));
+        Assert.Equal(Private600, File.GetUnixFileMode(path));
+        Assert.Equal(Open755, File.GetUnixFileMode(dir));
+    }
+
+    [Fact]
+    public void WriteAllLines_in_open_directory_never_widens_file_beyond_600()
+    {
+        var path = TempPath();
+        var dir = Path.GetDirectoryName(path)!;
+        Directory.CreateDirectory(dir);
+        File.SetUnixFileMode(dir, Open755);
+
+        SecureFile.WriteAllLines(path, new[] { "a" }, secureDirectory: false);
+
+        Assert.Equal(Private600, File.GetUnixFileMode(path));
     }
 }

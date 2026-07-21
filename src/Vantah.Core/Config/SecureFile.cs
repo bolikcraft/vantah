@@ -4,10 +4,11 @@
 namespace Vantah.Core.Config;
 
 /// <summary>
-/// Атомарная запись приватных файлов Vantah: временный файл в той же директории → права 600 →
-/// rename поверх. Права выставляем ДО move: File.Move переносит права временного файла, поэтому
-/// итоговый файл никогда не бывает world-readable даже мгновение. Каталог создаём с 700 —
-/// история подключений и активная сессия не должны читаться другими локальными пользователями.
+/// Атомарная запись приватных файлов Vantah: временный файл в той же директории → rename поверх.
+/// Временный файл СОЗДАЁТСЯ сразу с правами 600 (UnixCreateMode, минуя umask), а File.Move
+/// переносит права как есть — поэтому ни временный, ни итоговый файл не бывает world-readable
+/// даже мгновение. Каталог создаём с 700 — история подключений и активная сессия не должны
+/// читаться другими локальными пользователями.
 /// </summary>
 public static class SecureFile
 {
@@ -20,13 +21,13 @@ public static class SecureFile
     /// false — каталог назначения чужой (экспорт в выбранную пользователем папку), его права не трогаем.
     /// </param>
     public static void WriteAllText(string path, string content, bool secureDirectory = true) =>
-        Write(path, tmp => File.WriteAllText(tmp, content), secureDirectory);
+        Write(path, writer => writer.Write(content), secureDirectory);
 
     /// <inheritdoc cref="WriteAllText(string, string, bool)"/>
     public static void WriteAllLines(string path, IEnumerable<string> lines, bool secureDirectory = true) =>
-        Write(path, tmp => File.WriteAllLines(tmp, lines), secureDirectory);
+        Write(path, writer => { foreach (var line in lines) writer.WriteLine(line); }, secureDirectory);
 
-    private static void Write(string path, Action<string> writeTo, bool secureDirectory)
+    private static void Write(string path, Action<StreamWriter> writeTo, bool secureDirectory)
     {
         // Пустой каталог = запись в текущую рабочую директорию, создавать нечего.
         var dir = Path.GetDirectoryName(path) ?? "";
@@ -39,13 +40,22 @@ public static class SecureFile
         var tmp = Path.Combine(dir, $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
         try
         {
-            writeTo(tmp);
-            File.SetUnixFileMode(tmp, PrivateFile);
+            // UnixCreateMode задаёт права в момент создания — umask их не расширяет,
+            // и файл ни на мгновение не бывает доступен другим пользователям.
+            var options = new FileStreamOptions
+            {
+                Mode = FileMode.CreateNew,
+                Access = FileAccess.Write,
+                UnixCreateMode = PrivateFile,
+            };
+            using (var writer = new StreamWriter(new FileStream(tmp, options)))
+                writeTo(writer);
+
             File.Move(tmp, path, overwrite: true);
         }
         catch
         {
-            try { if (File.Exists(tmp)) File.Delete(tmp); } catch { /* уборка best-effort */ }
+            try { File.Delete(tmp); } catch { /* уборка best-effort */ }
             throw;
         }
     }
