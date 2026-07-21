@@ -438,6 +438,18 @@
   <data name="Settings_Autostart" xml:space="preserve">
     <value>Запускать при входе в систему</value>
   </data>
+  <data name="Settings_CheckAppUpdates" xml:space="preserve">
+    <value>Проверять обновления Vantah</value>
+  </data>
+  <data name="Update_Available" xml:space="preserve">
+    <value>Доступна новая версия Vantah — {0}</value>
+  </data>
+  <data name="Update_Download" xml:space="preserve">
+    <value>Скачать</value>
+  </data>
+  <data name="Update_Dismiss" xml:space="preserve">
+    <value>Скрыть эту версию</value>
+  </data>
 
   <!-- Меню «☰» -->
   <data name="Menu_Tooltip" xml:space="preserve">
