@@ -34,6 +34,43 @@ public class DomainNormalizerTests
         Assert.DoesNotContain("not a domain", result);
     }
 
+    [Theory]
+    [InlineData("2001:db8::1")]        // голый IPv6-литерал
+    [InlineData("::1")]                // сокращённая форма
+    [InlineData("[2001:db8::1]:443")]  // в скобках с портом
+    [InlineData("[2001:db8::1]")]      // в скобках без порта
+    [InlineData("2001:db8::/32")]      // IPv6-CIDR
+    public void Normalize_keeps_ipv6_literals(string input)
+    {
+        Assert.Equal(new[] { input }, DomainNormalizer.Normalize(new[] { input }));
+    }
+
+    [Theory]
+    [InlineData("--help")]             // флаг: option injection
+    [InlineData("-x")]
+    [InlineData("-2001:db8::1")]       // «похоже на IPv6», но начинается с «-»
+    [InlineData("not a domain")]
+    [InlineData("2001:db8::1 --help")] // IPv6 + пробел
+    [InlineData("localhost")]          // нет точки и не IPv6
+    [InlineData("тест")]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(":::")]                // не парсится как адрес
+    [InlineData("[2001:db8::1")]       // нет закрывающей скобки
+    [InlineData("[2001:db8::1]:notaport")]
+    [InlineData("2001:db8::/999")]     // невозможная маска
+    public void Normalize_drops_non_domains(string input)
+    {
+        Assert.Empty(DomainNormalizer.Normalize(new[] { input }));
+    }
+
+    [Fact]
+    public void Normalize_drops_too_long_ipv6_like_string()
+    {
+        var tooLong = new string('a', 250) + ".com";
+        Assert.Empty(DomainNormalizer.Normalize(new[] { tooLong }));
+    }
+
     [Fact]
     public void Normalize_keeps_253_chars_and_drops_254()
     {
