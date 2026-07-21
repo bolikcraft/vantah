@@ -43,6 +43,27 @@ public class ProcessCmdlineTests
         Assert.False(ProcessCmdline.Matches(["tail", "-f", "/var/log/adguardvpn-cli.log"], Exe));
     }
 
+    [Theory]
+    [InlineData(new object[] { new[] { "vim", "adguardvpn-cli" } })]          // редактируем файл с таким именем
+    [InlineData(new object[] { new[] { "tail", "-f", "adguardvpn-cli" } })]
+    // «-c» отдаёт целую команду одним токеном: его basename — тоже «adguardvpn-cli», но это не наш процесс.
+    [InlineData(new object[] { new[] { "bash", "-c", "vim /tmp/adguardvpn-cli" } })]
+    public void Editor_opening_a_file_named_like_cli_is_not_a_cli_process(string[] cmdline)
+        => Assert.False(ProcessCmdline.Matches(cmdline, Exe));
+
+    [Fact]
+    public void Wrapper_without_our_binary_is_not_a_match()
+    {
+        Assert.False(ProcessCmdline.Matches(["sudo", "-b", "env", "tail", "/var/log/x"], Exe));
+    }
+
+    [Theory]
+    [InlineData(new object[] { new[] { "adguardvpn-cli", "connect" } })]                      // прямой запуск
+    [InlineData(new object[] { new[] { "sudo", "-b", "env", "adguardvpn-cli", "connect" } })] // обёртка привилегий
+    [InlineData(new object[] { new[] { "/usr/local/bin/adguardvpn-cli", "status" } })]
+    public void Real_cli_invocations_match(string[] cmdline)
+        => Assert.True(ProcessCmdline.Matches(cmdline, Exe));
+
     [Fact]
     public void Empty_cmdline_is_not_a_match()
     {

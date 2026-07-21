@@ -310,8 +310,20 @@ public partial class ConfigViewModel : ObservableObject
     private Task ApplySocksAuth() =>
         RunAsync(async () =>
         {
-            await _config.SetSocksUsernameAsync(SocksUsername.Trim());
-            return await _config.SetSocksPasswordAsync(SocksPassword);
+            var saved = await _config.SetSocksUsernameAsync(SocksUsername.Trim());
+            // Пустое поле пароля — «меняем только логин», а не «сбросить пароль»: после
+            // успешного применения поле очищается, и повторное «Применить» (поправить
+            // опечатку в логине) иначе отправило бы в CLI пустой пароль. Сброс
+            // аутентификации делает отдельная команда ClearSocksAuth.
+            if (SocksPassword.Length > 0)
+            {
+                saved = await _config.SetSocksPasswordAsync(SocksPassword);
+                // Убираем пароль из формы: он уже применён, и незачем держать его на
+                // экране и в скриншотах. Гарантией затирания памяти это не является —
+                // прежний экземпляр string живёт до сборки мусора (и в undo-стеке TextBox).
+                SocksPassword = "";
+            }
+            return saved;
         });
 
     [RelayCommand]

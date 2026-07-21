@@ -28,28 +28,23 @@ public sealed class ExclusionsStore
 
     public void Save(SiteExclusionMode mode, IEnumerable<string> domains)
     {
-        Directory.CreateDirectory(_dir);
-        WriteAtomic(FilePath(mode), DomainNormalizer.Normalize(domains));
+        WriteDomains(FilePath(mode), DomainNormalizer.Normalize(domains), secureDirectory: true);
     }
 
     /// <summary>Экспорт в произвольный файл (.vantah/.txt) — newline, нормализовано.</summary>
     public void Export(string path, IEnumerable<string> domains)
     {
-        var dir = Path.GetDirectoryName(path);
-        if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-        WriteAtomic(path, DomainNormalizer.Normalize(domains));
+        // Каталог выбирает пользователь — его права не поджимаем, только сам файл пишем приватным.
+        WriteDomains(path, DomainNormalizer.Normalize(domains), secureDirectory: false);
     }
 
     /// <summary>Импорт из newline-файла — нормализовано.</summary>
     public IReadOnlyList<string> Import(string path) =>
         DomainNormalizer.Normalize(File.ReadAllLines(path));
 
-    private static void WriteAtomic(string path, IReadOnlyList<string> normalized)
+    private static void WriteDomains(string path, IReadOnlyList<string> normalized, bool secureDirectory)
     {
-        var dir = Path.GetDirectoryName(path)!;
         var content = normalized.Count == 0 ? "" : string.Join('\n', normalized) + "\n";
-        var tmp = Path.Combine(dir, $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
-        File.WriteAllText(tmp, content);
-        File.Move(tmp, path, overwrite: true);
+        SecureFile.WriteAllText(path, content, secureDirectory);
     }
 }

@@ -44,7 +44,7 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
     /// через /proc/&lt;pid&gt;/cmdline и <c>ps</c>. Ограничение CLI.
     /// </summary>
     public Task<VpnConfig> SetSocksUsernameAsync(string username, CancellationToken ct = default) =>
-        ApplyAsync(["config", "set-socks-username", username], ct);
+        ApplySensitiveAsync(["config", "set-socks-username", username], "set-socks-username", ct);
 
     /// <summary>
     /// Устанавливает SOCKS-пароль. ВНИМАНИЕ: adguardvpn-cli принимает пароль только позиционным
@@ -117,11 +117,12 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
     }
 
     /// <summary>
-    /// Как <see cref="ApplyAsync"/>, но для команд с чувствительными аргументами (пароль):
+    /// Как <see cref="ApplyAsync"/>, но для команд с чувствительными аргументами (логин/пароль):
     /// в fallback-сообщении об ошибке и в сообщении о таймауте используется <paramref name="safeLabel"/>,
-    /// а не сами <paramref name="args"/> — иначе, например, пароль из set-socks-password попал бы
-    /// в текст <see cref="ConfigCommandException"/> (fallback) либо <see cref="TimeoutException"/>
-    /// (её бросает <c>CliRunner</c>, включая args в сообщение), а оттуда — в UI/логи.
+    /// а не сами <paramref name="args"/> — иначе логин из set-socks-username или пароль из
+    /// set-socks-password попал бы в текст <see cref="ConfigCommandException"/> (fallback) либо
+    /// <see cref="TimeoutException"/> (её бросает <c>CliRunner</c>, включая args в сообщение),
+    /// а оттуда — в UI/логи.
     /// </summary>
     private async Task<VpnConfig> ApplySensitiveAsync(string[] args, string safeLabel, CancellationToken ct)
     {

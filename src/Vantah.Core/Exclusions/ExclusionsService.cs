@@ -17,13 +17,15 @@ public sealed class ExclusionsService(ICliRunner cli, ExclusionsStore store) : I
 
     public async Task AddAsync(string domain, CancellationToken ct = default)
     {
-        var r = await cli.RunAsync(["site-exclusions", "add", domain], QuickTimeout, ct);
+        // `--` — терминатор опций: домен всегда трактуется как позиционный аргумент,
+        // даже если строка начинается с «-» (проверено на adguardvpn-cli v1.7.13).
+        var r = await cli.RunAsync(["site-exclusions", "add", "--", domain], QuickTimeout, ct);
         if (!r.Ok) throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, $"не удалось добавить {domain}"));
     }
 
     public async Task RemoveAsync(string domain, CancellationToken ct = default)
     {
-        var r = await cli.RunAsync(["site-exclusions", "remove", domain], QuickTimeout, ct);
+        var r = await cli.RunAsync(["site-exclusions", "remove", "--", domain], QuickTimeout, ct);
         if (!r.Ok) throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, $"не удалось удалить {domain}"));
     }
 

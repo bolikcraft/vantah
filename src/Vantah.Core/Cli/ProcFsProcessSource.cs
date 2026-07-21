@@ -20,13 +20,28 @@ public sealed class ProcFsProcessSource(string executable, string procRoot = "/p
         var bootTime = ReadBootTime();
         if (bootTime is null) return [];
 
+        // UID, от чьего имени мы работаем, читаем лениво: если совпадений по cmdline нет вовсе,
+        // /proc/self/status трогать незачем.
+        int? ownUid = null;
+        var ownUidRead = false;
+
         var found = new List<RunningProcess>();
         foreach (var dir in EnumerateDirectories())
         {
             if (!int.TryParse(Path.GetFileName(dir), out var pid)) continue; // «self», «net», …
 
+            // Сперва cmdline: это копия из памяти процесса, тогда как status — самый дорогой файл
+            // procfs (десятки строк). Матчинг отсеивает почти все pid'ы, и UID для них читать не надо.
             var cmdline = ReadCmdline(dir);
             if (cmdline is null || !ProcessCmdline.Matches(cmdline, executable)) continue;
+
+            if (!ownUidRead)
+            {
+                ownUid = ReadUid(Path.Combine(procRoot, "self"));
+                ownUidRead = true;
+            }
+
+            if (ownUid is { } me && !IsOurs(dir, me)) continue;
 
             var startedAt = ReadStartedAt(dir, bootTime.Value);
             if (startedAt is null) continue; // умер, пока мы читали его каталог
@@ -57,6 +72,41 @@ public sealed class ProcFsProcessSource(string executable, string procRoot = "/p
             if (!line.StartsWith("btime ", StringComparison.Ordinal)) continue;
             if (long.TryParse(line.AsSpan(6).Trim(), out var seconds))
                 return DateTimeOffset.FromUnixTimeSeconds(seconds);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Можно ли считать процесс нашим. Чужие нас не касаются: их нельзя ни диагностировать, ни убить.
+    /// Исключение — root: привилегированный туннель поднимает наша же обёртка
+    /// «sudo -b env … adguardvpn-cli connect», он живёт под UID 0 и должен оставаться видимым
+    /// и завершаемым (kill_cmd = pkexec kill).
+    /// <para>
+    /// Политика при нечитаемом status асимметрична: СВОЙ UID неизвестен — фильтр не включается вовсе
+    /// (fail-open, см. <see cref="Scan"/>), чтобы на урезанном procfs не спрятать собственный туннель;
+    /// а вот ЧУЖОЙ процесс с нечитаемым status опознать нечем — его отбрасываем (fail-closed).
+    /// </para>
+    /// </summary>
+    private static bool IsOurs(string dir, int ownUid)
+    {
+        var uid = ReadUid(dir);
+        if (uid is null) return false;
+
+        return uid == ownUid || uid == 0;
+    }
+
+    /// <summary>Реальный UID процесса из /proc/PID/status (строка «Uid:\t&lt;real&gt;\t&lt;eff&gt;…»).</summary>
+    private static int? ReadUid(string dir)
+    {
+        var status = ReadText(Path.Combine(dir, "status"));
+        if (status is null) return null;
+
+        foreach (var line in status.Split('\n'))
+        {
+            if (!line.StartsWith("Uid:", StringComparison.Ordinal)) continue;
+            var parts = line[4..].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            return parts.Length > 0 && int.TryParse(parts[0], out var uid) ? uid : null;
         }
 
         return null;

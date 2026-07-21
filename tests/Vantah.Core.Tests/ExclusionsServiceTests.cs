@@ -29,7 +29,7 @@ public class ExclusionsServiceTests
         var cli = new FakeCliRunner();
         var svc = new ExclusionsService(cli, new ExclusionsStore(TempDir()));
         await svc.AddAsync("example.com");
-        Assert.Equal(new[] { "site-exclusions", "add", "example.com" }, cli.Calls[0]);
+        Assert.Equal(new[] { "site-exclusions", "add", "--", "example.com" }, cli.Calls[0]);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class ExclusionsServiceTests
         var cli = new FakeCliRunner();
         var svc = new ExclusionsService(cli, new ExclusionsStore(TempDir()));
         await svc.RemoveAsync("example.com");
-        Assert.Equal(new[] { "site-exclusions", "remove", "example.com" }, cli.Calls[0]);
+        Assert.Equal(new[] { "site-exclusions", "remove", "--", "example.com" }, cli.Calls[0]);
     }
 
     [Fact]
@@ -76,8 +76,8 @@ public class ExclusionsServiceTests
             Assert.Equal(new[] { "site-exclusions", "mode", "selective" }, cli.Calls[0]);
 
             // 3) переприменены домены целевого режима из файла
-            Assert.Equal(new[] { "site-exclusions", "add", "bank.example" }, cli.Calls[1]);
-            Assert.Equal(new[] { "site-exclusions", "add", "gov.example" }, cli.Calls[2]);
+            Assert.Equal(new[] { "site-exclusions", "add", "--", "bank.example" }, cli.Calls[1]);
+            Assert.Equal(new[] { "site-exclusions", "add", "--", "gov.example" }, cli.Calls[2]);
         }
         finally { if (Directory.Exists(dir)) Directory.Delete(dir, true); }
     }

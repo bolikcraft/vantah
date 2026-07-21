@@ -26,11 +26,6 @@ public sealed class FavoritesStore
 
     public void Save(IEnumerable<string> keys)
     {
-        var dir = Path.GetDirectoryName(_path)!;
-        Directory.CreateDirectory(dir);
-        // Атомарная запись: сначала во временный файл в той же директории, затем move поверх.
-        var tmp = Path.Combine(dir, $".{Path.GetFileName(_path)}.{Guid.NewGuid():N}.tmp");
-        File.WriteAllText(tmp, JsonSerializer.Serialize(keys.Distinct().ToArray()));
-        File.Move(tmp, _path, overwrite: true);
+        SecureFile.WriteAllText(_path, JsonSerializer.Serialize(keys.Distinct().ToArray()));
     }
 }

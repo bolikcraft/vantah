@@ -30,12 +30,7 @@ public sealed class ActiveSessionStore
 
     public void Save(ActiveSessionState state)
     {
-        var dir = Path.GetDirectoryName(_path)!;
-        Directory.CreateDirectory(dir);
-        // Атомарная запись: сначала во временный файл в той же директории, затем move поверх.
-        var tmp = Path.Combine(dir, $".{Path.GetFileName(_path)}.{Guid.NewGuid():N}.tmp");
-        File.WriteAllText(tmp, JsonSerializer.Serialize(state, JsonOptions));
-        File.Move(tmp, _path, overwrite: true);
+        SecureFile.WriteAllText(_path, JsonSerializer.Serialize(state, JsonOptions));
     }
 
     /// <summary>Активной сессии больше нет (её завершили и перенесли в историю).</summary>

@@ -27,6 +27,20 @@ public class SystemProcessMonitorTests
         }
     }
 
+    /// <summary>Источник со сценарием: первый скан отдаёт одно, все следующие — другое.</summary>
+    private sealed class ScriptedSource(IReadOnlyList<RunningProcess> first, IReadOnlyList<RunningProcess> then)
+        : IProcessSource
+    {
+        private bool _used;
+
+        public IReadOnlyList<RunningProcess> Scan()
+        {
+            if (_used) return then;
+            _used = true;
+            return first;
+        }
+    }
+
     private static RunningProcess Proc(int pid, params string[] args) =>
         new(pid, pid, "adguardvpn-cli", args, DateTimeOffset.UnixEpoch.AddSeconds(pid));
 
@@ -102,7 +116,9 @@ public class SystemProcessMonitorTests
         var killer = new FakeKiller();
         var source = new FakeSource { Processes = { Proc(10) } };
         var monitor = new SystemProcessMonitor(source, killer);
-        source.Processes.Clear(); // убийца сработал — процесса больше нет
+        // Процесс исчез между опросом и кликом: сверка личности провалится и убийца не вызовется.
+        // Проверяем, что Refresh() всё равно происходит — строка уходит и на неподтверждённом пути.
+        source.Processes.Clear();
 
         await monitor.KillAsync(10);
 
@@ -120,6 +136,71 @@ public class SystemProcessMonitorTests
 
         Assert.False(killed);
         Assert.Empty(killer.Killed);
+    }
+
+    [Fact]
+    public async Task KillAsync_does_not_signal_when_the_process_vanished_after_the_snapshot()
+    {
+        // Снимок обновляется по таймеру: процесс мог умереть сам, а pid — уйти чужому.
+        var proc = new RunningProcess(1, 4242, "adguardvpn-cli", [], DateTimeOffset.UnixEpoch);
+        var killer = new FakeKiller();
+        var monitor = new SystemProcessMonitor(new ScriptedSource([proc], []), killer);
+
+        var killed = await monitor.KillAsync(proc.Id);
+
+        Assert.False(killed);
+        Assert.Empty(killer.Killed);
+    }
+
+    [Fact]
+    public async Task KillAsync_does_not_signal_when_the_pid_was_reused_by_another_process()
+    {
+        var original = new RunningProcess(1, 4242, "adguardvpn-cli", [], DateTimeOffset.UnixEpoch);
+        var reused = new RunningProcess(1, 4242, "adguardvpn-cli", [], DateTimeOffset.UnixEpoch.AddHours(5));
+        var killer = new FakeKiller();
+        var monitor = new SystemProcessMonitor(new ScriptedSource([original], [reused]), killer);
+
+        var killed = await monitor.KillAsync(original.Id);
+
+        Assert.False(killed);
+        Assert.Empty(killer.Killed);
+    }
+
+    [Fact]
+    public async Task KillAsync_signals_when_the_identity_still_matches()
+    {
+        var proc = new RunningProcess(1, 4242, "adguardvpn-cli", [], DateTimeOffset.UnixEpoch);
+        var killer = new FakeKiller();
+        var monitor = new SystemProcessMonitor(new ScriptedSource([proc], [proc]), killer);
+
+        Assert.True(await monitor.KillAsync(proc.Id));
+        Assert.Equal([4242], killer.Killed);
+    }
+
+    [Fact]
+    public async Task KillAllAsync_skips_the_rows_whose_identity_no_longer_matches()
+    {
+        var alive = Proc(10);
+        var reused = Proc(11) with { StartedAt = DateTimeOffset.UnixEpoch.AddHours(5) };
+        var killer = new FakeKiller();
+        var monitor = new SystemProcessMonitor(new ScriptedSource([alive, Proc(11)], [alive, reused]), killer);
+
+        await monitor.KillAllAsync();
+
+        Assert.Equal([10], killer.Killed);
+    }
+
+    [Fact]
+    public async Task KillAllAsync_confirms_identity_with_a_single_rescan()
+    {
+        // N процессов не должны стоить N проходов по /proc.
+        var source = new FakeSource { Processes = { Proc(10), Proc(11), Proc(12) } };
+        var monitor = new SystemProcessMonitor(source, new FakeKiller());
+        var before = source.Scans;
+
+        await monitor.KillAllAsync();
+
+        Assert.Equal(2, source.Scans - before); // один на сверку личности + один на Refresh
     }
 
     [Fact]

@@ -44,6 +44,33 @@ interface.
   adguardvpn-cli login
   ```
 
+## Configuration and trust model
+
+Vantah reads an optional INI file at `~/.config/vantah/vantah.conf` (you create it
+yourself; without it the defaults apply):
+
+```ini
+# Which binary to run as the CLI: a name looked up in PATH or an absolute path.
+adguard_cmd = adguardvpn-cli
+
+# Optional command used to force-terminate a CLI process; the PID is appended as
+# the last argument. Without this key Vantah signals the process itself via kill(2).
+# The template is split on spaces — quoting and paths with spaces are not supported.
+kill_cmd = pkexec kill
+```
+
+The same two values can be supplied through the `VANTAH_ADGUARD_CMD` and
+`VANTAH_KILL_CMD` environment variables; if a key is set in both places, the
+config file wins.
+
+Both values are executed as given — Vantah does not validate, restrict, or
+sandbox them, and the usual `kill_cmd` runs through `pkexec`, that is **with
+elevated privileges**. The config file is therefore a trust boundary: anyone able
+to write to it can make Vantah run an arbitrary command on your behalf. Keep
+`~/.config/vantah` owned by your user and not writable by anyone else — Vantah
+creates that directory with `0700` permissions (and tightens an existing one)
+when it writes its own files there.
+
 ## Features
 
 - **Connection.** Connect / disconnect, "fastest location", IP protocol choice
