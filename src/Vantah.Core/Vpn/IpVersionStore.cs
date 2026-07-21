@@ -26,7 +26,6 @@ public sealed class IpVersionStore
 
     public void Save(IpVersionPreference value)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-        File.WriteAllText(_path, value.ToString());
+        SecureFile.WriteAllText(_path, value.ToString());
     }
 }

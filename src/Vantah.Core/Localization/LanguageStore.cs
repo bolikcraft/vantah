@@ -26,7 +26,6 @@ public sealed class LanguageStore
 
     public void Save(string code)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-        File.WriteAllText(_path, code.Trim());
+        SecureFile.WriteAllText(_path, code.Trim());
     }
 }

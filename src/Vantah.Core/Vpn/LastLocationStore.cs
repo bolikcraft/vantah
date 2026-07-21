@@ -26,7 +26,6 @@ public sealed class LastLocationStore
     public void Save(string? location)
     {
         if (string.IsNullOrWhiteSpace(location)) return;
-        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
-        File.WriteAllText(_path, location.Trim());
+        SecureFile.WriteAllText(_path, location.Trim());
     }
 }

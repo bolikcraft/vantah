@@ -40,13 +40,7 @@ public sealed class ConnectionHistoryStore
     public void Save(IEnumerable<ConnectionHistoryEntry> entries)
     {
         var capped = entries.Take(MaxEntries).ToArray();
-        var dir = Path.GetDirectoryName(_path)!;
-        Directory.CreateDirectory(dir);
-
         var lines = capped.Select(e => JsonSerializer.Serialize(e, JsonOptions));
-        // Атомарная запись: сначала во временный файл в той же директории, затем move поверх.
-        var tmp = Path.Combine(dir, $".{Path.GetFileName(_path)}.{Guid.NewGuid():N}.tmp");
-        File.WriteAllLines(tmp, lines);
-        File.Move(tmp, _path, overwrite: true);
+        SecureFile.WriteAllLines(_path, lines);
     }
 }
