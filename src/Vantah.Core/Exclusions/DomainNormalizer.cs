@@ -25,7 +25,13 @@ public static class DomainNormalizer
     // (напр. «No exclusions configured»); оно ослаблено ровно на один случай — строка является
     // IPv6-литералом, который adguardvpn-cli принимает как исключение (site-exclusions add
     // --help: `IPv6Address`, `[IPv6Address]`, `[IPv6Address]:port`, `IPv6Address/mask`).
-    private static bool IsAcceptableDomain(string s) =>
+    /// <summary>
+    /// Похожа ли строка на исключение, которое имеет смысл отдавать CLI (домен, маска, IP-литерал).
+    /// Тот же предикат, что фильтрует импорт файла и вывод CLI в <see cref="Normalize"/>;
+    /// открыт наружу, чтобы ручной ввод в UI проверялся ровно по тем же правилам.
+    /// Строка должна быть уже обрезана (<see cref="string.Trim()"/>).
+    /// </summary>
+    public static bool IsAcceptableDomain(string s) =>
         s.Length > 0 && s.Length <= 253 &&
         !s.StartsWith('-') &&
         !s.Contains(' ') &&

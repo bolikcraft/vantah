@@ -75,6 +75,7 @@ public static class LocKeys
     public const string Domains_ImportDialogTitle = "Domains_ImportDialogTitle";
     public const string Domains_ClearConfirmTitle = "Domains_ClearConfirmTitle";
     public const string Domains_ClearConfirmMessage = "Domains_ClearConfirmMessage";
+    public const string Domains_InvalidEntry = "Domains_InvalidEntry";
 
     // Вкладка «Лицензия»
     public const string License_Account = "License_Account";
