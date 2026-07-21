@@ -23,6 +23,16 @@ interface.
 > trademark owners. The name "Vantah" deliberately does not contain the word
 > "AdGuard".
 
+## Screenshots
+
+| Status | Locations |
+| --- | --- |
+| ![Status tab](assets/screenshots/status.png) | ![Locations tab](assets/screenshots/locations.png) |
+
+| Site exclusions | Settings |
+| --- | --- |
+| ![Domains tab](assets/screenshots/domains.png) | ![Settings window](assets/screenshots/settings.png) |
+
 ## Requirements
 
 - The `adguardvpn-cli` tool installed and available on your `PATH`.
@@ -53,6 +63,35 @@ interface.
 - **Convenience.** System tray (window and tray share one state), UI language
   switching, CLI update checks, log export, and viewing/terminating CLI
   processes.
+
+## Download
+
+Ready-made builds for Linux x86-64 are published on the
+[releases page](https://github.com/bolikcraft/vantah/releases/latest). No .NET
+runtime is required — everything is bundled inside.
+
+**AppImage** — download, make it executable, run:
+
+```bash
+chmod +x Vantah-*-x86_64.AppImage
+./Vantah-*-x86_64.AppImage
+```
+
+**tar.gz** — unpack and run the `vantah` binary:
+
+```bash
+tar -xzf vantah-*-linux-x64.tar.gz
+./vantah-*-linux-x64/vantah
+```
+
+Every asset ships with a `.sha256` file next to it; verify the download with:
+
+```bash
+sha256sum -c Vantah-*-x86_64.AppImage.sha256
+```
+
+To get an application-menu entry with an icon, build from source and run
+[`packaging/install.sh`](#installing-into-the-application-menu).
 
 ## Building and running for development
 
@@ -118,8 +157,9 @@ Windows and macOS, so there is no point duplicating them.
 
 - IP-address and region leak detection — verifying that traffic actually goes
   through the VPN.
-- Packaging and distribution: AppImage, rpm/deb (currently there is
-  `packaging/install.sh` plus application-menu integration).
+- Packaging and distribution: rpm/deb (AppImage and tar.gz are already published
+  with every release, and there is `packaging/install.sh` plus application-menu
+  integration).
 
 ## License
 

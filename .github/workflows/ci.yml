@@ -1,0 +1,46 @@
+name: CI
+
+# Быстрая проверка кода на каждое изменение main:
+#   * push в main — что попало в основную ветку, то и собирается;
+#   * pull_request в main — проверяем ветку до слияния.
+# Пакеты/релизы тут не собираем, для этого есть release.yml.
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Один прогон на ветку: новый push отменяет устаревший прогон, чтобы не жечь минуты.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore --nologo
+
+      # Тесты Vantah.App.Tests крутят Avalonia через Avalonia.Headless
+      # (AvaloniaHeadlessPlatformOptions без UseSkia), то есть рисуют в заглушку и не
+      # открывают ни одного окна. Ни X-сервера, ни xvfb-run на раннере не нужно —
+      # проверено локальным прогоном с погашенными DISPLAY/WAYLAND_DISPLAY.
+      - name: Test
+        run: dotnet test -c Release --no-build --nologo
