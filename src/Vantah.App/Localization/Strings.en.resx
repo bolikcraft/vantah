@@ -438,6 +438,18 @@
   <data name="Settings_Autostart" xml:space="preserve">
     <value>Launch on system login</value>
   </data>
+  <data name="Settings_CheckAppUpdates" xml:space="preserve">
+    <value>Check for Vantah updates</value>
+  </data>
+  <data name="Update_Available" xml:space="preserve">
+    <value>A new version of Vantah is available — {0}</value>
+  </data>
+  <data name="Update_Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="Update_Dismiss" xml:space="preserve">
+    <value>Hide this version</value>
+  </data>
 
   <!-- Меню «☰» -->
   <data name="Menu_Tooltip" xml:space="preserve">

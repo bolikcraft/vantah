@@ -28,17 +28,35 @@
     </Style>
   </Window.Styles>
 
-  <Grid>
+  <!-- Верхняя строка — плашка об обновлении Vantah; она вне логин-гейта и видна и на форме входа. -->
+  <Grid RowDefinitions="Auto,*">
+
+    <Border x:Name="UpdateBannerHost" Grid.Row="0"
+            Background="#333B82F6" CornerRadius="6" Padding="10" Margin="10,10,10,0"
+            IsVisible="{Binding UpdateBanner.IsVisible, FallbackValue=False}">
+      <DockPanel LastChildFill="True">
+        <Button DockPanel.Dock="Right" Margin="8,0,0,0"
+                Command="{Binding UpdateBanner.DismissCommand}"
+                Content="✕"
+                Background="Transparent"
+                ToolTip.Tip="{Binding [Update_Dismiss], Source={x:Static loc:Localizer.Instance}}"/>
+        <Button DockPanel.Dock="Right"
+                Command="{Binding UpdateBanner.OpenReleaseCommand}"
+                Content="{Binding [Update_Download], Source={x:Static loc:Localizer.Instance}}"/>
+        <TextBlock VerticalAlignment="Center" TextWrapping="Wrap"
+                   Text="{Binding UpdateBanner.Text}"/>
+      </DockPanel>
+    </Border>
 
     <!-- Пока не выполнен вход — форма входа поверх всего, рабочий UI скрыт.
          Гейт держим на обёртке: у самой LoginView DataContext = Login, и IsLoggedIn
          (свойство MainWindowViewModel) на ней бы не разрешился. -->
-    <Border IsVisible="{Binding !IsLoggedIn}">
+    <Border x:Name="LoginGate" Grid.Row="1" IsVisible="{Binding !IsLoggedIn}">
       <v:LoginView DataContext="{Binding Login}"/>
     </Border>
 
     <!-- Рабочий UI виден только при выполненном входе. -->
-    <Grid IsVisible="{Binding IsLoggedIn}">
+    <Grid x:Name="WorkingArea" Grid.Row="1" IsVisible="{Binding IsLoggedIn}">
 
     <!-- Служебные экраны («Процессы», «Настройки», «Лицензия», «О программе») живут не во вкладках,
          а в меню «☰» и открываются отдельными окнами: в полосе остаются три рабочие вкладки. -->

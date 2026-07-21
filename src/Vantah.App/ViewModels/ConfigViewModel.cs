@@ -34,6 +34,7 @@ public partial class ConfigViewModel : ObservableObject
     private readonly Func<Task<string?>> _pickFolder;
     private readonly AutoConnectStore _autoConnect;
     private readonly AutostartService _autostart;
+    private readonly AppUpdateService? _appUpdates;
     private bool _lastRadioWasFastest;
 
     // Подавляет авто-применение, пока форму заполняем программно: иначе загрузка конфига
@@ -48,7 +49,8 @@ public partial class ConfigViewModel : ObservableObject
         ILogExporter logs,
         Func<Task<string?>> pickFolder,
         AutoConnectStore? autoConnect = null,
-        AutostartService? autostart = null)
+        AutostartService? autostart = null,
+        AppUpdateService? appUpdates = null)
     {
         _config = config;
         _languageStore = languageStore;
@@ -62,6 +64,9 @@ public partial class ConfigViewModel : ObservableObject
         _autostart = autostart ?? new AutostartService(
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "autostart"),
             Environment.ProcessPath ?? "vantah", "vantah");
+        // Проверка обновлений самого Vantah тоже опциональна: без неё тумблер просто
+        // показывает значение по умолчанию и никуда не пишет.
+        _appUpdates = appUpdates;
 
         // Пишем в backing-поле, а не в свойство: стартовый язык — не выбор пользователя,
         // сохранять его в ~/.config/vantah/language незачем.
@@ -82,6 +87,7 @@ public partial class ConfigViewModel : ObservableObject
             AutoConnectUseFastest = mode == AutoConnectMode.Fastest;
             _lastRadioWasFastest = AutoConnectUseFastest;
             AutostartEnabled = _autostart.IsEnabled();
+            CheckAppUpdates = _appUpdates?.Enabled ?? true;
         }
         finally { _loading = false; }
 
@@ -138,6 +144,7 @@ public partial class ConfigViewModel : ObservableObject
     [ObservableProperty] private bool _autoConnectEnabled;
     [ObservableProperty] private bool _autoConnectUseFastest;
     [ObservableProperty] private bool _autostartEnabled;
+    [ObservableProperty] private bool _checkAppUpdates = true;
 
     partial void OnAutoConnectEnabledChanged(bool value) => PersistAutoConnect();
 
@@ -152,6 +159,12 @@ public partial class ConfigViewModel : ObservableObject
     {
         if (_loading) return;
         if (value) _autostart.Enable(); else _autostart.Disable();
+    }
+
+    partial void OnCheckAppUpdatesChanged(bool value)
+    {
+        if (_loading || _appUpdates is null) return;
+        _appUpdates.Enabled = value;
     }
 
     // Единственный источник истины — AutoConnectStore: чекбокс и радиокнопка «сжимаются»

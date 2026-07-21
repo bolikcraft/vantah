@@ -158,6 +158,8 @@
             </StackPanel>
             <CheckBox IsChecked="{Binding AutostartEnabled}"
                       Content="{Binding [Settings_Autostart], Source={x:Static loc:Localizer.Instance}}"/>
+            <CheckBox IsChecked="{Binding CheckAppUpdates}"
+                      Content="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"/>
           </StackPanel>
         </Border>
 

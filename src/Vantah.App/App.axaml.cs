@@ -88,6 +88,13 @@ public partial class App : Application
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "autostart"),
                 Environment.ProcessPath ?? "vantah", "vantah");
 
+            // Проверка обновлений самого Vantah (не путать с updateChecker выше — тот про CLI).
+            // Версию берём ту же, что показывает «О программе».
+            var appVersion = AboutViewModel.CurrentVersion;
+            var appUpdates = new AppUpdateService(
+                new GitHubReleaseSource(appVersion), new AppUpdateStore(), appVersion);
+            var updateBanner = new UpdateBannerViewModel(appUpdates);
+
             // Пикер папки для выгрузки логов работает через StorageProvider окна, а окно
             // создаётся ниже — вьюмодели передаём отложенную ссылку, замыкание её увидит позже.
             Window? mainWindowRef = null;
@@ -105,15 +112,19 @@ public partial class App : Application
                 new ConfigViewModel(
                     vpnConfig, store, languageStore, updateChecker, logExporter,
                     () => PickLogFolderAsync(mainWindowRef),
-                    autoConnectStore, autostart),
+                    autoConnectStore, autostart, appUpdates),
                 login,
-                auth, coordinator, store);
+                auth, coordinator, store, updateBanner);
 
             var window = new MainWindow { DataContext = mainVm };
             mainWindowRef = window;
             desktop.MainWindow = window;
             // Ссылку авторизации открываем системным браузером через Launcher окна.
             login.BrowserOpener = url => window.Launcher.LaunchUriAsync(new Uri(url));
+            updateBanner.BrowserOpener = url => window.Launcher.LaunchUriAsync(new Uri(url));
+
+            // Проверка обновлений — фоном и без ожидания: старт и автоподключение она не задерживает.
+            _ = CheckAppUpdateAsync(appUpdates, updateBanner);
 
             // Системный трей + сворачивание окна вместо выхода. Иконки цветные (серый /
             // янтарный / зелёный) — знак среднего тона читается и на светлой, и на тёмной
@@ -159,6 +170,22 @@ public partial class App : Application
     {
         try { await coordinator.PollOnceAsync(); }
         catch { /* тик опроса не должен ронять UI-поток */ }
+    }
+
+    // Проверка новой версии Vantah при старте. Результат кладём в плашку только через
+    // Dispatcher: заполнение привязанных свойств из фонового потока в UI не доезжает.
+    private static async Task CheckAppUpdateAsync(AppUpdateService updates, UpdateBannerViewModel banner)
+    {
+        try
+        {
+            var info = await updates.CheckAsync(DateTimeOffset.UtcNow);
+            if (info is null) return;
+            Dispatcher.UIThread.Post(() => banner.Show(info));
+        }
+        catch
+        {
+            // Проверка обновлений необязательна и не должна ронять старт приложения.
+        }
     }
 
     // Папка для выгрузки логов — через системный диалог окна; без окна (или без поддержки

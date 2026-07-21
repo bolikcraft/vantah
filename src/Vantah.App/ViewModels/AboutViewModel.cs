@@ -34,7 +34,10 @@ public partial class AboutViewModel : ObservableObject
         _ = LoadCliVersionAsync(CancellationToken.None);
     }
 
-    public string AppVersion { get; } = ReadAppVersion();
+    /// <summary>Версия сборки — общая для экрана «О программе» и проверки обновлений.</summary>
+    public static string CurrentVersion { get; } = ReadAppVersion();
+
+    public string AppVersion => CurrentVersion;
 
     public string Repository => RepositoryUrl;
 

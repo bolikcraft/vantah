@@ -1,22 +1,11 @@
-using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
-using Vantah.App.Localization;
-using Vantah.App.Services;
 using Vantah.App.Tests.Fakes;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
-using Vantah.Core.Auth;
-using Vantah.Core.Exclusions;
-using Vantah.Core.Favorites;
-using Vantah.Core.History;
-using Vantah.Core.Logs;
 using Vantah.Core.Models;
 using Vantah.Core.State;
-using Vantah.Core.Traffic;
-using Vantah.Core.Vpn;
 using Xunit;
 
 /// <summary>
@@ -28,43 +17,21 @@ public class MainWindowLoginGateTests
 {
     private static (MainWindow Window, AppStateStore Store, FakeAuthService Auth) ShowWith(LoginState state)
     {
-        var temp = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vantah-tests", System.Guid.NewGuid().ToString("N"));
         var store = new AppStateStore();
-        store.Set(s => s with { LoginState = state });
-
-        var runner = new FakeCliRunner();
-        var vpn = new VpnService(runner);
-        var ipVersionStore = new IpVersionStore(System.IO.Path.Combine(temp, "ip-version"));
         var auth = new FakeAuthService { State = state };
-        var coordinator = new VpnCoordinator(
-            vpn, new TrafficMonitor(new FakeTrafficReader()), store,
-            new ConnectionHistoryTracker(
-                new ConnectionHistoryStore(System.IO.Path.Combine(temp, "history")),
-                new ActiveSessionStore(System.IO.Path.Combine(temp, "connection-active"))),
-            ipVersionStore, auth);
-        var exclusionsStore = new ExclusionsStore(System.IO.Path.Combine(temp, "site-exclusions"));
-
-        var vm = new MainWindowViewModel(
-            new StatusViewModel(coordinator, store, new VpnLogReader(System.IO.Path.Combine(temp, "vpn.log")),
-                new HistoryViewModel(coordinator, store), ipVersionStore),
-            new LocationsViewModel(vpn, coordinator, new FavoritesStore(System.IO.Path.Combine(temp, "favorites.json")), store),
-            new DomainsViewModel(new ExclusionsService(runner, exclusionsStore), exclusionsStore, store),
-            new LicenseViewModel(vpn), new AboutViewModel(vpn), new ProcessesViewModel(new StubMonitor()),
-            new ConfigViewModel(new FakeConfigService(), store, new Vantah.Core.Localization.LanguageStore(System.IO.Path.Combine(temp, "language")),
-                new FakeUpdateChecker(), new FakeLogExporter(), () => System.Threading.Tasks.Task.FromResult<string?>(null)),
-            new LoginViewModel(auth, coordinator), auth, coordinator, store);
-
-        var window = new MainWindow { DataContext = vm };
+        var window = Vantah.App.Tests.MainWindowFactory.Build(state, store, auth);
         window.Show();
         Dispatcher.UIThread.RunJobs();
         return (window, store, auth);
     }
 
+    // Ищем по именам, а не по типу: в корневой сетке рядом с гейтом лежит ещё и Border плашки
+    // об обновлении, и OfType<Border>().Single() на нём бы упал.
     private static Border LoginWrapper(MainWindow window) =>
-        ((Grid)window.Content!).Children.OfType<Border>().Single();
+        window.FindControl<Border>("LoginGate")!;
 
     private static Grid WorkingArea(MainWindow window) =>
-        ((Grid)window.Content!).Children.OfType<Grid>().Single();
+        window.FindControl<Grid>("WorkingArea")!;
 
     [AvaloniaFact]
     public void Logged_out_shows_login_form_and_hides_working_ui()

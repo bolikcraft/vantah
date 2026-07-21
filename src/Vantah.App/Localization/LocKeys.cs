@@ -149,6 +149,12 @@ public static class LocKeys
     public const string Settings_AutoConnectLast = "Settings_AutoConnectLast";
     public const string Settings_AutoConnectFastest = "Settings_AutoConnectFastest";
     public const string Settings_Autostart = "Settings_Autostart";
+    public const string Settings_CheckAppUpdates = "Settings_CheckAppUpdates";
+
+    // Плашка «доступна новая версия Vantah» в главном окне
+    public const string Update_Available = "Update_Available";
+    public const string Update_Download = "Update_Download";
+    public const string Update_Dismiss = "Update_Dismiss";
 
     // Выбор языка
     public const string Lang_Label = "Lang_Label";
