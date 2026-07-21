@@ -127,13 +127,15 @@ public partial class App : Application
             desktop.MainWindow = window;
             // Ссылку авторизации открываем системным браузером через Launcher окна.
             // Открываем только http/https: страховка на случай изменения парсера ссылки.
-            Task OpenInBrowser(string url)
-            {
-                var uri = new Uri(url);
-                return uri.Scheme is "http" or "https"
+            // TryCreate вместо new Uri — кривая ссылка не должна ронять команду баннера
+            // обновлений (там нет try/catch, исключение утекло бы в AsyncRelayCommand).
+            // Отказ намеренно тихий: механизма логирования в приложении нет, а ссылка
+            // из CLI и так проверена регуляркой https?:// в DeviceCodeParser — сюда
+            // попадём только при будущем регрессе парсера.
+            Task OpenInBrowser(string url) =>
+                Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https"
                     ? window.Launcher.LaunchUriAsync(uri)
-                    : Task.FromResult(false);
-            }
+                    : Task.CompletedTask;
 
             login.BrowserOpener = OpenInBrowser;
             updateBanner.BrowserOpener = OpenInBrowser;

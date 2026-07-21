@@ -24,8 +24,8 @@ public sealed class AutostartService
             "[Desktop Entry]\n" +
             "Type=Application\n" +
             "Name=Vantah\n" +
-            $"Exec={QuoteExec(SingleLine(_execCommand))}\n" +
-            $"Icon={SingleLine(_iconName)}\n" +
+            $"Exec={QuoteExec(StripNewlines(_execCommand))}\n" +
+            $"Icon={StripNewlines(_iconName)}\n" +
             "Terminal=false\n" +
             "StartupWMClass=Vantah.App\n" +
             "X-GNOME-Autostart-enabled=true\n";
@@ -39,7 +39,7 @@ public sealed class AutostartService
 
     // Значение ключа Desktop Entry — ровно одна строка: перевод строки внутри значения
     // вырвался бы из неё и внедрил произвольные ключи (второй Exec=, Hidden= и т.п.).
-    private static string SingleLine(string s) => s.Replace("\r", "").Replace("\n", "");
+    private static string StripNewlines(string s) => s.Replace("\r", "").Replace("\n", "");
 
     private static string QuoteExec(string path)
     {

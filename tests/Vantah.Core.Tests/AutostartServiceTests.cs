@@ -70,6 +70,7 @@ public class AutostartServiceTests
     public void Exec_and_icon_cannot_inject_extra_desktop_keys()
     {
         var dir = TempDir();
+        var root = Path.GetDirectoryName(dir)!;   // .../vantah-tests/<guid> — убираем целиком
         try
         {
             var svc = new AutostartService(dir, "/usr/bin/vantah\nExec=/usr/bin/evil", "vantah\nHidden=true");
@@ -82,6 +83,6 @@ public class AutostartServiceTests
             Assert.DoesNotContain("Exec=/usr/bin/evil", lines);
             Assert.Contains("Icon=vantahHidden=true", lines);
         }
-        finally { if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true); }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
     }
 }
