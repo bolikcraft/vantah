@@ -267,6 +267,45 @@ public class ConfigServiceTests
         Assert.Contains("set-socks-password", ex.Message);
     }
 
+    [Fact]
+    public async Task Socks_username_is_not_leaked_in_error_message()
+    {
+        var cli = new FakeCliRunner().Enqueue(new CliResult(1, "", "internal error"));
+        var svc = new ConfigService(cli);
+
+        var ex = await Assert.ThrowsAsync<ConfigCommandException>(() => svc.SetSocksUsernameAsync("alice-secret"));
+
+        Assert.DoesNotContain("alice-secret", ex.Message);
+    }
+
+    // И stderr, и stdout пустые — срабатывает fallback-сообщение. Оно должно содержать
+    // безопасную метку команды, а не реальные args (в которых логин).
+    [Fact]
+    public async Task Socks_username_fallback_message_uses_safe_label()
+    {
+        var cli = new FakeCliRunner().Enqueue(new CliResult(1, "", ""));
+        var svc = new ConfigService(cli);
+
+        var ex = await Assert.ThrowsAsync<ConfigCommandException>(() => svc.SetSocksUsernameAsync("alice-secret"));
+
+        Assert.DoesNotContain("alice-secret", ex.Message);
+        Assert.Contains("set-socks-username", ex.Message);
+    }
+
+    // CliRunner при таймауте бросает TimeoutException, включающую args (и логин) в текст —
+    // ApplySensitiveAsync должен перехватывать это и переизлагать безопасным сообщением.
+    [Fact]
+    public async Task Socks_username_is_not_leaked_on_timeout()
+    {
+        var cli = new ThrowingTimeoutRunner();
+        var svc = new ConfigService(cli);
+
+        var ex = await Assert.ThrowsAsync<ConfigCommandException>(() => svc.SetSocksUsernameAsync("alice-secret"));
+
+        Assert.DoesNotContain("alice-secret", ex.Message);
+        Assert.Contains("set-socks-username", ex.Message);
+    }
+
     private sealed class ThrowingTimeoutRunner : ICliRunner
     {
         public Task<CliResult> RunAsync(string[] args, TimeSpan? timeout = null, CancellationToken ct = default) =>

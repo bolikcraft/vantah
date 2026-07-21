@@ -44,7 +44,7 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
     /// через /proc/&lt;pid&gt;/cmdline и <c>ps</c>. Ограничение CLI.
     /// </summary>
     public Task<VpnConfig> SetSocksUsernameAsync(string username, CancellationToken ct = default) =>
-        ApplyAsync(["config", "set-socks-username", username], ct);
+        ApplySensitiveAsync(["config", "set-socks-username", username], "set-socks-username", ct);
 
     /// <summary>
     /// Устанавливает SOCKS-пароль. ВНИМАНИЕ: adguardvpn-cli принимает пароль только позиционным
