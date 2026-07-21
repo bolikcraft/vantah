@@ -2,7 +2,7 @@ namespace Vantah.Core.Exclusions;
 
 public static class DomainNormalizer
 {
-    /// <summary>Trim, отбросить пустые, dedupe без учёта регистра (регистр первого вхождения сохраняется).</summary>
+    /// <summary>Trim, отбросить пустые и не-домены, dedupe без учёта регистра (регистр первого вхождения сохраняется).</summary>
     public static IReadOnlyList<string> Normalize(IEnumerable<string> domains)
     {
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -10,11 +10,21 @@ public static class DomainNormalizer
         foreach (var d in domains)
         {
             var trimmed = d.Trim();
-            if (trimmed.Length == 0) continue;
+            if (!IsAcceptableDomain(trimmed)) continue;
             if (seen.Add(trimmed)) result.Add(trimmed);
         }
         return result;
     }
+
+    // Отбрасываем всё, что не похоже на домен: строка, начинающаяся с «-», будет разобрана
+    // CLI как опция, а не как позиционный аргумент (option injection при импорте чужого файла).
+    // Требование точки — главный фильтр шумовых строк, поэтому оно не ослабляется.
+    private static bool IsAcceptableDomain(string s) =>
+        s.Length > 0 && s.Length <= 253 &&
+        !s.StartsWith('-') &&
+        !s.Contains(' ') &&
+        s.Contains('.') &&
+        s.All(c => char.IsLetterOrDigit(c) || c is '.' or '-' or '_' or '*' or ':' or '/');
 
     /// <summary>URL/токен из буфера → доменное имя (или null, если не домен). Порт adgui parseDomainFromClipboard.</summary>
     public static string? ParseUrlToDomain(string content)
