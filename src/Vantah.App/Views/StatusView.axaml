@@ -7,8 +7,13 @@
   <Grid Margin="16" RowDefinitions="Auto,*">
     <!--
       Скелетон вместо блока статуса, пока не пришёл первый ответ CLI: иначе на старте
-      секунду висит «Отключено», хотя статус ещё не опрошен. Геометрия плашек повторяет
-      реальные строки, чтобы блок не прыгал по высоте при появлении данных.
+      секунду висит «Отключено», хотя статус ещё не опрошен.
+
+      Высоты строк НЕ задаются числами: фиксированные Height подогнаны под конкретный
+      шрифт и на другой системе дают скачок при появлении данных. Вместо этого каждая
+      строка — Grid с невидимым образцом реального контрола (тот же TextBlock/Button/
+      ComboBox с теми же FontSize), а плашка растягивается по нему. Высота блока тогда
+      считается ровно теми же метриками шрифта, что и у заполненного состояния.
     -->
     <StackPanel x:Name="StatusSkeleton" Grid.Row="0" Spacing="8" HorizontalAlignment="Center"
                 IsVisible="{Binding IsStatusUnknown}">
@@ -19,20 +24,54 @@
           <Setter Property="CornerRadius" Value="4"/>
           <Setter Property="HorizontalAlignment" Value="Center"/>
         </Style>
+        <!-- Образцы задают только размер, на экране их не видно. -->
+        <Style Selector="StackPanel#StatusSkeleton :is(Control).ghost">
+          <Setter Property="Opacity" Value="0"/>
+          <Setter Property="IsHitTestVisible" Value="False"/>
+        </Style>
       </StackPanel.Styles>
-      <!-- Первая строка — не плашка, а текст: пользователю должно быть понятно, что происходит. -->
-      <TextBlock Text="{Binding [Status_Checking], Source={x:Static loc:Localizer.Instance}}"
-                 FontSize="18" FontWeight="SemiBold" Opacity="0.75" Height="30"
-                 HorizontalAlignment="Center" VerticalAlignment="Center"/>
-      <Border Classes="skeleton" Width="240" Height="22"/>
-      <Border Classes="skeleton" Width="160" Height="20"/>
-      <Border Classes="skeleton" Width="160" Height="20"/>
-      <Border Classes="skeleton" Width="200" Height="20"/>
-      <Border Classes="skeleton" Width="200" Height="20"/>
-      <Border Classes="skeleton" Width="180" Height="33" CornerRadius="6"/>
+
+      <!-- Заголовок: вместо плашки — текст, чтобы было понятно, что происходит. Высоту
+           держит невидимый образец заголовка (22/Bold), сам текст мельче. -->
+      <Grid HorizontalAlignment="Center">
+        <TextBlock Classes="ghost" Text="X" FontSize="22" FontWeight="Bold"/>
+        <TextBlock Text="{Binding [Status_Checking], Source={x:Static loc:Localizer.Instance}}"
+                   FontSize="15" FontWeight="SemiBold" Opacity="0.75"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Grid>
+      <Grid HorizontalAlignment="Center">
+        <TextBlock Classes="ghost" Text="X" FontSize="16"/>
+        <Border Classes="skeleton" Width="240"/>
+      </Grid>
+      <Grid HorizontalAlignment="Center">
+        <TextBlock Classes="ghost" Text="X"/>
+        <Border Classes="skeleton" Width="160"/>
+      </Grid>
+      <Grid HorizontalAlignment="Center">
+        <TextBlock Classes="ghost" Text="X"/>
+        <Border Classes="skeleton" Width="160"/>
+      </Grid>
+      <Grid HorizontalAlignment="Center">
+        <TextBlock Classes="ghost" Text="X"/>
+        <Border Classes="skeleton" Width="200"/>
+      </Grid>
+      <Grid HorizontalAlignment="Center">
+        <TextBlock Classes="ghost" Text="X"/>
+        <Border Classes="skeleton" Width="200"/>
+      </Grid>
+      <Grid HorizontalAlignment="Center">
+        <Button Classes="ghost" Content="X" Width="180"/>
+        <Border Classes="skeleton" Width="180" CornerRadius="6"/>
+      </Grid>
       <StackPanel Spacing="4" HorizontalAlignment="Center">
-        <Border Classes="skeleton" Width="120" Height="20"/>
-        <Border Classes="skeleton" Width="160" Height="32" CornerRadius="6"/>
+        <Grid HorizontalAlignment="Center">
+          <TextBlock Classes="ghost" Text="X" FontWeight="SemiBold"/>
+          <Border Classes="skeleton" Width="120"/>
+        </Grid>
+        <Grid HorizontalAlignment="Center">
+          <ComboBox Classes="ghost" Width="160"/>
+          <Border Classes="skeleton" Width="160" CornerRadius="6"/>
+        </Grid>
       </StackPanel>
     </StackPanel>
 

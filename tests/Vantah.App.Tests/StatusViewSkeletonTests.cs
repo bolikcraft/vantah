@@ -67,6 +67,32 @@ public class StatusViewSkeletonTests
         Assert.True(real.IsVisible);
     }
 
+    /// <summary>
+    /// Скелетон не должен «прыгать»: раньше высоты плашек были константами, подогнанными под
+    /// один шрифт, и на другом блок съезжал. Теперь их задают невидимые образцы контролов —
+    /// проверяем равенство высот, в том числе на нестандартном шрифте.
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData(null)]
+    [InlineData("DejaVu Sans")]
+    public void Skeleton_is_exactly_as_tall_as_the_filled_block(string? fontFamily)
+    {
+        var (vm, store) = MakeStatusVm();
+        var window = new Window { Content = new StatusView { DataContext = vm }, Width = 600, Height = 900 };
+        if (fontFamily is not null) window.FontFamily = new Avalonia.Media.FontFamily(fontFamily);
+        window.Show();
+        window.UpdateLayout();
+
+        var skeletonHeight = SkeletonPanel(window).Bounds.Height;
+        Assert.True(skeletonHeight > 0);
+
+        store.Set(s => s with { Connection = ConnectionState.Connected, LocationDisplay = "Amsterdam, Netherlands", Mode = "TUN" });
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+
+        Assert.Equal(skeletonHeight, RealStatusPanel(window).Bounds.Height);
+    }
+
     private static StackPanel SkeletonPanel(Window w) => Panel(w, "StatusSkeleton");
 
     private static StackPanel RealStatusPanel(Window w) => Panel(w, "StatusBlock");
