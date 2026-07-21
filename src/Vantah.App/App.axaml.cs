@@ -91,8 +91,14 @@ public partial class App : Application
             // Проверка обновлений самого Vantah (не путать с updateChecker выше — тот про CLI).
             // Версию берём ту же, что показывает «О программе».
             var appVersion = AboutViewModel.CurrentVersion;
+            // Основной источник — GitHub API, запасной — редирект web-морды: API без токена
+            // ограничен 60 запросами в час на IP, а наши пользователи сидят за общими адресами
+            // VPN и выбирают этот лимит чужим трафиком.
             var appUpdates = new AppUpdateService(
-                new GitHubReleaseSource(appVersion), new AppUpdateStore(), appVersion);
+                new FallbackReleaseSource(
+                    new GitHubReleaseSource(appVersion),
+                    new GitHubRedirectReleaseSource(appVersion)),
+                new AppUpdateStore(), appVersion);
             var updateBanner = new UpdateBannerViewModel(appUpdates);
 
             // Пикер папки для выгрузки логов работает через StorageProvider окна, а окно
