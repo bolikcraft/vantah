@@ -4,7 +4,8 @@ namespace Vantah.Core.State;
 
 public sealed record AppSnapshot
 {
-    public ConnectionState Connection { get; init; } = ConnectionState.Disconnected;
+    // До первого опроса CLI реальный статус неизвестен: показывать «Отключено» на старте нельзя.
+    public ConnectionState Connection { get; init; } = ConnectionState.Unknown;
     public string? Location { get; init; }
     public string? Mode { get; init; }
     public string? Interface { get; init; }

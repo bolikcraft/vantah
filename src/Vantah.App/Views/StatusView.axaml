@@ -5,7 +5,36 @@
              x:DataType="vm:StatusViewModel"
              x:Class="Vantah.App.Views.StatusView">
   <Grid Margin="16" RowDefinitions="Auto,*">
-    <StackPanel Grid.Row="0" Spacing="8" HorizontalAlignment="Center">
+    <!--
+      Скелетон вместо блока статуса, пока не пришёл первый ответ CLI: иначе на старте
+      секунду висит «Отключено», хотя статус ещё не опрошен. Геометрия плашек повторяет
+      реальные строки, чтобы блок не прыгал по высоте при появлении данных.
+    -->
+    <StackPanel x:Name="StatusSkeleton" Grid.Row="0" Spacing="8" HorizontalAlignment="Center"
+                IsVisible="{Binding IsStatusUnknown}">
+      <StackPanel.Styles>
+        <Style Selector="Border.skeleton">
+          <Setter Property="Background" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
+          <Setter Property="Opacity" Value="0.15"/>
+          <Setter Property="CornerRadius" Value="4"/>
+          <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+      </StackPanel.Styles>
+      <Border Classes="skeleton" Width="200" Height="30"/>
+      <Border Classes="skeleton" Width="240" Height="22"/>
+      <Border Classes="skeleton" Width="160" Height="20"/>
+      <Border Classes="skeleton" Width="160" Height="20"/>
+      <Border Classes="skeleton" Width="200" Height="20"/>
+      <Border Classes="skeleton" Width="200" Height="20"/>
+      <Border Classes="skeleton" Width="180" Height="33" CornerRadius="6"/>
+      <StackPanel Spacing="4" HorizontalAlignment="Center">
+        <Border Classes="skeleton" Width="120" Height="20"/>
+        <Border Classes="skeleton" Width="160" Height="32" CornerRadius="6"/>
+      </StackPanel>
+    </StackPanel>
+
+    <StackPanel x:Name="StatusBlock" Grid.Row="0" Spacing="8" HorizontalAlignment="Center"
+                IsVisible="{Binding !IsStatusUnknown}">
       <TextBlock Text="{Binding ConnectionText}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
       <TextBlock Text="{Binding Location}" FontSize="16" HorizontalAlignment="Center"/>
       <TextBlock Text="{Binding Mode}" Opacity="0.7" HorizontalAlignment="Center"/>

@@ -12,6 +12,8 @@ public class TrayIconResolverTests
     [InlineData(ConnectionState.Disconnected, "disconnected")]
     // Ошибка рисуется как «отключено»: туннеля нет, и иконка не должна намекать на обратное.
     [InlineData(ConnectionState.Error, "disconnected")]
+    // Статус ещё не опрошен — серый глиф, как и «отключено».
+    [InlineData(ConnectionState.Unknown, "disconnected")]
     public void Glyph_matches_state(ConnectionState state, string expected)
     {
         Assert.Equal(expected, TrayIconResolver.GlyphName(state));

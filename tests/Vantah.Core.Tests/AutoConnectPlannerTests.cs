@@ -50,6 +50,15 @@ public class AutoConnectPlannerTests
         Assert.False(a.ShouldConnect);
     }
 
+    // До первого опроса статус неизвестен — автоконнект решается уже после него.
+    [Fact]
+    public void Unknown_state_does_nothing()
+    {
+        var a = AutoConnectPlanner.Plan(ConnectionState.Unknown, LoginState.LoggedIn,
+            AutoConnectMode.Fastest, null);
+        Assert.False(a.ShouldConnect);
+    }
+
     [Theory]
     [InlineData(LoginState.LoggedOut)]
     [InlineData(LoginState.Unknown)]

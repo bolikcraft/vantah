@@ -32,7 +32,9 @@ public partial class StatusViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ToggleText))]
     private bool _isConnected;
-    [ObservableProperty] private bool _isBusy;
+    [ObservableProperty] private bool _isBusy = true;
+    // Статус ещё не опрошен: вместо блока статуса показываем скелетон, кнопку держим заблокированной.
+    [ObservableProperty] private bool _isStatusUnknown = true;
     [ObservableProperty] private string _log = "";
 
     // Подпись кнопки = действие, которое она выполнит (не статус).
@@ -116,7 +118,9 @@ public partial class StatusViewModel : ObservableObject
             : LocKeys.Status_Exclusions_General];
         Error = s.Error;
         IsConnected = s.Connection == ConnectionState.Connected;
-        IsBusy = s.Connection is ConnectionState.Connecting or ConnectionState.Disconnecting;
+        IsStatusUnknown = s.Connection == ConnectionState.Unknown;
+        IsBusy = s.Connection is ConnectionState.Connecting or ConnectionState.Disconnecting
+                                or ConnectionState.Unknown;
         if (s.Traffic is { } t)
         {
             RxText = "↓ " + Format(t.RxBytesPerSec) + "/s";
