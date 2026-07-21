@@ -5,6 +5,7 @@
 # .NET build artifacts
 bin/
 obj/
+TestResults/
 
 # Rider / Visual Studio
 .vs/
