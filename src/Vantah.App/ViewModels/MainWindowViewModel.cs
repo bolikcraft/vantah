@@ -24,6 +24,9 @@ public partial class MainWindowViewModel : ObservableObject
     public ConfigViewModel Config { get; }
     public LoginViewModel Login { get; }
 
+    /// <summary>Плашка «доступна новая версия Vantah»; null — проверка обновлений не подключена.</summary>
+    public UpdateBannerViewModel? UpdateBanner { get; }
+
     // Гейт формы входа. Гейтимся по «!= LoggedOut» (а не «== LoggedIn»), чтобы при Unknown
     // (CLI недоступен/зонд не прошёл) не мигать формой входа зря.
     [ObservableProperty] private bool _isLoggedIn = true;
@@ -44,7 +47,8 @@ public partial class MainWindowViewModel : ObservableObject
         LoginViewModel login,
         IAuthService auth,
         VpnCoordinator coordinator,
-        AppStateStore store)
+        AppStateStore store,
+        UpdateBannerViewModel? updateBanner = null)
     {
         Status = status;
         Locations = locations;
@@ -54,6 +58,7 @@ public partial class MainWindowViewModel : ObservableObject
         Processes = processes;
         Config = config;
         Login = login;
+        UpdateBanner = updateBanner;
         _auth = auth;
         _coordinator = coordinator;
 

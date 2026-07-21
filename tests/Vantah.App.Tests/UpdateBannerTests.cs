@@ -1,4 +1,6 @@
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Vantah.App.Tests;
 using Vantah.App.ViewModels;
 using Vantah.Core.Update;
 using Xunit;
@@ -64,5 +66,25 @@ public class UpdateBannerTests
         vm.OpenReleaseCommand.Execute(null);
 
         Assert.Equal("https://github.com/bolikcraft/vantah/releases/tag/v0.2.0", opened);
+    }
+
+    [AvaloniaFact]
+    public void Main_window_shows_the_banner_only_when_an_update_is_available()
+    {
+        var (vm, _) = Build();
+        var window = MainWindowFactory.Build(banner: vm);
+        window.Show();
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+
+        var host = window.FindControl<Avalonia.Controls.Border>("UpdateBannerHost")!;
+        Assert.False(host.IsVisible);
+
+        vm.Show(Info);
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        Assert.True(host.IsVisible);
+
+        vm.DismissCommand.Execute(null);
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        Assert.False(host.IsVisible);
     }
 }
