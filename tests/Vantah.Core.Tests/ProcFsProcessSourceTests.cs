@@ -120,6 +120,17 @@ public class ProcFsProcessSourceTests : IDisposable
     }
 
     [Fact]
+    public void Scan_skips_a_process_whose_owner_is_unknown_while_our_own_uid_is_known()
+    {
+        // Асимметрия политики: свой UID неизвестен — фильтр выключается целиком (fail-open),
+        // а вот чужой процесс без status опознать нельзя, и он отбрасывается (fail-closed).
+        FakeSelf(uid: 1000);
+        FakeProcess(500, [Exe, "status"]); // status не создан
+
+        Assert.Empty(Source().Scan());
+    }
+
+    [Fact]
     public void Scan_does_not_filter_by_uid_when_own_uid_is_unreadable()
     {
         // status недоступен (контейнер с урезанным procfs) — лучше показать всё, чем ничего.

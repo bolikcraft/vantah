@@ -20,22 +20,28 @@ public sealed class ProcFsProcessSource(string executable, string procRoot = "/p
         var bootTime = ReadBootTime();
         if (bootTime is null) return [];
 
-        // UID, от чьего имени мы работаем. Если прочитать не удалось (урезанный procfs, нет status) —
-        // не фильтруем вовсе: лучше показать лишнее, чем скрыть свой же туннель и оставить его висеть.
-        var ownUid = ReadUid(Path.Combine(procRoot, "self"));
+        // UID, от чьего имени мы работаем, читаем лениво: если совпадений по cmdline нет вовсе,
+        // /proc/self/status трогать незачем.
+        int? ownUid = null;
+        var ownUidRead = false;
 
         var found = new List<RunningProcess>();
         foreach (var dir in EnumerateDirectories())
         {
             if (!int.TryParse(Path.GetFileName(dir), out var pid)) continue; // «self», «net», …
 
-            // Чужие процессы нас не касаются: их нельзя ни диагностировать, ни убить. Исключение — root:
-            // привилегированный туннель поднимает наша же обёртка «sudo -b env … adguardvpn-cli connect»,
-            // он живёт под UID 0 и должен оставаться видимым и завершаемым (kill_cmd = pkexec kill).
-            if (ownUid is { } me && ReadUid(dir) is var uid && uid != me && uid != 0) continue;
-
+            // Сперва cmdline: это копия из памяти процесса, тогда как status — самый дорогой файл
+            // procfs (десятки строк). Матчинг отсеивает почти все pid'ы, и UID для них читать не надо.
             var cmdline = ReadCmdline(dir);
             if (cmdline is null || !ProcessCmdline.Matches(cmdline, executable)) continue;
+
+            if (!ownUidRead)
+            {
+                ownUid = ReadUid(Path.Combine(procRoot, "self"));
+                ownUidRead = true;
+            }
+
+            if (ownUid is { } me && !IsOurs(dir, me)) continue;
 
             var startedAt = ReadStartedAt(dir, bootTime.Value);
             if (startedAt is null) continue; // умер, пока мы читали его каталог
@@ -69,6 +75,25 @@ public sealed class ProcFsProcessSource(string executable, string procRoot = "/p
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Можно ли считать процесс нашим. Чужие нас не касаются: их нельзя ни диагностировать, ни убить.
+    /// Исключение — root: привилегированный туннель поднимает наша же обёртка
+    /// «sudo -b env … adguardvpn-cli connect», он живёт под UID 0 и должен оставаться видимым
+    /// и завершаемым (kill_cmd = pkexec kill).
+    /// <para>
+    /// Политика при нечитаемом status асимметрична: СВОЙ UID неизвестен — фильтр не включается вовсе
+    /// (fail-open, см. <see cref="Scan"/>), чтобы на урезанном procfs не спрятать собственный туннель;
+    /// а вот ЧУЖОЙ процесс с нечитаемым status опознать нечем — его отбрасываем (fail-closed).
+    /// </para>
+    /// </summary>
+    private static bool IsOurs(string dir, int ownUid)
+    {
+        var uid = ReadUid(dir);
+        if (uid is null) return false;
+
+        return uid == ownUid || uid == 0;
     }
 
     /// <summary>Реальный UID процесса из /proc/PID/status (строка «Uid:\t&lt;real&gt;\t&lt;eff&gt;…»).</summary>

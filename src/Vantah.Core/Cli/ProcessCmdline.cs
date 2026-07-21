@@ -25,6 +25,14 @@ public static class ProcessCmdline
         // Запуск через обёртку: наш бинарь стоит дальше, но argv[0] обязан быть обёрткой.
         if (!Wrappers.Contains(Path.GetFileName(cmdline[0]))) return false;
 
-        return cmdline.Skip(1).Any(token => Path.GetFileName(token) == name);
+        for (var i = 1; i < cmdline.Count; i++)
+        {
+            // Токен с пробелом — это целая команда, отданная одним аргументом («bash -c "vim …/adguardvpn-cli"»).
+            // Путём к бинарю он быть не может, а его basename ложно совпал бы с нашим именем.
+            if (cmdline[i].Contains(' ')) continue;
+            if (Path.GetFileName(cmdline[i]) == name) return true;
+        }
+
+        return false;
     }
 }
