@@ -164,14 +164,19 @@ Windows and macOS, so there is no point duplicating them.
 
 ## License
 
-Vantah is distributed under the **MIT** license — full text in the
-[LICENSE](LICENSE) file. In short: you may freely use, modify, and distribute the
-software provided you keep the license text and copyright notice. The software is
-provided "AS IS", without any warranty.
+Copyright (C) 2026 bolikcraft
 
-The MIT license covers **only Vantah's own code**. The `adguardvpn-cli` tool and
-other AdGuard software are not covered by it and are distributed under AdGuard's
-own terms.
+Vantah is free software distributed under the **GNU General Public License,
+version 3 or (at your option) any later version** — full text in the
+[LICENSE](LICENSE) file. In short: you may freely use, modify, and distribute the
+software, but any distributed derivative work must also be released under the
+GPL with its source code available. The software is provided "AS IS", without
+any warranty.
+
+The GPL covers **only Vantah's own code**. The `adguardvpn-cli` tool and other
+AdGuard software are not covered by it, are not bundled with Vantah, and are
+distributed under AdGuard's own terms. Vantah invokes `adguardvpn-cli` as a
+separate process and does not link against it.
 
 ## Disclaimer
 
