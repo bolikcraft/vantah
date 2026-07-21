@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Vantah.App.Localization;
@@ -139,6 +140,9 @@ public partial class App : Application
 
             login.BrowserOpener = OpenInBrowser;
             updateBanner.BrowserOpener = OpenInBrowser;
+            // Буфер обмена — тоже от окна (TopLevel.Clipboard), как в DomainsView. На платформе
+            // без буфера просто ничего не делаем: ссылку на экране можно выделить руками.
+            login.ClipboardWriter = text => window.Clipboard?.SetTextAsync(text) ?? Task.CompletedTask;
 
             // Проверка обновлений — фоном и без ожидания: старт и автоподключение она не задерживает.
             _ = CheckAppUpdateAsync(appUpdates, updateBanner);

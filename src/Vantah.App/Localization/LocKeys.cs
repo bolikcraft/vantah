@@ -173,4 +173,6 @@ public static class LocKeys
     public const string Login_Cancel = "Login_Cancel";
     public const string Login_Waiting = "Login_Waiting";
     public const string Login_CodeLabel = "Login_CodeLabel";
+    public const string Login_UrlLabel = "Login_UrlLabel";
+    public const string Login_CopyUrl = "Login_CopyUrl";
 }

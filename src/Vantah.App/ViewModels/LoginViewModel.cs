@@ -28,6 +28,10 @@ public partial class LoginViewModel : ObservableObject
     // Открытие ссылки в браузере — через окно (Launcher); поставляет App.axaml.cs.
     public Func<string, Task>? BrowserOpener { get; set; }
 
+    // Копирование в буфер обмена — тоже через окно (TopLevel.Clipboard); поставляет App.axaml.cs.
+    // Делегат, а не TopLevel во вьюмодели: так копирование проверяется тестом с фейком.
+    public Func<string, Task>? ClipboardWriter { get; set; }
+
     public LoginViewModel(IAuthService auth, VpnCoordinator coordinator)
     {
         _auth = auth;
@@ -83,6 +87,16 @@ public partial class LoginViewModel : ObservableObject
         if (Url is { } u && BrowserOpener is { } open)
         {
             try { await open(u); } catch { /* пользователь откроет ссылку вручную */ }
+        }
+    }
+
+    // Запасной путь, когда браузер не открылся: ссылка видна на экране, её можно скопировать.
+    [RelayCommand]
+    private async Task CopyUrlAsync()
+    {
+        if (Url is { Length: > 0 } u && ClipboardWriter is { } copy)
+        {
+            try { await copy(u); } catch { /* ссылку всё ещё можно выделить и скопировать вручную */ }
         }
     }
 
