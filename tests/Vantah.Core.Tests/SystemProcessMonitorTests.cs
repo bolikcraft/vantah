@@ -116,7 +116,9 @@ public class SystemProcessMonitorTests
         var killer = new FakeKiller();
         var source = new FakeSource { Processes = { Proc(10) } };
         var monitor = new SystemProcessMonitor(source, killer);
-        source.Processes.Clear(); // убийца сработал — процесса больше нет
+        // Процесс исчез между опросом и кликом: сверка личности провалится и убийца не вызовется.
+        // Проверяем, что Refresh() всё равно происходит — строка уходит и на неподтверждённом пути.
+        source.Processes.Clear();
 
         await monitor.KillAsync(10);
 

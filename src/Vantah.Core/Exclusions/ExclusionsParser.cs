@@ -22,19 +22,12 @@ public static class ExclusionsParser
                     : SiteExclusionMode.General;
                 continue;
             }
-            if (LooksLikeDomain(line))
-                domains.Add(line);
+            domains.Add(line);
         }
 
+        // Единственная точка фильтрации: Normalize сам отбрасывает строки-«шум» CLI
+        // (напр. «No exclusions configured», «Type a domain to add») своим предикатом
+        // «похоже на домен» — дублировать его здесь незачем.
         return new ExclusionsSnapshot(mode, DomainNormalizer.Normalize(domains));
     }
-
-    // Отсеивает строки-«шум» CLI (напр. «No exclusions configured», «Type a domain to add»),
-    // которые не являются доменом/wildcard-доменом/IP-исключением. Требование точки — главный
-    // фильтр шумовых строк, поэтому оно не ослабляется: чистые IPv6-литералы без точки
-    // (напр. `2001:db8::1`) под предикат не подходят и не распознаются как исключение — это
-    // осознанный компромисс, т.к. site-исключения adguardvpn-cli — это домены/IPv4/CIDR.
-    private static bool LooksLikeDomain(string s) =>
-        s.Length <= 253 && !s.Contains(' ') && s.Contains('.') &&
-        s.All(c => char.IsLetterOrDigit(c) || c is '.' or '-' or '_' or '*' or ':' or '/');
 }

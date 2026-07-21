@@ -34,6 +34,30 @@ public class DomainNormalizerTests
         Assert.DoesNotContain("not a domain", result);
     }
 
+    [Fact]
+    public void Normalize_keeps_253_chars_and_drops_254()
+    {
+        var ok = new string('a', 249) + ".com";    // ровно 253 — граница включительно
+        var tooLong = new string('a', 250) + ".com"; // 254 — уже за границей
+        Assert.Equal(253, ok.Length);
+        Assert.Equal(254, tooLong.Length);
+
+        var result = DomainNormalizer.Normalize(new[] { ok, tooLong });
+
+        Assert.Equal(new[] { ok }, result);
+    }
+
+    [Theory]
+    [InlineData("a;b.com")]      // разделитель команд
+    [InlineData("evil.com|x")]   // пайп
+    [InlineData("evil.com&x")]
+    [InlineData("$(id).com")]
+    [InlineData("a\tb.com")]     // управляющий символ
+    public void Normalize_drops_entries_with_forbidden_characters(string input)
+    {
+        Assert.Empty(DomainNormalizer.Normalize(new[] { input }));
+    }
+
     [Theory]
     [InlineData("https://www.example.com/path?q=1", "example.com")]
     [InlineData("example.com", "example.com")]
