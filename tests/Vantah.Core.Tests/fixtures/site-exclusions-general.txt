@@ -1,13 +1,13 @@
 Exclusions for [1mGENERAL[0m mode:
-*.avito.ru
-*.figma.com
-*.gitlab.com
-*.lemanapro.ru
-*.mail.ru
-*.max.ru
-*.srvdev.ru
-*.wildberries.ru
-*.zona.plus
-*.zonapic.com
-45.139.16.61
-kalk.pro
+*.bank.example
+*.cdn.example
+*.chat.example
+*.docs.example
+*.mail.example
+*.market.example
+*.media.example
+*.news.example
+*.shop.example
+*.video.example
+203.0.113.42
+plain.example

@@ -148,7 +148,8 @@ packaging/install.sh` (as root); to uninstall, run `packaging/install.sh
 - C# / .NET 10 (`net10.0`).
 - Avalonia 12 + FluentAvalonia (theme).
 - CommunityToolkit.Mvvm (MVVM).
-- xUnit — tests for the core (`Vantah.Core`).
+- xUnit — tests for the core (`Vantah.Core`) and for the UI (`Vantah.App`,
+  headless Avalonia).
 
 The project is **Linux-only**. AdGuard already ships official VPN GUI clients for
 Windows and macOS, so there is no point duplicating them.

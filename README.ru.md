@@ -147,7 +147,8 @@ packaging/install.sh
 - C# / .NET 10 (`net10.0`).
 - Avalonia 12 + FluentAvalonia (тема оформления).
 - CommunityToolkit.Mvvm (MVVM).
-- xUnit — тесты ядра (`Vantah.Core`).
+- xUnit — тесты ядра (`Vantah.Core`) и интерфейса (`Vantah.App`, headless
+  Avalonia).
 
 Проект **только для Linux**. Для Windows и macOS у AdGuard есть официальные
 GUI-клиенты VPN, поэтому дублировать их смысла нет.

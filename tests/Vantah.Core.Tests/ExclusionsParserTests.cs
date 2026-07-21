@@ -50,9 +50,9 @@ public class ExclusionsParserTests
         var snap = ExclusionsParser.Parse(raw);
         Assert.Equal(SiteExclusionMode.General, snap.Mode);
         Assert.NotEmpty(snap.Domains);
-        // Реальные строки из фикстуры (E1-0): домен и IP-исключение.
-        Assert.Contains("kalk.pro", snap.Domains);
-        Assert.Contains("45.139.16.61", snap.Domains);
+        // Строки из фикстуры (E1-0): домен без маски и IP-исключение.
+        Assert.Contains("plain.example", snap.Domains);
+        Assert.Contains("203.0.113.42", snap.Domains);
     }
 
     [Fact]
