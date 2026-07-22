@@ -2,8 +2,6 @@
 
 [![CI](https://github.com/bolikcraft/vantah/actions/workflows/ci.yml/badge.svg)](https://github.com/bolikcraft/vantah/actions/workflows/ci.yml)
 
-**English** · [Русский](README.ru.md)
-
 Vantah is a desktop GUI client for Linux (a window plus a system-tray icon) that
 acts as a convenient front-end for the official `adguardvpn-cli` command-line
 tool. Vantah does **not** implement a VPN itself — it merely runs `adguardvpn-cli`
