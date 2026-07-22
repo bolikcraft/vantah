@@ -100,12 +100,29 @@ public partial class ConfigViewModel : ErrorAwareViewModel
         UpdateCheckTask = CheckForUpdatesAsync();
     }
 
-    /// <summary>Языки интерфейса. Название каждого — на нём самом, поэтому не переводится.</summary>
-    public IReadOnlyList<LanguageOption> Languages { get; } = new[]
+    /// <summary>
+    /// Языки интерфейса. Название каждого — на нём самом, поэтому не переводится. Порядок:
+    /// языки авторов первыми, дальше по алфавиту самоназваний. Список должен совпадать с
+    /// <see cref="CultureSelector.Supported"/> — это проверяет тест.
+    /// </summary>
+    public static IReadOnlyList<LanguageOption> AllLanguages { get; } = new[]
     {
         new LanguageOption("ru", "Русский"),
         new LanguageOption("en", "English"),
+        new LanguageOption("de", "Deutsch"),
+        new LanguageOption("es", "Español"),
+        new LanguageOption("fr", "Français"),
+        new LanguageOption("id", "Bahasa Indonesia"),
+        new LanguageOption("it", "Italiano"),
+        new LanguageOption("pl", "Polski"),
+        new LanguageOption("pt-BR", "Português (Brasil)"),
+        new LanguageOption("tr", "Türkçe"),
+        new LanguageOption("uk", "Українська"),
+        new LanguageOption("zh-Hans", "简体中文"),
     };
+
+    /// <summary>Тот же список для привязки в XAML (у статического свойства биндинг неудобен).</summary>
+    public IReadOnlyList<LanguageOption> Languages => AllLanguages;
 
     [ObservableProperty] private LanguageOption _selectedLanguage;
 

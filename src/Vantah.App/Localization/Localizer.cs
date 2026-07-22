@@ -37,7 +37,12 @@ public sealed class Localizer : INotifyPropertyChanged
     public event EventHandler? LanguageChanged;
 
     /// <summary>Двухбуквенный код текущего языка интерфейса.</summary>
-    public string Language => _culture.TwoLetterISOLanguageName;
+    /// <summary>
+    /// Код текущего языка интерфейса — имя культуры, а не две буквы: у португальского и
+    /// китайского вариант значим («pt-BR», «zh-Hans»), и по этому же коду язык ищется
+    /// в списке <see cref="CultureSelector.Supported"/> и в выпадающем списке настроек.
+    /// </summary>
+    public string Language => _culture.Name;
 
     /// <summary>Строка по ключу; неизвестный ключ возвращается как есть — UI не падает из-за опечатки.</summary>
     public string this[string key] => Resources.GetString(key, _culture) ?? key;

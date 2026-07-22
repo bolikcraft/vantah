@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Spanish strings. Neutral culture (Strings.resx) is Russian. -->
+
+  <!-- Вкладки главного окна -->
+  <data name="Tab_Status" xml:space="preserve">
+    <value>Estado</value>
+  </data>
+  <data name="Tab_Locations" xml:space="preserve">
+    <value>Ubicaciones</value>
+  </data>
+  <data name="Tab_Domains" xml:space="preserve">
+    <value>Dominios</value>
+  </data>
+
+  <!-- Общие подписи кнопок и состояний -->
+  <data name="Common_Connect" xml:space="preserve">
+    <value>Conectar</value>
+  </data>
+  <data name="Common_Disconnect" xml:space="preserve">
+    <value>Desconectar</value>
+  </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>Agregar</value>
+  </data>
+  <data name="Common_Clear" xml:space="preserve">
+    <value>Borrar</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Actualizar</value>
+  </data>
+  <data name="Common_Import" xml:space="preserve">
+    <value>Importar</value>
+  </data>
+  <data name="Common_Export" xml:space="preserve">
+    <value>Exportar</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>cargando…</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>no disponible</value>
+  </data>
+  <data name="Common_Apply" xml:space="preserve">
+    <value>Aplicar</value>
+  </data>
+  <data name="Common_Reset" xml:space="preserve">
+    <value>Restablecer</value>
+  </data>
+  <data name="Common_Saved" xml:space="preserve">
+    <value>Guardado</value>
+  </data>
+
+  <!-- Вкладка «Статус» -->
+  <data name="Status_Connected" xml:space="preserve">
+    <value>Conectado</value>
+  </data>
+  <data name="Status_Connecting" xml:space="preserve">
+    <value>Conectando…</value>
+  </data>
+  <data name="Status_Disconnecting" xml:space="preserve">
+    <value>Desconectando…</value>
+  </data>
+  <data name="Status_Disconnected" xml:space="preserve">
+    <value>Desconectado</value>
+  </data>
+  <data name="Status_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Status_Checking" xml:space="preserve">
+    <value>Comprobando el estado de la conexión…</value>
+  </data>
+  <data name="Status_SpeedLabel" xml:space="preserve">
+    <value>Velocidad:</value>
+  </data>
+  <data name="Status_SessionLabel" xml:space="preserve">
+    <value>Total de la sesión:</value>
+  </data>
+  <data name="Status_ModeFormat" xml:space="preserve">
+    <value>Modo: {0}</value>
+    <comment>{0} — режим CLI (TUN/SOCKS), не переводится.</comment>
+  </data>
+  <data name="Status_Exclusions_General" xml:space="preserve">
+    <value>Exclusiones: General</value>
+  </data>
+  <data name="Status_Exclusions_Selective" xml:space="preserve">
+    <value>Exclusiones: Selectivo</value>
+  </data>
+  <data name="Status_SubTab_History" xml:space="preserve">
+    <value>Historial</value>
+  </data>
+  <data name="Status_SubTab_Log" xml:space="preserve">
+    <value>Registro</value>
+  </data>
+  <data name="Status_HistoryEmpty" xml:space="preserve">
+    <value>Aún no hay entradas — el historial aparece tras la primera conexión</value>
+  </data>
+  <data name="Status_HistoryEntryFormat" xml:space="preserve">
+    <value>{0} — {1} → {2}</value>
+    <comment>{0} — локация, {1} — начало, {2} — конец сессии.</comment>
+  </data>
+  <data name="Status_IpVersion" xml:space="preserve">
+    <value>Versión de IP al conectar</value>
+  </data>
+
+  <!-- Вкладка «Локации» -->
+  <data name="Locations_SearchPlaceholder" xml:space="preserve">
+    <value>Buscar ubicación…</value>
+  </data>
+  <data name="Locations_Loading" xml:space="preserve">
+    <value>Cargando ubicaciones…</value>
+  </data>
+  <data name="Locations_ConnectedBadge" xml:space="preserve">
+    <value>✓ Conectado</value>
+  </data>
+  <data name="Locations_Col_Iso" xml:space="preserve">
+    <value>ISO</value>
+  </data>
+  <data name="Locations_Col_City" xml:space="preserve">
+    <value>Ciudad</value>
+  </data>
+  <data name="Locations_Col_Country" xml:space="preserve">
+    <value>País</value>
+  </data>
+  <data name="Locations_Col_Ping" xml:space="preserve">
+    <value>Ping (ms)</value>
+  </data>
+  <data name="Locations_Tooltip_FavoritesFirst" xml:space="preserve">
+    <value>Favoritos primero</value>
+  </data>
+  <data name="Locations_Tooltip_SortByIso" xml:space="preserve">
+    <value>Ordenar por código de país</value>
+  </data>
+  <data name="Locations_Tooltip_SortByCity" xml:space="preserve">
+    <value>Ordenar por ciudad</value>
+  </data>
+  <data name="Locations_Tooltip_SortByCountry" xml:space="preserve">
+    <value>Ordenar por país</value>
+  </data>
+  <data name="Locations_Tooltip_SortByPing" xml:space="preserve">
+    <value>Ordenar por ping</value>
+  </data>
+
+  <!-- Вкладка «Домены» -->
+  <data name="Domains_Mode_General" xml:space="preserve">
+    <value>Los dominios de la lista no pasan por la VPN</value>
+  </data>
+  <data name="Domains_Mode_Selective" xml:space="preserve">
+    <value>Solo los dominios de la lista pasan por la VPN</value>
+  </data>
+  <data name="Domains_QueryPlaceholder" xml:space="preserve">
+    <value>Dominio / filtro (p. ej. example.com)</value>
+  </data>
+  <data name="Domains_PasteFromClipboard" xml:space="preserve">
+    <value>Pegar del portapapeles</value>
+  </data>
+  <data name="Domains_ExportDialogTitle" xml:space="preserve">
+    <value>Exportar dominios</value>
+  </data>
+  <data name="Domains_ImportDialogTitle" xml:space="preserve">
+    <value>Importar dominios</value>
+  </data>
+  <data name="Domains_ClearConfirmTitle" xml:space="preserve">
+    <value>Borrar exclusiones</value>
+  </data>
+  <data name="Domains_ClearConfirmMessage" xml:space="preserve">
+    <value>¿Eliminar todos los dominios del modo actual?</value>
+  </data>
+  <data name="Domains_InvalidEntry" xml:space="preserve">
+    <value>Esto no parece un dominio ni una dirección IP</value>
+  </data>
+
+  <!-- Вкладка «Лицензия» -->
+  <data name="License_Account" xml:space="preserve">
+    <value>Cuenta:</value>
+  </data>
+  <data name="License_Plan" xml:space="preserve">
+    <value>Plan:</value>
+  </data>
+  <data name="License_Devices" xml:space="preserve">
+    <value>Dispositivos:</value>
+  </data>
+  <data name="License_Renewal" xml:space="preserve">
+    <value>Renovación:</value>
+  </data>
+  <data name="License_Loading" xml:space="preserve">
+    <value>Cargando la licencia…</value>
+  </data>
+  <data name="License_ErrorNotLoggedIn" xml:space="preserve">
+    <value>No se pudo obtener la licencia — puede que no haya sesión iniciada</value>
+  </data>
+  <data name="License_ErrorFormat" xml:space="preserve">
+    <value>No se pudo obtener la licencia: {0}</value>
+    <comment>{0} — текст ошибки CLI.</comment>
+  </data>
+
+  <!-- Вкладка «О программе» -->
+  <data name="About_Version" xml:space="preserve">
+    <value>Versión:</value>
+  </data>
+  <data name="About_CliVersion" xml:space="preserve">
+    <value>adguardvpn-cli:</value>
+  </data>
+  <data name="About_LegalNotice" xml:space="preserve">
+    <value>Vantah es un cliente gráfico independiente para la utilidad adguardvpn-cli. El proyecto no está afiliado a AdGuard ni cuenta con su respaldo o soporte. «AdGuard» y «AdGuard VPN» son marcas de sus respectivos titulares y se mencionan únicamente para indicar compatibilidad.</value>
+  </data>
+
+  <!-- Вкладка «Процессы» -->
+  <data name="Processes_Col_Pid" xml:space="preserve">
+    <value>PID</value>
+  </data>
+  <data name="Processes_Col_Command" xml:space="preserve">
+    <value>Comando</value>
+  </data>
+  <data name="Processes_Col_Started" xml:space="preserve">
+    <value>Iniciado</value>
+  </data>
+  <data name="Processes_Kill" xml:space="preserve">
+    <value>Finalizar</value>
+  </data>
+  <data name="Processes_KillAll" xml:space="preserve">
+    <value>Finalizar todos</value>
+  </data>
+  <data name="Processes_KillConfirm" xml:space="preserve">
+    <value>¿Finalizar el proceso con PID {0}?</value>
+    <comment>{0} — PID процесса.</comment>
+  </data>
+  <data name="Processes_KillAllConfirm" xml:space="preserve">
+    <value>¿Finalizar todos los procesos en ejecución?</value>
+  </data>
+  <data name="Processes_KillConfirmAction" xml:space="preserve">
+    <value>Finalizar</value>
+  </data>
+  <data name="Processes_Empty" xml:space="preserve">
+    <value>No hay procesos en ejecución</value>
+  </data>
+
+  <!-- Меню и подсказка в трее -->
+  <data name="Tray_Fastest" xml:space="preserve">
+    <value>⚡ Más rápida</value>
+  </data>
+  <data name="Tray_Location" xml:space="preserve">
+    <value>Ubicación</value>
+  </data>
+  <data name="Tray_ShowWindow" xml:space="preserve">
+    <value>Mostrar la ventana</value>
+  </data>
+  <data name="Tray_Exit" xml:space="preserve">
+    <value>Salir</value>
+  </data>
+  <data name="Tray_NoFavorites" xml:space="preserve">
+    <value>Sin favoritos</value>
+  </data>
+  <data name="Tray_DomainsFormat" xml:space="preserve">
+    <value>Dominios ({0})</value>
+    <comment>{0} — число доменов-исключений.</comment>
+  </data>
+  <data name="Tray_Tooltip_ConnectedFormat" xml:space="preserve">
+    <value>{0} Vantah — Conectado{1}</value>
+    <comment>{0} — глиф состояния, {1} — «: Город» либо пусто.</comment>
+  </data>
+  <data name="Tray_Tooltip_DisconnectedFormat" xml:space="preserve">
+    <value>{0} Vantah — Desconectado</value>
+    <comment>{0} — глиф состояния.</comment>
+  </data>
+  <data name="Tray_Tooltip_TrafficFormat" xml:space="preserve">
+    <value>↓ {0}/s ↑ {1}/s</value>
+    <comment>{0} — приём, {1} — передача.</comment>
+  </data>
+  <data name="Tray_Tooltip_DomainsFormat" xml:space="preserve">
+    <value>Dominios: {0}</value>
+    <comment>{0} — число доменов-исключений.</comment>
+  </data>
+  <data name="Tray_Tooltip_ErrorFormat" xml:space="preserve">
+    <value>⚠ Error: {0}</value>
+    <comment>{0} — текст ошибки подключения.</comment>
+  </data>
+  <data name="Tray_StatusConnectedFormat" xml:space="preserve">
+    <value>{0} {1}{2}</value>
+    <comment>{0} — глиф состояния, {1} — локация, {2} — « · Режим» либо пусто.</comment>
+  </data>
+
+  <!-- Вкладка «Настройки» -->
+  <data name="Settings_ConnectedWarning" xml:space="preserve">
+    <value>La VPN está conectada. Los cambios en los ajustes pueden requerir volver a conectar para surtir efecto.</value>
+  </data>
+  <data name="Settings_Mode" xml:space="preserve">
+    <value>Modo de funcionamiento</value>
+  </data>
+  <data name="Settings_SocksSection" xml:space="preserve">
+    <value>Ajustes de SOCKS</value>
+  </data>
+  <data name="Settings_SocksPort" xml:space="preserve">
+    <value>Puerto</value>
+  </data>
+  <data name="Settings_SocksHost" xml:space="preserve">
+    <value>Host</value>
+  </data>
+  <data name="Settings_SocksUsername" xml:space="preserve">
+    <value>Usuario</value>
+  </data>
+  <data name="Settings_SocksPassword" xml:space="preserve">
+    <value>Contraseña</value>
+  </data>
+  <data name="Settings_SaveAuth" xml:space="preserve">
+    <value>Guardar usuario y contraseña</value>
+  </data>
+  <data name="Settings_ClearAuth" xml:space="preserve">
+    <value>Borrar la autenticación</value>
+  </data>
+  <data name="Settings_Dns" xml:space="preserve">
+    <value>Servidor DNS</value>
+  </data>
+  <data name="Settings_DnsPlaceholder" xml:space="preserve">
+    <value>Vacío — servidores de AdGuard por defecto</value>
+  </data>
+  <data name="Settings_Protocol" xml:space="preserve">
+    <value>Protocolo</value>
+  </data>
+  <data name="Settings_Channel" xml:space="preserve">
+    <value>Canal de actualizaciones</value>
+  </data>
+  <data name="Settings_Routing" xml:space="preserve">
+    <value>Modo de enrutamiento TUN</value>
+  </data>
+  <data name="Settings_CreateRouteScript" xml:space="preserve">
+    <value>Crear script de rutas</value>
+  </data>
+  <data name="Settings_ChangeSystemDns" xml:space="preserve">
+    <value>Cambiar el DNS del sistema</value>
+  </data>
+  <data name="Settings_PostQuantum" xml:space="preserve">
+    <value>Criptografía poscuántica</value>
+  </data>
+  <data name="Settings_ShowNotifications" xml:space="preserve">
+    <value>Mostrar notificaciones</value>
+  </data>
+  <data name="Settings_DebugLogging" xml:space="preserve">
+    <value>Registro de depuración</value>
+  </data>
+  <data name="Settings_CrashReporting" xml:space="preserve">
+    <value>Enviar informes de fallos</value>
+  </data>
+  <data name="Settings_Telemetry" xml:space="preserve">
+    <value>Enviar datos de uso anónimos</value>
+  </data>
+  <data name="Settings_ShowHints" xml:space="preserve">
+    <value>Mostrar sugerencias tras los comandos</value>
+  </data>
+  <data name="Settings_InterfaceOverride" xml:space="preserve">
+    <value>Interfaz de red de salida</value>
+  </data>
+  <data name="Settings_InterfacePlaceholder" xml:space="preserve">
+    <value>p. ej. eth0 (vacío — por defecto)</value>
+  </data>
+  <data name="Settings_ErrorInvalidPort" xml:space="preserve">
+    <value>El puerto SOCKS debe ser un número entre 1 y 65535</value>
+  </data>
+  <data name="Settings_ErrorEmptyHost" xml:space="preserve">
+    <value>Indique un host SOCKS</value>
+  </data>
+  <data name="Settings_UpdateAvailable" xml:space="preserve">
+    <value>Hay una nueva versión de adguardvpn-cli</value>
+  </data>
+  <data name="Settings_ExportLogs" xml:space="preserve">
+    <value>Exportar registros…</value>
+  </data>
+  <data name="Settings_LogsExported" xml:space="preserve">
+    <value>Registros guardados</value>
+  </data>
+  <data name="Settings_StartupSection" xml:space="preserve">
+    <value>Inicio</value>
+  </data>
+  <data name="Settings_AutoConnect" xml:space="preserve">
+    <value>Conectar automáticamente al iniciar</value>
+  </data>
+  <data name="Settings_AutoConnectLast" xml:space="preserve">
+    <value>Última ubicación</value>
+  </data>
+  <data name="Settings_AutoConnectFastest" xml:space="preserve">
+    <value>Más rápida</value>
+  </data>
+  <data name="Settings_Autostart" xml:space="preserve">
+    <value>Iniciar al entrar en el sistema</value>
+  </data>
+  <data name="Settings_CheckAppUpdates" xml:space="preserve">
+    <value>Buscar actualizaciones de Vantah</value>
+  </data>
+  <data name="Update_Available" xml:space="preserve">
+    <value>Hay una nueva versión de Vantah — {0}</value>
+  </data>
+  <data name="Update_Download" xml:space="preserve">
+    <value>Descargar</value>
+  </data>
+  <data name="Update_Dismiss" xml:space="preserve">
+    <value>Ocultar esta versión</value>
+  </data>
+
+  <!-- Меню «☰» -->
+  <data name="Menu_Tooltip" xml:space="preserve">
+    <value>Menú</value>
+  </data>
+  <data name="Menu_Processes" xml:space="preserve">
+    <value>Procesos…</value>
+  </data>
+  <data name="Menu_Settings" xml:space="preserve">
+    <value>Ajustes…</value>
+  </data>
+  <data name="Menu_License" xml:space="preserve">
+    <value>Licencia…</value>
+  </data>
+  <data name="Menu_About" xml:space="preserve">
+    <value>Acerca de…</value>
+  </data>
+
+  <!-- Выбор языка -->
+  <data name="Lang_Label" xml:space="preserve">
+    <value>Idioma</value>
+  </data>
+
+  <!-- Sign-in screen (device-code via browser) -->
+  <data name="Login_Title" xml:space="preserve">
+    <value>Iniciar sesión en AdGuard VPN</value>
+  </data>
+  <data name="Login_Logout" xml:space="preserve">
+    <value>Cerrar sesión…</value>
+  </data>
+  <data name="Login_LogoutConfirmTitle" xml:space="preserve">
+    <value>Cerrar sesión</value>
+  </data>
+  <data name="Login_LogoutConfirmMessage" xml:space="preserve">
+    <value>¿Cerrar la sesión de la cuenta de AdGuard VPN? Se cortará la conexión y habrá que iniciar sesión de nuevo.</value>
+  </data>
+  <data name="Login_LogoutConfirmAction" xml:space="preserve">
+    <value>Cerrar sesión</value>
+  </data>
+  <data name="Login_Intro" xml:space="preserve">
+    <value>El inicio de sesión se realiza en el navegador. Pulse «Iniciar sesión» para abrir la página de autorización de AdGuard.</value>
+  </data>
+  <data name="Login_Start" xml:space="preserve">
+    <value>Iniciar sesión</value>
+  </data>
+  <data name="Login_OpenBrowser" xml:space="preserve">
+    <value>Abrir en el navegador</value>
+  </data>
+  <data name="Login_Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="Login_Waiting" xml:space="preserve">
+    <value>Esperando la confirmación en el navegador…</value>
+  </data>
+  <data name="Login_CodeLabel" xml:space="preserve">
+    <value>Código:</value>
+  </data>
+  <data name="Login_UrlLabel" xml:space="preserve">
+    <value>Si el navegador no se abrió, abra el enlace manualmente:</value>
+  </data>
+  <data name="Login_CopyUrl" xml:space="preserve">
+    <value>Copiar el enlace</value>
+  </data>
+  <data name="Error_CommandFailed" xml:space="preserve">
+    <value>{0} terminó con error</value>
+  </data>
+  <data name="Error_Timeout" xml:space="preserve">
+    <value>{0} superó el tiempo de espera</value>
+  </data>
+  <data name="Error_AddDomainFailed" xml:space="preserve">
+    <value>no se pudo agregar {0}</value>
+  </data>
+  <data name="Error_RemoveDomainFailed" xml:space="preserve">
+    <value>no se pudo eliminar {0}</value>
+  </data>
+  <data name="Error_ModeSwitchFailed" xml:space="preserve">
+    <value>no se pudo cambiar el modo a {0}</value>
+  </data>
+  <data name="Error_Cancelled" xml:space="preserve">
+    <value>operación cancelada</value>
+  </data>
+  <data name="Login_Succeeded" xml:space="preserve">
+    <value>Sesión iniciada</value>
+  </data>
+  <data name="Login_Failed" xml:space="preserve">
+    <value>No se completó el inicio de sesión</value>
+  </data>
+  <data name="Login_Cancelled" xml:space="preserve">
+    <value>Inicio de sesión cancelado</value>
+  </data>
+  <data name="Login_TimedOut" xml:space="preserve">
+    <value>Se agotó el tiempo de inicio de sesión</value>
+  </data>
+  <data name="Settings_LogsExportedFormat" xml:space="preserve">
+    <value>Registros guardados: {0}</value>
+  </data>
+  <data name="Settings_UpdateAvailableFormat" xml:space="preserve">
+    <value>Hay una nueva versión de adguardvpn-cli: {0}</value>
+  </data>
+</root>

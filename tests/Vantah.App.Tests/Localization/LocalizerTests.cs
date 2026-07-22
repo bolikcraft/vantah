@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using System.Reflection;
 using Vantah.App.Localization;
+using Vantah.App.ViewModels;
+using Vantah.Core.Localization;
 
 namespace Vantah.App.Tests.Localization;
 
@@ -141,14 +143,90 @@ public class LocalizerTests
         Assert.True(AllKeys().Count >= 78);
     }
 
-    [Fact]
-    public void Ru_and_en_resx_declare_exactly_the_same_keys()
+    /// <summary>Языки интерфейса, кроме русского: у него значения лежат в нейтральном Strings.resx.</summary>
+    public static TheoryData<string> TranslatedLanguages()
     {
-        var ru = ResxKeys("Strings.resx");
-        var en = ResxKeys("Strings.en.resx");
+        var data = new TheoryData<string>();
+        foreach (var code in CultureSelector.Supported.Where(c => c != CultureSelector.Default))
+            data.Add(code);
+        return data;
+    }
 
-        Assert.Empty(ru.Except(en));   // нет перевода в en
-        Assert.Empty(en.Except(ru));   // лишний ключ в en
+    [Theory]
+    [MemberData(nameof(TranslatedLanguages))]
+    public void Every_language_resx_declares_the_same_keys_as_neutral(string code)
+    {
+        var neutral = ResxKeys("Strings.resx");
+        var translated = ResxKeys($"Strings.{code}.resx");
+
+        Assert.Empty(neutral.Except(translated));   // нет перевода
+        Assert.Empty(translated.Except(neutral));   // лишний ключ
+    }
+
+    /// <summary>
+    /// Потерянный или лишний плейсхолдер в переводе — это не кривая строка, а падение
+    /// <c>string.Format</c> в рантайме (FormatException) либо молча пропавшее значение.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(TranslatedLanguages))]
+    public void Every_language_keeps_the_placeholders_of_the_neutral_string(string code)
+    {
+        var neutral = ResxValues("Strings.resx");
+        var translated = ResxValues($"Strings.{code}.resx");
+
+        foreach (var (key, value) in neutral)
+        {
+            Assert.True(translated.ContainsKey(key), $"{code}: нет ключа {key}");
+            Assert.Equal(Placeholders(value), Placeholders(translated[key]));
+        }
+    }
+
+    /// <summary>
+    /// Главная страховка этого файла. Забытый (или не попавший в сборку) сателлитный ресурс
+    /// <c>ResourceManager</c> не считает ошибкой: он молча отдаёт нейтральные — русские —
+    /// строки, и все проверки «строка непустая и не равна ключу» остаются зелёными на
+    /// полностью непереведённом языке. Поэтому спрашиваем именно сателлит:
+    /// <c>tryParents: false</c> — никакого отката на нейтральный ресурс.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(TranslatedLanguages))]
+    public void Every_language_ships_its_own_satellite_assembly(string code)
+    {
+        var resources = new System.Resources.ResourceManager(
+            "Vantah.App.Localization.Strings", typeof(Localizer).Assembly);
+
+        var set = resources.GetResourceSet(new System.Globalization.CultureInfo(code),
+            createIfNotExists: true, tryParents: false);
+
+        Assert.True(set is not null, $"{code}: сателлитная сборка не собрана или не найдена");
+        foreach (var key in AllKeys())
+            Assert.False(string.IsNullOrWhiteSpace(set!.GetString(key)), $"{code}: нет строки {key}");
+    }
+
+    /// <summary>Язык без строки в выпадающем списке настроек выбрать нельзя — и наоборот.</summary>
+    [Fact]
+    public void Language_dropdown_matches_supported_cultures()
+    {
+        var dropdown = ConfigViewModel.AllLanguages.Select(l => l.Code).ToHashSet(StringComparer.Ordinal);
+
+        Assert.Equal(CultureSelector.Supported.ToHashSet(StringComparer.Ordinal), dropdown);
+        Assert.All(ConfigViewModel.AllLanguages, l => Assert.False(string.IsNullOrWhiteSpace(l.Display)));
+    }
+
+    /// <summary>Каждый язык действительно отдаёт переведённые строки, а не откатывается на нейтральные.</summary>
+    [Theory]
+    [MemberData(nameof(TranslatedLanguages))]
+    public void Every_language_translates_every_key(string code)
+    {
+        var loc = new Localizer();
+        loc.SetLanguage(code);
+
+        Assert.Equal(code, loc.Language);
+        foreach (var key in AllKeys())
+        {
+            Assert.NotEqual(key, loc[key]);                          // ключ вместо строки = забытый перевод
+            Assert.False(string.IsNullOrWhiteSpace(loc[key]), key);
+        }
     }
 
     [Fact]
@@ -164,13 +242,30 @@ public class LocalizerTests
     /// <summary>Имена data-элементов из .resx, взятого прямо из исходников (не из скомпилированного ресурса).</summary>
     private static HashSet<string> ResxKeys(string fileName)
     {
-        var path = Path.Combine(RepoRoot(), "src", "Vantah.App", "Localization", fileName);
-        var doc = System.Xml.Linq.XDocument.Load(path);
+        var doc = System.Xml.Linq.XDocument.Load(ResxPath(fileName));
         return doc.Root!
             .Elements("data")
             .Select(d => d.Attribute("name")!.Value)
             .ToHashSet(StringComparer.Ordinal);
     }
+
+    /// <summary>Пары «ключ → значение» из .resx исходников.</summary>
+    private static string ResxPath(string fileName) =>
+        Path.Combine(RepoRoot(), "src", "Vantah.App", "Localization", fileName);
+
+    private static Dictionary<string, string> ResxValues(string fileName)
+    {
+        var doc = System.Xml.Linq.XDocument.Load(ResxPath(fileName));
+        return doc.Root!
+            .Elements("data")
+            .ToDictionary(d => d.Attribute("name")!.Value, d => d.Element("value")!.Value, StringComparer.Ordinal);
+    }
+
+    /// <summary>Плейсхолдеры вида {0}: сравниваем как множество — порядок в переводе может отличаться.</summary>
+    private static HashSet<string> Placeholders(string value) =>
+        System.Text.RegularExpressions.Regex.Matches(value, @"\{\d+\}")
+            .Select(m => m.Value)
+            .ToHashSet(StringComparer.Ordinal);
 
     private static string RepoRoot()
     {

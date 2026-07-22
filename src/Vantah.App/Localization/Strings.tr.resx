@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Turkish strings. Neutral culture (Strings.resx) is Russian. -->
+
+  <!-- Вкладки главного окна -->
+  <data name="Tab_Status" xml:space="preserve">
+    <value>Durum</value>
+  </data>
+  <data name="Tab_Locations" xml:space="preserve">
+    <value>Konumlar</value>
+  </data>
+  <data name="Tab_Domains" xml:space="preserve">
+    <value>Alan adları</value>
+  </data>
+
+  <!-- Общие подписи кнопок и состояний -->
+  <data name="Common_Connect" xml:space="preserve">
+    <value>Bağlan</value>
+  </data>
+  <data name="Common_Disconnect" xml:space="preserve">
+    <value>Bağlantıyı kes</value>
+  </data>
+  <data name="Common_Add" xml:space="preserve">
+    <value>Ekle</value>
+  </data>
+  <data name="Common_Clear" xml:space="preserve">
+    <value>Temizle</value>
+  </data>
+  <data name="Common_Cancel" xml:space="preserve">
+    <value>İptal</value>
+  </data>
+  <data name="Common_Refresh" xml:space="preserve">
+    <value>Yenile</value>
+  </data>
+  <data name="Common_Import" xml:space="preserve">
+    <value>İçe aktar</value>
+  </data>
+  <data name="Common_Export" xml:space="preserve">
+    <value>Dışa aktar</value>
+  </data>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>yükleniyor…</value>
+  </data>
+  <data name="Common_NotAvailable" xml:space="preserve">
+    <value>kullanılamıyor</value>
+  </data>
+  <data name="Common_Apply" xml:space="preserve">
+    <value>Uygula</value>
+  </data>
+  <data name="Common_Reset" xml:space="preserve">
+    <value>Sıfırla</value>
+  </data>
+  <data name="Common_Saved" xml:space="preserve">
+    <value>Kaydedildi</value>
+  </data>
+
+  <!-- Вкладка «Статус» -->
+  <data name="Status_Connected" xml:space="preserve">
+    <value>Bağlandı</value>
+  </data>
+  <data name="Status_Connecting" xml:space="preserve">
+    <value>Bağlanıyor…</value>
+  </data>
+  <data name="Status_Disconnecting" xml:space="preserve">
+    <value>Bağlantı kesiliyor…</value>
+  </data>
+  <data name="Status_Disconnected" xml:space="preserve">
+    <value>Bağlantı kesildi</value>
+  </data>
+  <data name="Status_Error" xml:space="preserve">
+    <value>Hata</value>
+  </data>
+  <data name="Status_Checking" xml:space="preserve">
+    <value>Bağlantı durumu denetleniyor…</value>
+  </data>
+  <data name="Status_SpeedLabel" xml:space="preserve">
+    <value>Hız:</value>
+  </data>
+  <data name="Status_SessionLabel" xml:space="preserve">
+    <value>Oturum toplamı:</value>
+  </data>
+  <data name="Status_ModeFormat" xml:space="preserve">
+    <value>Mod: {0}</value>
+    <comment>{0} — режим CLI (TUN/SOCKS), не переводится.</comment>
+  </data>
+  <data name="Status_Exclusions_General" xml:space="preserve">
+    <value>İstisnalar: Genel</value>
+  </data>
+  <data name="Status_Exclusions_Selective" xml:space="preserve">
+    <value>İstisnalar: Seçmeli</value>
+  </data>
+  <data name="Status_SubTab_History" xml:space="preserve">
+    <value>Geçmiş</value>
+  </data>
+  <data name="Status_SubTab_Log" xml:space="preserve">
+    <value>Günlük</value>
+  </data>
+  <data name="Status_HistoryEmpty" xml:space="preserve">
+    <value>Henüz kayıt yok — geçmiş ilk bağlantıdan sonra görünür</value>
+  </data>
+  <data name="Status_HistoryEntryFormat" xml:space="preserve">
+    <value>{0} — {1} → {2}</value>
+    <comment>{0} — локация, {1} — начало, {2} — конец сессии.</comment>
+  </data>
+  <data name="Status_IpVersion" xml:space="preserve">
+    <value>Bağlantıda IP sürümü</value>
+  </data>
+
+  <!-- Вкладка «Локации» -->
+  <data name="Locations_SearchPlaceholder" xml:space="preserve">
+    <value>Konum ara…</value>
+  </data>
+  <data name="Locations_Loading" xml:space="preserve">
+    <value>Konumlar yükleniyor…</value>
+  </data>
+  <data name="Locations_ConnectedBadge" xml:space="preserve">
+    <value>✓ Bağlandı</value>
+  </data>
+  <data name="Locations_Col_Iso" xml:space="preserve">
+    <value>ISO</value>
+  </data>
+  <data name="Locations_Col_City" xml:space="preserve">
+    <value>Şehir</value>
+  </data>
+  <data name="Locations_Col_Country" xml:space="preserve">
+    <value>Ülke</value>
+  </data>
+  <data name="Locations_Col_Ping" xml:space="preserve">
+    <value>Ping (ms)</value>
+  </data>
+  <data name="Locations_Tooltip_FavoritesFirst" xml:space="preserve">
+    <value>Favoriler üstte</value>
+  </data>
+  <data name="Locations_Tooltip_SortByIso" xml:space="preserve">
+    <value>Ülke koduna göre sırala</value>
+  </data>
+  <data name="Locations_Tooltip_SortByCity" xml:space="preserve">
+    <value>Şehre göre sırala</value>
+  </data>
+  <data name="Locations_Tooltip_SortByCountry" xml:space="preserve">
+    <value>Ülkeye göre sırala</value>
+  </data>
+  <data name="Locations_Tooltip_SortByPing" xml:space="preserve">
+    <value>Ping değerine göre sırala</value>
+  </data>
+
+  <!-- Вкладка «Домены» -->
+  <data name="Domains_Mode_General" xml:space="preserve">
+    <value>Listedeki alan adları VPN dışında kalır</value>
+  </data>
+  <data name="Domains_Mode_Selective" xml:space="preserve">
+    <value>Yalnızca listedeki alan adları VPN üzerinden geçer</value>
+  </data>
+  <data name="Domains_QueryPlaceholder" xml:space="preserve">
+    <value>Alan adı / filtre (örn. example.com)</value>
+  </data>
+  <data name="Domains_PasteFromClipboard" xml:space="preserve">
+    <value>Panodan yapıştır</value>
+  </data>
+  <data name="Domains_ExportDialogTitle" xml:space="preserve">
+    <value>Alan adlarını dışa aktar</value>
+  </data>
+  <data name="Domains_ImportDialogTitle" xml:space="preserve">
+    <value>Alan adlarını içe aktar</value>
+  </data>
+  <data name="Domains_ClearConfirmTitle" xml:space="preserve">
+    <value>İstisnaları temizle</value>
+  </data>
+  <data name="Domains_ClearConfirmMessage" xml:space="preserve">
+    <value>Geçerli moddaki tüm alan adları silinsin mi?</value>
+  </data>
+  <data name="Domains_InvalidEntry" xml:space="preserve">
+    <value>Bu bir alan adına veya IP adresine benzemiyor</value>
+  </data>
+
+  <!-- Вкладка «Лицензия» -->
+  <data name="License_Account" xml:space="preserve">
+    <value>Hesap:</value>
+  </data>
+  <data name="License_Plan" xml:space="preserve">
+    <value>Abonelik:</value>
+  </data>
+  <data name="License_Devices" xml:space="preserve">
+    <value>Cihazlar:</value>
+  </data>
+  <data name="License_Renewal" xml:space="preserve">
+    <value>Yenileme:</value>
+  </data>
+  <data name="License_Loading" xml:space="preserve">
+    <value>Lisans yükleniyor…</value>
+  </data>
+  <data name="License_ErrorNotLoggedIn" xml:space="preserve">
+    <value>Lisans alınamadı — oturum açmamış olabilirsiniz</value>
+  </data>
+  <data name="License_ErrorFormat" xml:space="preserve">
+    <value>Lisans alınamadı: {0}</value>
+    <comment>{0} — текст ошибки CLI.</comment>
+  </data>
+
+  <!-- Вкладка «О программе» -->
+  <data name="About_Version" xml:space="preserve">
+    <value>Sürüm:</value>
+  </data>
+  <data name="About_CliVersion" xml:space="preserve">
+    <value>adguardvpn-cli:</value>
+  </data>
+  <data name="About_LegalNotice" xml:space="preserve">
+    <value>Vantah, adguardvpn-cli aracı için bağımsız bir grafik istemcidir. Proje AdGuard ile bağlantılı değildir; AdGuard tarafından onaylanmaz ve desteklenmez. "AdGuard" ve "AdGuard VPN", ilgili hak sahiplerinin ticari markalarıdır ve yalnızca uyumluluğu belirtmek amacıyla anılmaktadır.</value>
+  </data>
+
+  <!-- Вкладка «Процессы» -->
+  <data name="Processes_Col_Pid" xml:space="preserve">
+    <value>PID</value>
+  </data>
+  <data name="Processes_Col_Command" xml:space="preserve">
+    <value>Komut</value>
+  </data>
+  <data name="Processes_Col_Started" xml:space="preserve">
+    <value>Başlatıldı</value>
+  </data>
+  <data name="Processes_Kill" xml:space="preserve">
+    <value>Sonlandır</value>
+  </data>
+  <data name="Processes_KillAll" xml:space="preserve">
+    <value>Tümünü sonlandır</value>
+  </data>
+  <data name="Processes_KillConfirm" xml:space="preserve">
+    <value>PID {0} işlemi sonlandırılsın mı?</value>
+    <comment>{0} — PID процесса.</comment>
+  </data>
+  <data name="Processes_KillAllConfirm" xml:space="preserve">
+    <value>Çalışan tüm işlemler sonlandırılsın mı?</value>
+  </data>
+  <data name="Processes_KillConfirmAction" xml:space="preserve">
+    <value>Sonlandır</value>
+  </data>
+  <data name="Processes_Empty" xml:space="preserve">
+    <value>Çalışan işlem yok</value>
+  </data>
+
+  <!-- Меню и подсказка в трее -->
+  <data name="Tray_Fastest" xml:space="preserve">
+    <value>⚡ En hızlı</value>
+  </data>
+  <data name="Tray_Location" xml:space="preserve">
+    <value>Konum</value>
+  </data>
+  <data name="Tray_ShowWindow" xml:space="preserve">
+    <value>Pencereyi göster</value>
+  </data>
+  <data name="Tray_Exit" xml:space="preserve">
+    <value>Çıkış</value>
+  </data>
+  <data name="Tray_NoFavorites" xml:space="preserve">
+    <value>Favori yok</value>
+  </data>
+  <data name="Tray_DomainsFormat" xml:space="preserve">
+    <value>Alan adları ({0})</value>
+    <comment>{0} — число доменов-исключений.</comment>
+  </data>
+  <data name="Tray_Tooltip_ConnectedFormat" xml:space="preserve">
+    <value>{0} Vantah — Bağlandı{1}</value>
+    <comment>{0} — глиф состояния, {1} — «: Город» либо пусто.</comment>
+  </data>
+  <data name="Tray_Tooltip_DisconnectedFormat" xml:space="preserve">
+    <value>{0} Vantah — Bağlantı kesildi</value>
+    <comment>{0} — глиф состояния.</comment>
+  </data>
+  <data name="Tray_Tooltip_TrafficFormat" xml:space="preserve">
+    <value>↓ {0}/s ↑ {1}/s</value>
+    <comment>{0} — приём, {1} — передача.</comment>
+  </data>
+  <data name="Tray_Tooltip_DomainsFormat" xml:space="preserve">
+    <value>Alan adları: {0}</value>
+    <comment>{0} — число доменов-исключений.</comment>
+  </data>
+  <data name="Tray_Tooltip_ErrorFormat" xml:space="preserve">
+    <value>⚠ Hata: {0}</value>
+    <comment>{0} — текст ошибки подключения.</comment>
+  </data>
+  <data name="Tray_StatusConnectedFormat" xml:space="preserve">
+    <value>{0} {1}{2}</value>
+    <comment>{0} — глиф состояния, {1} — локация, {2} — « · Режим» либо пусто.</comment>
+  </data>
+
+  <!-- Вкладка «Настройки» -->
+  <data name="Settings_ConnectedWarning" xml:space="preserve">
+    <value>VPN bağlı. Ayar değişikliklerinin etkili olması için yeniden bağlanmanız gerekebilir.</value>
+  </data>
+  <data name="Settings_Mode" xml:space="preserve">
+    <value>Çalışma modu</value>
+  </data>
+  <data name="Settings_SocksSection" xml:space="preserve">
+    <value>SOCKS ayarları</value>
+  </data>
+  <data name="Settings_SocksPort" xml:space="preserve">
+    <value>Port</value>
+  </data>
+  <data name="Settings_SocksHost" xml:space="preserve">
+    <value>Sunucu</value>
+  </data>
+  <data name="Settings_SocksUsername" xml:space="preserve">
+    <value>Kullanıcı adı</value>
+  </data>
+  <data name="Settings_SocksPassword" xml:space="preserve">
+    <value>Parola</value>
+  </data>
+  <data name="Settings_SaveAuth" xml:space="preserve">
+    <value>Kullanıcı adını ve parolayı kaydet</value>
+  </data>
+  <data name="Settings_ClearAuth" xml:space="preserve">
+    <value>Kimlik bilgilerini temizle</value>
+  </data>
+  <data name="Settings_Dns" xml:space="preserve">
+    <value>DNS sunucusu</value>
+  </data>
+  <data name="Settings_DnsPlaceholder" xml:space="preserve">
+    <value>Boş — varsayılan AdGuard sunucuları</value>
+  </data>
+  <data name="Settings_Protocol" xml:space="preserve">
+    <value>Protokol</value>
+  </data>
+  <data name="Settings_Channel" xml:space="preserve">
+    <value>Güncelleme kanalı</value>
+  </data>
+  <data name="Settings_Routing" xml:space="preserve">
+    <value>TUN yönlendirme modu</value>
+  </data>
+  <data name="Settings_CreateRouteScript" xml:space="preserve">
+    <value>Yönlendirme betiği oluştur</value>
+  </data>
+  <data name="Settings_ChangeSystemDns" xml:space="preserve">
+    <value>Sistem DNS ayarını değiştir</value>
+  </data>
+  <data name="Settings_PostQuantum" xml:space="preserve">
+    <value>Kuantum sonrası kriptografi</value>
+  </data>
+  <data name="Settings_ShowNotifications" xml:space="preserve">
+    <value>Bildirimleri göster</value>
+  </data>
+  <data name="Settings_DebugLogging" xml:space="preserve">
+    <value>Hata ayıklama günlüğü</value>
+  </data>
+  <data name="Settings_CrashReporting" xml:space="preserve">
+    <value>Çökme raporları gönder</value>
+  </data>
+  <data name="Settings_Telemetry" xml:space="preserve">
+    <value>Anonim kullanım verisi gönder</value>
+  </data>
+  <data name="Settings_ShowHints" xml:space="preserve">
+    <value>Komutlardan sonra ipuçlarını göster</value>
+  </data>
+  <data name="Settings_InterfaceOverride" xml:space="preserve">
+    <value>Giden ağ arayüzü</value>
+  </data>
+  <data name="Settings_InterfacePlaceholder" xml:space="preserve">
+    <value>örn. eth0 (boş — varsayılan)</value>
+  </data>
+  <data name="Settings_ErrorInvalidPort" xml:space="preserve">
+    <value>SOCKS portu 1 ile 65535 arasında bir sayı olmalı</value>
+  </data>
+  <data name="Settings_ErrorEmptyHost" xml:space="preserve">
+    <value>SOCKS sunucusunu girin</value>
+  </data>
+  <data name="Settings_UpdateAvailable" xml:space="preserve">
+    <value>adguardvpn-cli için yeni sürüm mevcut</value>
+  </data>
+  <data name="Settings_ExportLogs" xml:space="preserve">
+    <value>Günlükleri dışa aktar…</value>
+  </data>
+  <data name="Settings_LogsExported" xml:space="preserve">
+    <value>Günlükler kaydedildi</value>
+  </data>
+  <data name="Settings_StartupSection" xml:space="preserve">
+    <value>Başlangıç</value>
+  </data>
+  <data name="Settings_AutoConnect" xml:space="preserve">
+    <value>Açılışta otomatik bağlan</value>
+  </data>
+  <data name="Settings_AutoConnectLast" xml:space="preserve">
+    <value>Son konum</value>
+  </data>
+  <data name="Settings_AutoConnectFastest" xml:space="preserve">
+    <value>En hızlı</value>
+  </data>
+  <data name="Settings_Autostart" xml:space="preserve">
+    <value>Sistem açılışında başlat</value>
+  </data>
+  <data name="Settings_CheckAppUpdates" xml:space="preserve">
+    <value>Vantah güncellemelerini denetle</value>
+  </data>
+  <data name="Update_Available" xml:space="preserve">
+    <value>Vantah için yeni sürüm mevcut — {0}</value>
+  </data>
+  <data name="Update_Download" xml:space="preserve">
+    <value>İndir</value>
+  </data>
+  <data name="Update_Dismiss" xml:space="preserve">
+    <value>Bu sürümü gizle</value>
+  </data>
+
+  <!-- Меню «☰» -->
+  <data name="Menu_Tooltip" xml:space="preserve">
+    <value>Menü</value>
+  </data>
+  <data name="Menu_Processes" xml:space="preserve">
+    <value>İşlemler…</value>
+  </data>
+  <data name="Menu_Settings" xml:space="preserve">
+    <value>Ayarlar…</value>
+  </data>
+  <data name="Menu_License" xml:space="preserve">
+    <value>Lisans…</value>
+  </data>
+  <data name="Menu_About" xml:space="preserve">
+    <value>Hakkında…</value>
+  </data>
+
+  <!-- Выбор языка -->
+  <data name="Lang_Label" xml:space="preserve">
+    <value>Dil</value>
+  </data>
+
+  <!-- Экран входа (device-code через браузер) -->
+  <data name="Login_Title" xml:space="preserve">
+    <value>AdGuard VPN oturumu açın</value>
+  </data>
+  <data name="Login_Logout" xml:space="preserve">
+    <value>Oturumu kapat…</value>
+  </data>
+  <data name="Login_LogoutConfirmTitle" xml:space="preserve">
+    <value>Oturumu kapat</value>
+  </data>
+  <data name="Login_LogoutConfirmMessage" xml:space="preserve">
+    <value>AdGuard VPN hesabınızın oturumu kapatılsın mı? Bağlantı kesilecek ve yeniden oturum açmanız gerekecek.</value>
+  </data>
+  <data name="Login_LogoutConfirmAction" xml:space="preserve">
+    <value>Oturumu kapat</value>
+  </data>
+  <data name="Login_Intro" xml:space="preserve">
+    <value>Oturum açma işlemi tarayıcınızda yapılır. AdGuard yetkilendirme sayfasını açmak için “Oturum aç” düğmesine tıklayın.</value>
+  </data>
+  <data name="Login_Start" xml:space="preserve">
+    <value>Oturum aç</value>
+  </data>
+  <data name="Login_OpenBrowser" xml:space="preserve">
+    <value>Tarayıcıda aç</value>
+  </data>
+  <data name="Login_Cancel" xml:space="preserve">
+    <value>İptal</value>
+  </data>
+  <data name="Login_Waiting" xml:space="preserve">
+    <value>Tarayıcıda onay bekleniyor…</value>
+  </data>
+  <data name="Login_CodeLabel" xml:space="preserve">
+    <value>Kod:</value>
+  </data>
+  <data name="Login_UrlLabel" xml:space="preserve">
+    <value>Tarayıcı açılmadıysa bağlantıyı elle açın:</value>
+  </data>
+  <data name="Login_CopyUrl" xml:space="preserve">
+    <value>Bağlantıyı kopyala</value>
+  </data>
+  <data name="Error_CommandFailed" xml:space="preserve">
+    <value>{0} başarısız oldu</value>
+  </data>
+  <data name="Error_Timeout" xml:space="preserve">
+    <value>{0} zaman aşımına uğradı</value>
+  </data>
+  <data name="Error_AddDomainFailed" xml:space="preserve">
+    <value>eklenemedi: {0}</value>
+  </data>
+  <data name="Error_RemoveDomainFailed" xml:space="preserve">
+    <value>kaldırılamadı: {0}</value>
+  </data>
+  <data name="Error_ModeSwitchFailed" xml:space="preserve">
+    <value>mod değiştirilemedi: {0}</value>
+  </data>
+  <data name="Error_Cancelled" xml:space="preserve">
+    <value>işlem iptal edildi</value>
+  </data>
+  <data name="Login_Succeeded" xml:space="preserve">
+    <value>Oturum açıldı</value>
+  </data>
+  <data name="Login_Failed" xml:space="preserve">
+    <value>Oturum açma tamamlanmadı</value>
+  </data>
+  <data name="Login_Cancelled" xml:space="preserve">
+    <value>Oturum açma iptal edildi</value>
+  </data>
+  <data name="Login_TimedOut" xml:space="preserve">
+    <value>Oturum açma zaman aşımına uğradı</value>
+  </data>
+  <data name="Settings_LogsExportedFormat" xml:space="preserve">
+    <value>Günlükler kaydedildi: {0}</value>
+  </data>
+  <data name="Settings_UpdateAvailableFormat" xml:space="preserve">
+    <value>adguardvpn-cli için yeni sürüm mevcut: {0}</value>
+  </data>
+</root>

@@ -91,6 +91,17 @@ when it writes its own files there.
   switching, CLI update checks, log export, and viewing/terminating CLI
   processes.
 
+## Interface languages
+
+Vantah speaks Russian, English, German, Spanish, French, Indonesian, Italian,
+Polish, Brazilian Portuguese, Turkish, Ukrainian and Simplified Chinese; the
+language is picked in Settings and applies immediately.
+
+Only the Russian and English strings are written by the authors. **Every other
+language is a draft that has not been reviewed by a native speaker** — if
+something reads wrong, an issue or a pull request against
+`src/Vantah.App/Localization/Strings.<code>.resx` is very welcome.
+
 ## Download
 
 Ready-made builds for Linux x86-64 are published on the
