@@ -1,5 +1,7 @@
 # Vantah
 
+[![CI](https://github.com/bolikcraft/vantah/actions/workflows/ci.yml/badge.svg)](https://github.com/bolikcraft/vantah/actions/workflows/ci.yml)
+
 **English** · [Русский](README.ru.md)
 
 Vantah is a desktop GUI client for Linux (a window plus a system-tray icon) that
