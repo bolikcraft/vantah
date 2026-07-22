@@ -22,6 +22,7 @@ public partial class DomainsViewModel : ObservableObject
     private SiteExclusionMode _mode = SiteExclusionMode.General;
     private bool _switchingMode;   // защита от реентранта при программной установке радио
     private bool _errorFromInput;  // текущая ошибка — про введённую строку, а не про CLI
+    private bool _loadFailed;      // последняя загрузка списка упала (таймаут/ошибка CLI)
 
     [ObservableProperty] private string _query = "";  // одно поле: ввод домена и фильтр списка
     [ObservableProperty] private bool _isGeneral = true;
@@ -62,6 +63,18 @@ public partial class DomainsViewModel : ObservableObject
         if (value && !_switchingMode) _ = SwitchModeAsync(SiteExclusionMode.Selective);
     }
 
+    /// <summary>Повторная загрузка списка (кнопка «Обновить»): без неё сбой CLI при старте
+    /// оставляет вкладку пустой навсегда — перезапуск приложения был единственным выходом.</summary>
+    [RelayCommand]
+    private Task Reload() => LoadTask = ReloadAsync();
+
+    /// <summary>Возврат на вкладку «Домены» после неудачной загрузки — пробуем ещё раз.
+    /// Успешно загруженный (пусть и пустой) список не перечитываем: CLI дёргать зря незачем.</summary>
+    public void ReloadIfFailed()
+    {
+        if (_loadFailed) LoadTask = ReloadAsync();
+    }
+
     private async Task ReloadAsync()
     {
         try
@@ -84,11 +97,12 @@ public partial class DomainsViewModel : ObservableObject
                 _all.AddRange(snap.Domains);
                 ApplyFilter();
                 _appState.Set(s => s with { ExclusionsCount = _all.Count, ExclusionsMode = _mode });
+                _loadFailed = false;
             });
         }
         catch (Exception ex)
         {
-            await UiThread.RunAsync(() => Error = ex.Message);
+            await UiThread.RunAsync(() => { Error = ex.Message; _loadFailed = true; });
         }
         finally
         {

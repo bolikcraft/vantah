@@ -33,6 +33,8 @@
       <Button Content="{Binding [Common_Export], Source={x:Static loc:Localizer.Instance}}" Click="OnExportClick"/>
       <Button Content="{Binding [Domains_PasteFromClipboard], Source={x:Static loc:Localizer.Instance}}" Click="OnPasteClick"/>
       <Button Content="{Binding [Common_Clear], Source={x:Static loc:Localizer.Instance}}" Click="OnClearClick"/>
+      <Button Command="{Binding ReloadCommand}" IsEnabled="{Binding !IsBusy}"
+              Content="{Binding [Common_Refresh], Source={x:Static loc:Localizer.Instance}}"/>
     </StackPanel>
 
     <ListBox ItemsSource="{Binding Items}">

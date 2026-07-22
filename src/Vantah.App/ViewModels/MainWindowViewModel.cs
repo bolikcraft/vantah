@@ -67,6 +67,13 @@ public partial class MainWindowViewModel : ObservableObject
         IsLoggedIn = store.Current.LoginState != LoginState.LoggedOut;
     }
 
+    // Домены = вкладка 2 (см. комментарий у SelectedTab). Если список исключений при старте
+    // не пришёл (таймаут CLI), возврат на вкладку — естественный момент повторить попытку.
+    partial void OnSelectedTabChanged(int value)
+    {
+        if (value == 2) Domains.ReloadIfFailed();
+    }
+
     [RelayCommand]
     private async Task LogoutAsync()
     {
