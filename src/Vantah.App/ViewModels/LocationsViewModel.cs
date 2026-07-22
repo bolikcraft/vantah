@@ -32,6 +32,8 @@ public partial class LocationsViewModel : ObservableObject
     // Состояние загрузки локаций для самого экрана «Локации»: пока грузим — показываем «Загрузка…»,
     // при сбое — текст ошибки и кнопку «Обновить», а не молчаливо пустой список.
     [ObservableProperty] private bool _isLoading;
+    // Причина сбоя, а не готовая строка: после смены языка сообщение пересобирается (см. RaiseHeadersChanged).
+    private UiText _loadErrorValue;
     [ObservableProperty] private string? _loadError;
 
     /// <summary>Текущая (пере)загрузка списка — чтобы её можно было дождаться в тестах.</summary>
@@ -96,11 +98,13 @@ public partial class LocationsViewModel : ObservableObject
         OnPropertyChanged(nameof(CityHeader));
         OnPropertyChanged(nameof(CountryHeader));
         OnPropertyChanged(nameof(PingHeader));
+        LoadError = _loadErrorValue.Text;   // сообщение о сбое — тоже на новом языке
     }
 
     private async Task LoadAsync()
     {
         IsLoading = true;
+        _loadErrorValue = UiText.None;
         LoadError = null;
         try
         {
@@ -126,8 +130,10 @@ public partial class LocationsViewModel : ObservableObject
             // и в общем баннере на «Статусе».
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                LoadError = ex.Message;
-                _store.Set(s => s with { Error = ex.Message });
+                var error = UiText.From(ex);
+                _loadErrorValue = error;
+                LoadError = error.Text;
+                _store.Set(s => s with { Error = Vantah.Core.Errors.AppError.From(ex) });
             });
         }
         finally

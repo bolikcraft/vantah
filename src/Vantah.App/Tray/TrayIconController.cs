@@ -170,8 +170,8 @@ public sealed class TrayIconController
             _icon.ToolTipText = loc.Format(LocKeys.Tray_Tooltip_DisconnectedFormat, glyph);
 
             // Ошибку не показываем глифом (на 16px не читается) — значит, она обязана быть здесь.
-            if (s.Connection == ConnectionState.Error && !string.IsNullOrWhiteSpace(s.Error))
-                _icon.ToolTipText += "\n" + loc.Format(LocKeys.Tray_Tooltip_ErrorFormat, s.Error);
+            if (s.Connection == ConnectionState.Error && s.Error is { } err && UiText.Of(err).Text is { Length: > 0 } text)
+                _icon.ToolTipText += "\n" + loc.Format(LocKeys.Tray_Tooltip_ErrorFormat, text);
         }
 
         // Счётчик доменов-исключений: пункт меню + строка в подсказке.

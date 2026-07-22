@@ -1,3 +1,4 @@
+using Vantah.Core.Errors;
 using Vantah.Core.Auth;
 using Vantah.Core.Cli;
 using Vantah.Core.Models;
@@ -99,6 +100,6 @@ public class AuthServiceTests
         cts.Cancel();
         var result = await auth.LoginAsync(_ => { }, cts.Token);
         Assert.False(result.Success);
-        Assert.Contains("отмен", result.Message, System.StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(AppErrorCode.LoginCancelled, result.Message.Code);
     }
 }

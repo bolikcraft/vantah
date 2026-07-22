@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Vantah.Core.Auth;
 using Vantah.Core.History;
 using Vantah.Core.Models;
+using Vantah.Core.Errors;
 using Vantah.Core.State;
 using Vantah.Core.Traffic;
 using Vantah.Core.Vpn;
@@ -88,7 +89,7 @@ public sealed class VpnCoordinator(
             }
             catch (Exception ex)
             {
-                store.Set(s => s with { Connection = ConnectionState.Error, Error = ex.Message });
+                store.Set(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) });
             }
         }
         finally
@@ -130,7 +131,7 @@ public sealed class VpnCoordinator(
             }
             catch (Exception ex)
             {
-                store.Set(s => s with { Connection = ConnectionState.Error, Error = ex.Message });
+                store.Set(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) });
             }
         }
         finally
@@ -163,7 +164,7 @@ public sealed class VpnCoordinator(
             }
             catch (Exception ex)
             {
-                store.Set(s => s with { Connection = ConnectionState.Error, Error = ex.Message });
+                store.Set(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) });
             }
         }
         finally

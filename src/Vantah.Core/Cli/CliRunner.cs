@@ -2,8 +2,19 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Channels;
 using Vantah.Core.Config;
+using Vantah.Core.Errors;
 
 namespace Vantah.Core.Cli;
+
+/// <summary>
+/// Команда CLI не уложилась в таймаут. Наследник <see cref="TimeoutException"/> — старые
+/// <c>catch (TimeoutException)</c> продолжают ловить её, но текст для пользователя UI берёт
+/// из <see cref="Error"/> и переводит.
+/// </summary>
+public sealed class CliTimeoutException(AppError error) : TimeoutException(error.ToString()), IAppErrorException
+{
+    public AppError Error { get; } = error;
+}
 
 public sealed class CliRunner(string executable = CliOptionsResolver.DefaultExecutable) : ICliRunner, IInteractiveCliRunner
 {
@@ -48,7 +59,8 @@ public sealed class CliRunner(string executable = CliOptionsResolver.DefaultExec
                 // Если отмену запросил вызывающий — показываем настоящую OperationCanceledException,
                 // а не маскируем её таймаутом (linked cts срабатывает и на ct, и на timeout).
                 ct.ThrowIfCancellationRequested();
-                throw new TimeoutException($"{executable} {string.Join(' ', args)} превысил таймаут");
+                throw new CliTimeoutException(
+                    new AppError(AppErrorCode.Timeout, $"{executable} {string.Join(' ', args)}"));
             }
 
             return new CliResult(proc.ExitCode, stdout.ToString(), stderr.ToString());

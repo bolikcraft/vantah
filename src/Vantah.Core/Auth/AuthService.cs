@@ -1,5 +1,6 @@
 using System.Text;
 using Vantah.Core.Cli;
+using Vantah.Core.Errors;
 using Vantah.Core.Models;
 using Vantah.Core.Vpn;    // VpnCommandException
 
@@ -45,15 +46,15 @@ public sealed class AuthService(ICliRunner cli, IInteractiveCliRunner interactiv
             var exit = await session.WaitForExitAsync(token);
             if (exit == 0) return LoginResult.Ok();
             var state = await GetLoginStateAsync(ct);
-            return state == LoginState.LoggedIn ? LoginResult.Ok() : LoginResult.Fail("Вход не выполнен");
+            return state == LoginState.LoggedIn ? LoginResult.Ok() : LoginResult.Fail(AppErrorCode.LoginFailed);
         }
         catch (OperationCanceledException)
         {
             // Грациозно просим CLI отменить (`x`), затем DisposeAsync добьёт процесс.
             try { await session.WriteLineAsync("x", CancellationToken.None); } catch { /* процесс мог уже уйти */ }
             return ct.IsCancellationRequested
-                ? LoginResult.Fail("Вход отменён")
-                : LoginResult.Fail("Истекло время ожидания входа");
+                ? LoginResult.Fail(AppErrorCode.LoginCancelled)
+                : LoginResult.Fail(AppErrorCode.LoginTimedOut);
         }
     }
 
@@ -61,8 +62,6 @@ public sealed class AuthService(ICliRunner cli, IInteractiveCliRunner interactiv
     {
         var r = await cli.RunAsync(["logout"], QuickTimeout, ct);
         if (!r.Ok)
-            throw new VpnCommandException(
-                new[] { r.Stderr, r.Stdout, "logout завершился с ошибкой" }
-                    .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))!.Trim());
+            throw new VpnCommandException(AppError.FromCli(r, "logout"));
     }
 }

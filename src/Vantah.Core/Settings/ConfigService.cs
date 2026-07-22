@@ -1,9 +1,14 @@
 using Vantah.Core.Cli;
+using Vantah.Core.Errors;
 using Vantah.Core.Models;
 
 namespace Vantah.Core.Settings;
 
-public sealed class ConfigCommandException(string message) : Exception(message);
+/// <summary>Сбой команды <c>config</c>. Текст для пользователя собирается из <see cref="Error"/> в UI.</summary>
+public sealed class ConfigCommandException(AppError error) : Exception(error.ToString()), IAppErrorException
+{
+    public AppError Error { get; } = error;
+}
 
 /// <summary>
 /// Настройки поверх <c>adguardvpn-cli config</c>. Пишем одной подкомандой <c>set-*</c>, затем
@@ -25,7 +30,7 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
     {
         var r = await cli.RunAsync(["config", "show"], Timeout, ct);
         if (!r.Ok)
-            throw new ConfigCommandException(FirstNonEmpty(r.Stderr, r.Stdout, "config show завершился с ошибкой"));
+            throw new ConfigCommandException(AppError.FromCli(r, "config show"));
         return ConfigParser.Parse(r.Stdout);
     }
 
@@ -103,7 +108,7 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
         var r = await cli.RunAsync(["config", "create-route-script"], Timeout, ct);
         if (!r.Ok)
             throw new ConfigCommandException(
-                FirstNonEmpty(r.Stderr, r.Stdout, "create-route-script завершился с ошибкой"));
+                AppError.FromCli(r, "create-route-script"));
         return FirstNonEmpty(r.Stdout, r.Stderr, "");
     }
 
@@ -112,7 +117,7 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
         var r = await cli.RunAsync(args, Timeout, ct);
         if (!r.Ok)
             throw new ConfigCommandException(
-                FirstNonEmpty(r.Stderr, r.Stdout, $"{string.Join(' ', args)} завершился с ошибкой"));
+                AppError.FromCli(r, string.Join(' ', args)));
         return await GetAsync(ct);
     }
 
@@ -133,10 +138,10 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
         }
         catch (TimeoutException)
         {
-            throw new ConfigCommandException($"{safeLabel} превысил таймаут");
+            throw new ConfigCommandException(new AppError(AppErrorCode.Timeout, safeLabel));
         }
         if (!r.Ok)
-            throw new ConfigCommandException(FirstNonEmpty(r.Stderr, r.Stdout, $"{safeLabel} завершился с ошибкой"));
+            throw new ConfigCommandException(AppError.FromCli(r, safeLabel));
         return await GetAsync(ct);
     }
 

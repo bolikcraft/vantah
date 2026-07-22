@@ -1,3 +1,5 @@
+using Vantah.Core.Cli;
+using Vantah.Core.Errors;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.VisualTree;
@@ -24,7 +26,7 @@ public class DomainsViewRefreshTests
         {
             await Task.Yield();
             if (Interlocked.Increment(ref _calls) == 1)
-                throw new TimeoutException("adguardvpn-cli site-exclusions show превысил таймаут");
+                throw new CliTimeoutException(new AppError(AppErrorCode.Timeout, "adguardvpn-cli site-exclusions show"));
             return snapshot;
         }
 

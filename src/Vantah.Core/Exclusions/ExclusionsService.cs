@@ -1,4 +1,5 @@
 using Vantah.Core.Cli;
+using Vantah.Core.Errors;
 using Vantah.Core.Models;
 using Vantah.Core.Vpn; // VpnCommandException
 
@@ -11,7 +12,7 @@ public sealed class ExclusionsService(ICliRunner cli, ExclusionsStore store) : I
     public async Task<ExclusionsSnapshot> GetAsync(CancellationToken ct = default)
     {
         var r = await cli.RunAsync(["site-exclusions", "show"], QuickTimeout, ct);
-        if (!r.Ok) throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, "site-exclusions show завершился с ошибкой"));
+        if (!r.Ok) throw new VpnCommandException(AppError.FromCli(r, "site-exclusions show"));
         return ExclusionsParser.Parse(r.Stdout);
     }
 
@@ -20,13 +21,13 @@ public sealed class ExclusionsService(ICliRunner cli, ExclusionsStore store) : I
         // `--` — терминатор опций: домен всегда трактуется как позиционный аргумент,
         // даже если строка начинается с «-» (проверено на adguardvpn-cli v1.7.13).
         var r = await cli.RunAsync(["site-exclusions", "add", "--", domain], QuickTimeout, ct);
-        if (!r.Ok) throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, $"не удалось добавить {domain}"));
+        if (!r.Ok) throw new VpnCommandException(AppError.FromCli(r, new AppError(AppErrorCode.AddDomainFailed, domain)));
     }
 
     public async Task RemoveAsync(string domain, CancellationToken ct = default)
     {
         var r = await cli.RunAsync(["site-exclusions", "remove", "--", domain], QuickTimeout, ct);
-        if (!r.Ok) throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, $"не удалось удалить {domain}"));
+        if (!r.Ok) throw new VpnCommandException(AppError.FromCli(r, new AppError(AppErrorCode.RemoveDomainFailed, domain)));
     }
 
     public async Task SetModeAsync(SiteExclusionMode from, SiteExclusionMode to,
@@ -37,7 +38,7 @@ public sealed class ExclusionsService(ICliRunner cli, ExclusionsStore store) : I
 
         // 2) переключить режим в CLI
         var r = await cli.RunAsync(["site-exclusions", "mode", to.ToCliArg()], QuickTimeout, ct);
-        if (!r.Ok) throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, $"не удалось переключить режим на {to.ToCliArg()}"));
+        if (!r.Ok) throw new VpnCommandException(AppError.FromCli(r, new AppError(AppErrorCode.ModeSwitchFailed, to.ToCliArg())));
 
         // 3) переприменить домены целевого режима из его файла.
         // NB: цикл НЕ атомарен — если add упадёт на середине, CLI останется в целевом
@@ -45,7 +46,4 @@ public sealed class ExclusionsService(ICliRunner cli, ExclusionsStore store) : I
         foreach (var domain in store.Load(to))
             await AddAsync(domain, ct);
     }
-
-    private static string FirstNonEmpty(params string[] xs) =>
-        xs.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.Trim() ?? "";
 }

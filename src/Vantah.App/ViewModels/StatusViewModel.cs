@@ -13,7 +13,7 @@ using Vantah.Core.Vpn;
 
 namespace Vantah.App.ViewModels;
 
-public partial class StatusViewModel : ObservableObject
+public partial class StatusViewModel : ErrorAwareViewModel
 {
     private readonly VpnCoordinator _coordinator;
     private readonly VpnLogReader _logReader;
@@ -28,7 +28,6 @@ public partial class StatusViewModel : ObservableObject
     [ObservableProperty] private string _rxTotalText = "↓ 0.0 B";
     [ObservableProperty] private string _txTotalText = "↑ 0.0 B";
     [ObservableProperty] private string _exclusionsText = "";
-    [ObservableProperty] private string? _error;
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ToggleText))]
     private bool _isConnected;
@@ -116,7 +115,7 @@ public partial class StatusViewModel : ObservableObject
         ExclusionsText = loc[s.ExclusionsMode == SiteExclusionMode.Selective
             ? LocKeys.Status_Exclusions_Selective
             : LocKeys.Status_Exclusions_General];
-        Error = s.Error;
+        SetError(s.Error is { } e ? UiText.Of(e) : UiText.None);
         IsConnected = s.Connection == ConnectionState.Connected;
         IsStatusUnknown = s.Connection == ConnectionState.Unknown;
         IsBusy = s.Connection is ConnectionState.Connecting or ConnectionState.Disconnecting

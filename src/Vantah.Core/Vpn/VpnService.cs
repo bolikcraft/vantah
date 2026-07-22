@@ -1,10 +1,15 @@
 using Vantah.Core.Cli;
+using Vantah.Core.Errors;
 using Vantah.Core.Models;
 using Vantah.Core.Parsing;
 
 namespace Vantah.Core.Vpn;
 
-public sealed class VpnCommandException(string message) : Exception(message);
+/// <summary>Сбой команды CLI. Текст для пользователя собирается из <see cref="Error"/> в UI.</summary>
+public sealed class VpnCommandException(AppError error) : Exception(error.ToString()), IAppErrorException
+{
+    public AppError Error { get; } = error;
+}
 
 public sealed class VpnService(ICliRunner cli) : IVpnService
 {
@@ -17,7 +22,7 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
         // Транзиентный сбой (демон/сеть моргнули) иначе молча парсился бы как «отключено»
         // и рвал бы активную сессию истории — сбой ловим по коду возврата.
         if (!r.Ok)
-            throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, "status завершился с ошибкой"));
+            throw new VpnCommandException(AppError.FromCli(r, "status"));
         return StatusParser.Parse(r.Stdout);
     }
 
@@ -25,7 +30,7 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
     {
         var r = await cli.RunAsync(["list-locations", count.ToString()], QuickTimeout, ct);
         if (!r.Ok)
-            throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, "list-locations завершился с ошибкой"));
+            throw new VpnCommandException(AppError.FromCli(r, "list-locations"));
         return LocationsParser.Parse(r.Stdout);
     }
 
@@ -43,7 +48,7 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
 
         var r = await cli.RunAsync(args.ToArray(), ConnectTimeout, ct);
         if (!r.Ok)
-            throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, "connect завершился с ошибкой"));
+            throw new VpnCommandException(AppError.FromCli(r, "connect"));
         return await GetStatusAsync(ct);
     }
 
@@ -51,7 +56,7 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
     {
         var r = await cli.RunAsync(["disconnect"], QuickTimeout, ct);
         if (!r.Ok)
-            throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, "disconnect завершился с ошибкой"));
+            throw new VpnCommandException(AppError.FromCli(r, "disconnect"));
         return await GetStatusAsync(ct);
     }
 
@@ -61,7 +66,7 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
         // Парсер на нераспарсенном выводе молча вернёт License("", "UNKNOWN", 0, null),
         // поэтому сбой (частый случай — не выполнен вход) ловим по коду возврата.
         if (!r.Ok)
-            throw new VpnCommandException(FirstNonEmpty(r.Stderr, r.Stdout, "license завершился с ошибкой"));
+            throw new VpnCommandException(AppError.FromCli(r, "license"));
         return LicenseParser.Parse(r.Stdout);
     }
 
@@ -72,7 +77,4 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
         var version = Ansi.Strip(r.Stdout).Trim();
         return string.IsNullOrWhiteSpace(version) ? null : version;
     }
-
-    private static string FirstNonEmpty(params string[] xs) =>
-        xs.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.Trim() ?? "";
 }

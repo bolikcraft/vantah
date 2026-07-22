@@ -11,7 +11,7 @@ using Vantah.Core.Vpn;
 
 namespace Vantah.App.ViewModels;
 
-public partial class LicenseViewModel : ObservableObject
+public partial class LicenseViewModel : ErrorAwareViewModel
 {
     private const string Empty = "—";
 
@@ -20,15 +20,12 @@ public partial class LicenseViewModel : ObservableObject
     // Что именно показано в Status/Error, в виде ключей ресурсов: после смены языка
     // те же сообщения пересобираются, не дёргая CLI заново.
     private string? _statusKey = LocKeys.License_Loading;
-    private string? _errorKey;
-    private string? _errorArgument;
 
     [ObservableProperty] private string _email = Empty;
     [ObservableProperty] private string _plan = Empty;
     [ObservableProperty] private string _devices = Empty;
     [ObservableProperty] private string _renewal = Empty;
     [ObservableProperty] private string _status = Localizer.Instance[LocKeys.License_Loading];
-    [ObservableProperty] private string? _error;
     [ObservableProperty] private bool _isBusy;
 
     /// <summary>Текущая (пере)загрузка лицензии — чтобы её можно было дождаться в тестах.</summary>
@@ -98,20 +95,14 @@ public partial class LicenseViewModel : ObservableObject
     private void SetTexts(string? status, string? error, string? errorArgument = null)
     {
         _statusKey = status;
-        _errorKey = error;
-        _errorArgument = errorArgument;
+        if (error is null) ClearError();
+        else if (errorArgument is null) SetError(error);
+        else SetError(error, errorArgument);
         RefreshTexts();
     }
 
-    /// <summary>Пересобирает Status/Error из запомненных ключей по текущему языку.</summary>
-    private void RefreshTexts()
-    {
-        var loc = Localizer.Instance;
-        Status = _statusKey is null ? "" : loc[_statusKey];
-        Error = _errorKey is null
-            ? null
-            : _errorArgument is null ? loc[_errorKey] : loc.Format(_errorKey, _errorArgument);
-    }
+    /// <summary>Пересобирает Status из запомненного ключа по текущему языку (Error — база).</summary>
+    private void RefreshTexts() => Status = _statusKey is null ? "" : Localizer.Instance[_statusKey];
 
     private static bool IsBlank(License license) =>
         string.IsNullOrWhiteSpace(license.Email) || license.Plan is "UNKNOWN";

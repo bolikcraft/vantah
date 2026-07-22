@@ -1,3 +1,5 @@
+using Vantah.App.Localization;
+using Vantah.Core.Errors;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -61,13 +63,13 @@ public class LoginViewModelTests
     [AvaloniaFact]
     public async Task Failed_login_shows_error_and_does_not_stay_awaiting()
     {
-        var auth = new FakeAuthService { State = LoginState.LoggedOut, NextResult = LoginResult.Fail("Вход отменён") };
+        var auth = new FakeAuthService { State = LoginState.LoggedOut, NextResult = LoginResult.Fail(AppErrorCode.LoginCancelled) };
         var (vm, _, _) = NewVm(auth);
 
         await vm.StartCommand.ExecuteAsync(null);
         Dispatcher.UIThread.RunJobs();
 
         Assert.False(vm.IsAwaitingAuth);
-        Assert.Equal("Вход отменён", vm.Error);
+        Assert.Equal(Localizer.Instance[LocKeys.Login_Cancelled], vm.Error);
     }
 }

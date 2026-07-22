@@ -12,7 +12,7 @@ using Vantah.Core.State;
 
 namespace Vantah.App.ViewModels;
 
-public partial class DomainsViewModel : ObservableObject
+public partial class DomainsViewModel : ErrorAwareViewModel
 {
     private readonly IExclusionsService _exclusions;
     private readonly ExclusionsStore _store;
@@ -28,7 +28,6 @@ public partial class DomainsViewModel : ObservableObject
     [ObservableProperty] private bool _isGeneral = true;
     [ObservableProperty] private bool _isSelective;
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string? _error;
 
     public ObservableCollection<DomainItemViewModel> Items { get; } = new();
 
@@ -49,7 +48,7 @@ public partial class DomainsViewModel : ObservableObject
         // на экране до следующего «Добавить» незачем. Гасим только ЭТУ жалобу: поле работает
         // ещё и фильтром списка, а ошибка удаления/очистки/импорта к набору текста отношения
         // не имеет — потерять её при поиске строки нельзя.
-        if (_errorFromInput) { Error = null; _errorFromInput = false; }
+        if (_errorFromInput) { ClearError(); _errorFromInput = false; }
         ApplyFilter();
     }
 
@@ -79,7 +78,7 @@ public partial class DomainsViewModel : ObservableObject
     {
         try
         {
-            IsBusy = true; Error = null;
+            IsBusy = true; ClearError();
             var snap = await _exclusions.GetAsync();
             // Продолжение после await может оказаться на потоке пула (реальный CliRunner ждёт
             // внешний процесс). Items и радио-свойства привязаны к UI, поэтому их правку выполняем
@@ -102,7 +101,7 @@ public partial class DomainsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await UiThread.RunAsync(() => { Error = ex.Message; _loadFailed = true; });
+            await UiThread.RunAsync(() => { SetError(ex); _loadFailed = true; });
         }
         finally
         {
@@ -124,7 +123,7 @@ public partial class DomainsViewModel : ObservableObject
         if (target == _mode) return;
         try
         {
-            IsBusy = true; Error = null;
+            IsBusy = true; ClearError();
             await _exclusions.SetModeAsync(_mode, target, _all.ToList());
             await ReloadAsync();
         }
@@ -132,7 +131,7 @@ public partial class DomainsViewModel : ObservableObject
         {
             // Переключение упало: CLI/_mode остались на прежнем режиме — вернуть радио к нему,
             // иначе визуально «залипнет» на целевом, а повторный клик того же радио ничего не запустит.
-            Error = ex.Message;
+            SetError(ex);
             _switchingMode = true;
             IsGeneral = _mode == SiteExclusionMode.General;
             IsSelective = _mode == SiteExclusionMode.Selective;
@@ -152,20 +151,20 @@ public partial class DomainsViewModel : ObservableObject
         // которым Normalize фильтрует импорт файла и вывод CLI. Ввод не затираем — его правят.
         if (!DomainNormalizer.IsAcceptableDomain(domain))
         {
-            Error = Localizer.Instance[LocKeys.Domains_InvalidEntry];
+            SetError(LocKeys.Domains_InvalidEntry);
             _errorFromInput = true;
             return;
         }
 
-        try { Error = null; await _exclusions.AddAsync(domain); Query = ""; await ReloadAsync(); }
-        catch (Exception ex) { Error = ex.Message; }
+        try { ClearError(); await _exclusions.AddAsync(domain); Query = ""; await ReloadAsync(); }
+        catch (Exception ex) { SetError(ex); }
     }
 
     [RelayCommand]
     private async Task Remove(DomainItemViewModel item)
     {
         try { await _exclusions.RemoveAsync(item.Domain); await ReloadAsync(); }
-        catch (Exception ex) { Error = ex.Message; }
+        catch (Exception ex) { SetError(ex); }
     }
 
     // Полную очистку с подтверждением инициирует View (диалог), сюда приходит уже подтверждённый вызов.
@@ -173,7 +172,7 @@ public partial class DomainsViewModel : ObservableObject
     private async Task Clear()
     {
         try { foreach (var d in _all.ToList()) await _exclusions.RemoveAsync(d); await ReloadAsync(); }
-        catch (Exception ex) { Error = ex.Message; }
+        catch (Exception ex) { SetError(ex); }
     }
 
     // Текст берётся из буфера обмена во View (TopLevel.Clipboard) и передаётся сюда.
@@ -189,7 +188,7 @@ public partial class DomainsViewModel : ObservableObject
                     await _exclusions.AddAsync(entry);
             await ReloadAsync();
         }
-        catch (Exception ex) { Error = ex.Message; }
+        catch (Exception ex) { SetError(ex); }
     }
 
     // Путь выбирает View через файловый диалог. Экспорт синхронный (_store.Export),
@@ -197,7 +196,7 @@ public partial class DomainsViewModel : ObservableObject
     public Task ExportAsync(string path)
     {
         try { _store.Export(path, _all); }
-        catch (Exception ex) { Error = ex.Message; }
+        catch (Exception ex) { SetError(ex); }
         return Task.CompletedTask;
     }
 
@@ -210,6 +209,6 @@ public partial class DomainsViewModel : ObservableObject
                     await _exclusions.AddAsync(d);
             await ReloadAsync();
         }
-        catch (Exception ex) { Error = ex.Message; }
+        catch (Exception ex) { SetError(ex); }
     }
 }

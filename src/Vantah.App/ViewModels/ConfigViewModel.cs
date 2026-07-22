@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Localization;
 using Vantah.Core.Autostart;
+using Vantah.Core.Errors;
 using Vantah.Core.Localization;
 using Vantah.Core.Logs;
 using Vantah.Core.Models;
@@ -25,7 +26,7 @@ public sealed record LanguageOption(string Code, string Display);
 /// Вкладка «Настройки». Тумблеры и выпадающие списки применяются сразу, текстовые поля — по кнопке.
 /// Форма всегда перерисовывается из ответа CLI, а не из введённого: показываем применённое, а не желаемое.
 /// </summary>
-public partial class ConfigViewModel : ObservableObject
+public partial class ConfigViewModel : ErrorAwareViewModel
 {
     private readonly IConfigService _config;
     private readonly LanguageStore _languageStore;
@@ -72,6 +73,10 @@ public partial class ConfigViewModel : ObservableObject
         // сохранять его в ~/.config/vantah/language незачем.
         var current = Localizer.Instance.Language;
         _selectedLanguage = Languages.FirstOrDefault(l => l.Code == current) ?? Languages[0];
+
+        // Статус и плашка обновления собираются в коде — после смены языка пересобираем их
+        // из запомненных ключей, иначе они висят на прежнем языке до перезапуска.
+        Localizer.Instance.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(RefreshTexts);
 
         store.Changed += (_, s) => Dispatcher.UIThread.Post(() =>
             IsConnectedWarningVisible = s.Connection == ConnectionState.Connected);
@@ -135,7 +140,10 @@ public partial class ConfigViewModel : ObservableObject
     [ObservableProperty] private string _selectedRouting = "auto";
 
     [ObservableProperty] private bool _isBusy;
-    [ObservableProperty] private string? _error;
+    // Статус («сохранено», путь к логам) и плашка обновления — тоже значения, а не готовые
+    // строки: после смены языка пересобираются из тех же ключей (см. RefreshTexts).
+    private UiText _statusValue;
+    private UiText _updateValue;
     [ObservableProperty] private string? _statusText;
     [ObservableProperty] private bool _isConnectedWarningVisible;
     [ObservableProperty] private bool _isUpdateAvailable;
@@ -198,7 +206,7 @@ public partial class ConfigViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            await UiThread.RunAsync(() => Error = ex.Message);
+            await UiThread.RunAsync(() => SetError(ex));
         }
     }
 
@@ -210,8 +218,9 @@ public partial class ConfigViewModel : ObservableObject
             if (s.IsLatest) return;
             await UiThread.RunAsync(() =>
             {
-                var tmpl = Localizer.Instance[LocKeys.Settings_UpdateAvailable];
-                UpdateMessage = string.IsNullOrEmpty(s.LatestVersion) ? tmpl : $"{tmpl}: {s.LatestVersion}";
+                SetUpdateMessage(string.IsNullOrEmpty(s.LatestVersion)
+                    ? UiText.Key(LocKeys.Settings_UpdateAvailable)
+                    : UiText.Key(LocKeys.Settings_UpdateAvailableFormat, s.LatestVersion));
                 IsUpdateAvailable = true;
             });
         }
@@ -351,13 +360,13 @@ public partial class ConfigViewModel : ObservableObject
         var folder = await _pickFolder();
         if (string.IsNullOrWhiteSpace(folder)) return;   // отмена диалога
         if (IsBusy) return;
-        IsBusy = true; Error = null; StatusText = null;
+        IsBusy = true; ClearError(); SetStatus(UiText.None);
         try
         {
             var path = await _logs.ExportAsync(folder);
-            StatusText = $"{Localizer.Instance[LocKeys.Settings_LogsExported]}: {path}";
+            SetStatus(UiText.Key(LocKeys.Settings_LogsExportedFormat, path));
         }
-        catch (Exception ex) { Error = ex.Message; }
+        catch (Exception ex) { SetError(ex); }
         finally { IsBusy = false; }
     }
 
@@ -365,14 +374,14 @@ public partial class ConfigViewModel : ObservableObject
     {
         if (IsBusy) return;
         IsBusy = true;
-        Error = null;
-        StatusText = null;
+        ClearError();
+        SetStatus(UiText.None);
         try
         {
             Apply(await action());
-            StatusText = Localizer.Instance[LocKeys.Common_Saved];
+            SetStatus(UiText.Key(LocKeys.Common_Saved));
         }
-        catch (Exception ex) { Error = ex.Message; }
+        catch (Exception ex) { SetError(ex); }
         finally { IsBusy = false; }
     }
 
@@ -381,23 +390,43 @@ public partial class ConfigViewModel : ObservableObject
     {
         if (IsBusy) return;
         IsBusy = true;
-        Error = null;
-        StatusText = null;
+        ClearError();
+        SetStatus(UiText.None);
         try
         {
             var text = await action();
-            StatusText = string.IsNullOrWhiteSpace(text)
-                ? Localizer.Instance[LocKeys.Common_Saved]
-                : text.Trim();
+            // Вывод create-route-script — текст самого CLI, переводить нечего.
+            SetStatus(string.IsNullOrWhiteSpace(text)
+                ? UiText.Key(LocKeys.Common_Saved)
+                : UiText.Of(AppError.Cli(text)));
         }
-        catch (Exception ex) { Error = ex.Message; }
+        catch (Exception ex) { SetError(ex); }
         finally { IsBusy = false; }
+    }
+
+    private void SetStatus(UiText value)
+    {
+        _statusValue = value;
+        StatusText = value.Text;
+    }
+
+    private void SetUpdateMessage(UiText value)
+    {
+        _updateValue = value;
+        UpdateMessage = value.Text ?? "";
+    }
+
+    /// <summary>Пересобирает статус и плашку обновления после смены языка.</summary>
+    private void RefreshTexts()
+    {
+        StatusText = _statusValue.Text;
+        UpdateMessage = _updateValue.Text ?? "";
     }
 
     private Task Fail(string messageKey)
     {
-        Error = Localizer.Instance[messageKey];
-        StatusText = null;
+        SetError(messageKey);
+        SetStatus(UiText.None);
         return Task.CompletedTask;
     }
 

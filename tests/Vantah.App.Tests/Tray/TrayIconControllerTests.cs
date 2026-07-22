@@ -1,3 +1,4 @@
+using Vantah.Core.Errors;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
@@ -80,7 +81,7 @@ public class TrayIconControllerTests
         const string reason = "adguardvpn-cli: no route to host";
         var loc = Localizer.Instance;
 
-        store.Set(s => s with { Connection = ConnectionState.Error, Error = reason });
+        store.Set(s => s with { Connection = ConnectionState.Error, Error = AppError.Cli(reason) });
         Dispatcher.UIThread.RunJobs();
 
         var tip = trayIcon.ToolTipText!;

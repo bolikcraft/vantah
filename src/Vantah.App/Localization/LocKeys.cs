@@ -175,4 +175,19 @@ public static class LocKeys
     public const string Login_CodeLabel = "Login_CodeLabel";
     public const string Login_UrlLabel = "Login_UrlLabel";
     public const string Login_CopyUrl = "Login_CopyUrl";
+
+    // Сообщения об ошибках (коды AppErrorCode из ядра) и итог входа
+    public const string Settings_LogsExportedFormat = "Settings_LogsExportedFormat";
+    public const string Settings_UpdateAvailableFormat = "Settings_UpdateAvailableFormat";
+
+    public const string Error_CommandFailed = "Error_CommandFailed";
+    public const string Error_Timeout = "Error_Timeout";
+    public const string Error_AddDomainFailed = "Error_AddDomainFailed";
+    public const string Error_RemoveDomainFailed = "Error_RemoveDomainFailed";
+    public const string Error_ModeSwitchFailed = "Error_ModeSwitchFailed";
+    public const string Error_Cancelled = "Error_Cancelled";
+    public const string Login_Succeeded = "Login_Succeeded";
+    public const string Login_Failed = "Login_Failed";
+    public const string Login_Cancelled = "Login_Cancelled";
+    public const string Login_TimedOut = "Login_TimedOut";
 }

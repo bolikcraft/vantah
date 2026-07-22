@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Vantah.App.Localization;
 using Vantah.App.Services;
 using Vantah.Core.Auth;
 
@@ -14,7 +15,7 @@ namespace Vantah.App.ViewModels;
 /// авторизации, открывает её в браузере и ждёт, пока пользователь подтвердит вход. Секретов нет —
 /// пароль в этом флоу не вводится.
 /// </summary>
-public partial class LoginViewModel : ObservableObject
+public partial class LoginViewModel : ErrorAwareViewModel
 {
     private readonly IAuthService _auth;
     private readonly VpnCoordinator _coordinator;
@@ -23,7 +24,6 @@ public partial class LoginViewModel : ObservableObject
     [ObservableProperty] private bool _isAwaitingAuth;   // ссылка получена, ждём подтверждения
     [ObservableProperty] private string? _url;
     [ObservableProperty] private string? _userCode;
-    [ObservableProperty] private string? _error;
 
     // Открытие ссылки в браузере — через окно (Launcher); поставляет App.axaml.cs.
     public Func<string, Task>? BrowserOpener { get; set; }
@@ -42,7 +42,7 @@ public partial class LoginViewModel : ObservableObject
     private async Task StartAsync()
     {
         if (IsAwaitingAuth) return;                       // уже идёт вход
-        Error = null;
+        ClearError();
         _cts = new CancellationTokenSource();
         try
         {
@@ -50,11 +50,11 @@ public partial class LoginViewModel : ObservableObject
             if (result.Success)
                 await _coordinator.RefreshLoginStateAsync();   // гейт спрячет форму
             else
-                Error = result.Message;
+                SetError(UiText.Of(result.Message));
         }
         catch (Exception ex)
         {
-            Error = ex.Message;
+            SetError(ex);
         }
         finally
         {

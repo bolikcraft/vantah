@@ -1,3 +1,4 @@
+using Vantah.Core.Errors;
 using Vantah.Core.Models;
 
 namespace Vantah.Core.State;
@@ -10,7 +11,7 @@ public sealed record AppSnapshot
     public string? Mode { get; init; }
     public string? Interface { get; init; }
     public TrafficSample? Traffic { get; init; }
-    public string? Error { get; init; }
+    public AppError? Error { get; init; }   // код причины: текст собирает UI на своём языке
     public int ExclusionsCount { get; init; }
     public string? LocationDisplay { get; init; }              // «Amsterdam, Netherlands» (человекочитаемо)
     public SiteExclusionMode ExclusionsMode { get; init; }     // текущий режим исключений

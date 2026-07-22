@@ -519,4 +519,40 @@
   <data name="Login_CopyUrl" xml:space="preserve">
     <value>Скопировать ссылку</value>
   </data>
+  <data name="Error_CommandFailed" xml:space="preserve">
+    <value>{0} завершился с ошибкой</value>
+  </data>
+  <data name="Error_Timeout" xml:space="preserve">
+    <value>{0} превысил таймаут</value>
+  </data>
+  <data name="Error_AddDomainFailed" xml:space="preserve">
+    <value>не удалось добавить {0}</value>
+  </data>
+  <data name="Error_RemoveDomainFailed" xml:space="preserve">
+    <value>не удалось удалить {0}</value>
+  </data>
+  <data name="Error_ModeSwitchFailed" xml:space="preserve">
+    <value>не удалось переключить режим на {0}</value>
+  </data>
+  <data name="Error_Cancelled" xml:space="preserve">
+    <value>операция отменена</value>
+  </data>
+  <data name="Login_Succeeded" xml:space="preserve">
+    <value>Вход выполнен</value>
+  </data>
+  <data name="Login_Failed" xml:space="preserve">
+    <value>Вход не выполнен</value>
+  </data>
+  <data name="Login_Cancelled" xml:space="preserve">
+    <value>Вход отменён</value>
+  </data>
+  <data name="Login_TimedOut" xml:space="preserve">
+    <value>Истекло время ожидания входа</value>
+  </data>
+  <data name="Settings_LogsExportedFormat" xml:space="preserve">
+    <value>Логи сохранены: {0}</value>
+  </data>
+  <data name="Settings_UpdateAvailableFormat" xml:space="preserve">
+    <value>Доступна новая версия adguardvpn-cli: {0}</value>
+  </data>
 </root>

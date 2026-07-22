@@ -519,4 +519,40 @@
   <data name="Login_CopyUrl" xml:space="preserve">
     <value>Copy link</value>
   </data>
+  <data name="Error_CommandFailed" xml:space="preserve">
+    <value>{0} failed</value>
+  </data>
+  <data name="Error_Timeout" xml:space="preserve">
+    <value>{0} timed out</value>
+  </data>
+  <data name="Error_AddDomainFailed" xml:space="preserve">
+    <value>could not add {0}</value>
+  </data>
+  <data name="Error_RemoveDomainFailed" xml:space="preserve">
+    <value>could not remove {0}</value>
+  </data>
+  <data name="Error_ModeSwitchFailed" xml:space="preserve">
+    <value>could not switch mode to {0}</value>
+  </data>
+  <data name="Error_Cancelled" xml:space="preserve">
+    <value>operation cancelled</value>
+  </data>
+  <data name="Login_Succeeded" xml:space="preserve">
+    <value>Signed in</value>
+  </data>
+  <data name="Login_Failed" xml:space="preserve">
+    <value>Sign-in did not complete</value>
+  </data>
+  <data name="Login_Cancelled" xml:space="preserve">
+    <value>Sign-in cancelled</value>
+  </data>
+  <data name="Login_TimedOut" xml:space="preserve">
+    <value>Sign-in timed out</value>
+  </data>
+  <data name="Settings_LogsExportedFormat" xml:space="preserve">
+    <value>Logs saved: {0}</value>
+  </data>
+  <data name="Settings_UpdateAvailableFormat" xml:space="preserve">
+    <value>A new version of adguardvpn-cli is available: {0}</value>
+  </data>
 </root>

@@ -1,3 +1,4 @@
+using Vantah.Core.Errors;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Vantah.App.Services;
@@ -83,7 +84,7 @@ public class LocationsViewTests
     [AvaloniaFact]
     public async Task Failed_load_surfaces_error_and_ends_loading()
     {
-        var vm = MakeVm(new ScriptedVpn(() => throw new VpnCommandException("не выполнен вход")));
+        var vm = MakeVm(new ScriptedVpn(() => throw new VpnCommandException(AppError.Cli("не выполнен вход"))));
 
         await vm.LoadTask;
 
@@ -111,7 +112,7 @@ public class LocationsViewTests
     public async Task Reload_recovers_after_a_failure()
     {
         var vpn = new ScriptedVpn(
-            () => throw new VpnCommandException("сеть недоступна"),
+            () => throw new VpnCommandException(AppError.Cli("сеть недоступна")),
             () => new[] { Loc("DE", "Germany", "Berlin", 20) });
         var vm = MakeVm(vpn);
         await vm.LoadTask;

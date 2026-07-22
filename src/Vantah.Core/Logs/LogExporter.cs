@@ -1,8 +1,12 @@
 using Vantah.Core.Cli;
+using Vantah.Core.Errors;
 
 namespace Vantah.Core.Logs;
 
-public sealed class LogExportException(string message) : Exception(message);
+public sealed class LogExportException(AppError error) : Exception(error.ToString()), IAppErrorException
+{
+    public AppError Error { get; } = error;
+}
 
 /// <summary>Выгрузка логов через <c>export-logs -o &lt;path&gt; -f</c> (неинтерактивно).</summary>
 public sealed class LogExporter(ICliRunner cli) : ILogExporter
@@ -14,10 +18,7 @@ public sealed class LogExporter(ICliRunner cli) : ILogExporter
         var r = await cli.RunAsync(["export-logs", "-o", outputPath, "-f"], Timeout, ct);
         if (!r.Ok)
         {
-            var msg = new[] { r.Stderr, r.Stdout }
-                .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x))?.Trim()
-                ?? "export-logs завершился с ошибкой";
-            throw new LogExportException(msg);
+            throw new LogExportException(AppError.FromCli(r, "export-logs"));
         }
         return outputPath;
     }
