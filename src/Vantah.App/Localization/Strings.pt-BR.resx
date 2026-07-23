@@ -423,6 +423,15 @@
   <data name="Settings_UpdateAvailable" xml:space="preserve">
     <value>Há uma nova versão do adguardvpn-cli</value>
   </data>
+  <data name="Settings_InstallUpdate" xml:space="preserve">
+    <value>Atualizar agora</value>
+  </data>
+  <data name="Settings_UpdateDone" xml:space="preserve">
+    <value>Atualizado. Reinicie o Vantah para aplicar.</value>
+  </data>
+  <data name="Settings_UpdateUpToDate" xml:space="preserve">
+    <value>Você já tem a versão mais recente</value>
+  </data>
   <data name="Settings_ExportLogs" xml:space="preserve">
     <value>Exportar logs…</value>
   </data>
