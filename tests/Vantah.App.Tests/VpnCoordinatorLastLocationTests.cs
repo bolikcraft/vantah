@@ -54,7 +54,8 @@ public class VpnCoordinatorLastLocationTests
 file sealed class FakeConnectingVpnService(string? connectedCity) : IVpnService
 {
     public Task<VpnStatus> ConnectAsync(string? location, bool fastest,
-        IpVersionPreference ipVersion = IpVersionPreference.Auto, CancellationToken ct = default) =>
+        IpVersionPreference ipVersion = IpVersionPreference.Auto,
+        bool killSwitch = false, CancellationToken ct = default) =>
         Task.FromResult(connectedCity is null
             ? VpnStatus.Disconnected
             : new VpnStatus(true, connectedCity, "tun", "tun0"));
