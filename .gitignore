@@ -1,4 +1,7 @@
 
+# Claude Code worktrees / local agent state
+.claude/
+
 # .NET build artifacts
 bin/
 obj/
