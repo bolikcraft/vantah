@@ -36,6 +36,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel
     private readonly AutoConnectStore _autoConnect;
     private readonly AutostartService _autostart;
     private readonly AppUpdateService? _appUpdates;
+    private readonly ICliUpdater? _updater;
     private bool _lastRadioWasFastest;
 
     // Подавляет авто-применение, пока форму заполняем программно: иначе загрузка конфига
@@ -51,7 +52,8 @@ public partial class ConfigViewModel : ErrorAwareViewModel
         Func<Task<string?>> pickFolder,
         AutoConnectStore? autoConnect = null,
         AutostartService? autostart = null,
-        AppUpdateService? appUpdates = null)
+        AppUpdateService? appUpdates = null,
+        ICliUpdater? updater = null)
     {
         _config = config;
         _languageStore = languageStore;
@@ -68,6 +70,9 @@ public partial class ConfigViewModel : ErrorAwareViewModel
         // Проверка обновлений самого Vantah тоже опциональна: без неё тумблер просто
         // показывает значение по умолчанию и никуда не пишет.
         _appUpdates = appUpdates;
+        // Установка обновления CLI тоже опциональна: без неё команда «Обновить сейчас»
+        // ничего не делает (кнопка живёт только в баннере обновления).
+        _updater = updater;
 
         // Пишем в backing-поле, а не в свойство: стартовый язык — не выбор пользователя,
         // сохранять его в ~/.config/vantah/language незачем.
@@ -391,6 +396,36 @@ public partial class ConfigViewModel : ErrorAwareViewModel
         {
             var path = await _logs.ExportAsync(folder);
             SetStatus(UiText.Key(LocKeys.Settings_LogsExportedFormat, path));
+        }
+        catch (Exception ex) { SetError(ex); }
+        finally { IsBusy = false; }
+    }
+
+    // Кнопка «Обновить сейчас» в баннере. Запускает `update -y`, по исходу прячет баннер и
+    // показывает статус. Вывод CLI при ошибке — как есть (английский, не переводим).
+    [RelayCommand]
+    private async Task InstallUpdate()
+    {
+        if (_updater is null || IsBusy) return;
+        IsBusy = true; ClearError(); SetStatus(UiText.None);
+        try
+        {
+            var r = await _updater.UpdateAsync();
+            switch (r.Outcome)
+            {
+                case UpdateOutcome.Updated:
+                    IsUpdateAvailable = false;
+                    SetStatus(UiText.Key(LocKeys.Settings_UpdateDone));
+                    break;
+                case UpdateOutcome.AlreadyLatest:
+                    IsUpdateAvailable = false;
+                    SetStatus(UiText.Key(LocKeys.Settings_UpdateUpToDate));
+                    break;
+                default:
+                    SetError(UiText.Of(AppError.Cli(
+                        string.IsNullOrWhiteSpace(r.Output) ? "update failed" : r.Output)));
+                    break;
+            }
         }
         catch (Exception ex) { SetError(ex); }
         finally { IsBusy = false; }
