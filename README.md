@@ -25,13 +25,39 @@ interface.
 
 ## Screenshots
 
+<details>
+<summary>Dark theme</summary>
+
 | Status | Locations |
 | --- | --- |
-| ![Status tab](assets/screenshots/status.png) | ![Locations tab](assets/screenshots/locations.png) |
+| ![Status tab](assets/screenshots/dark/status.png) | ![Locations tab](assets/screenshots/dark/locations.png) |
 
-| Site exclusions | Settings |
+| Site exclusions | Account |
 | --- | --- |
-| ![Domains tab](assets/screenshots/domains.png) | ![Settings window](assets/screenshots/settings.png) |
+| ![Domains tab](assets/screenshots/dark/domains.png) | ![Account](assets/screenshots/dark/license.png) |
+
+| Settings (TUN) | Settings (SOCKS5) |
+| --- | --- |
+| ![Settings TUN](assets/screenshots/dark/settings-tun.png) | ![Settings SOCKS5](assets/screenshots/dark/settings-socks.png) |
+
+</details>
+
+<details>
+<summary>Light theme</summary>
+
+| Status | Locations |
+| --- | --- |
+| ![Status tab](assets/screenshots/light/status.png) | ![Locations tab](assets/screenshots/light/locations.png) |
+
+| Site exclusions | Account |
+| --- | --- |
+| ![Domains tab](assets/screenshots/light/domains.png) | ![Account](assets/screenshots/light/license.png) |
+
+| Settings (TUN) | Settings (SOCKS5) |
+| --- | --- |
+| ![Settings TUN](assets/screenshots/light/settings-tun.png) | ![Settings SOCKS5](assets/screenshots/light/settings-socks.png) |
+
+</details>
 
 ## Requirements
 
