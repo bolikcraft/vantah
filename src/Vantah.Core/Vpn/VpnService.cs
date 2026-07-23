@@ -37,6 +37,7 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
     public async Task<VpnStatus> ConnectAsync(
         string? location, bool fastest,
         IpVersionPreference ipVersion = IpVersionPreference.Auto,
+        bool killSwitch = false,
         CancellationToken ct = default)
     {
         var args = new List<string> { "connect" };
@@ -44,6 +45,8 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
         else if (!string.IsNullOrWhiteSpace(location)) { args.Add("-l"); args.Add(location); }
         if (ipVersion == IpVersionPreference.IPv4Only) args.Add("-4");
         else if (ipVersion == IpVersionPreference.IPv6Only) args.Add("-6");
+        // Kill switch: демон бесконечно переподключается при обрыве. disconnect его гасит.
+        if (killSwitch) args.Add("--boot");
         args.Add("-y");
 
         var r = await cli.RunAsync(args.ToArray(), ConnectTimeout, ct);
