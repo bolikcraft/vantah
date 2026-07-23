@@ -25,8 +25,13 @@ interface.
 
 ## Screenshots
 
+Buttons, toggles and other accents follow your desktop's **system accent color**
+(`SystemAccentColor`), so the UI matches the rest of your system — change the accent in
+your OS settings and Vantah follows. The galleries below use different accents as examples:
+green in dark theme, blue in light theme.
+
 <details>
-<summary>Dark theme</summary>
+<summary>Dark theme (green accent)</summary>
 
 | Status | Locations |
 | --- | --- |
@@ -43,7 +48,7 @@ interface.
 </details>
 
 <details>
-<summary>Light theme</summary>
+<summary>Light theme (blue accent)</summary>
 
 | Status | Locations |
 | --- | --- |
