@@ -40,11 +40,17 @@ public sealed class FakeConfigService(VpnConfig? current = null) : IConfigServic
     public Task<VpnConfig> ClearSocksAuthAsync(CancellationToken ct = default) =>
         Record("clear-socks-auth");
 
-    public Task<VpnConfig> SetDnsAsync(string upstream, CancellationToken ct = default) =>
-        Record($"set-dns:{upstream}");
+    public Task<VpnConfig> SetDnsAsync(string upstream, CancellationToken ct = default)
+    {
+        _current = _current with { DnsUpstream = upstream };
+        return Record($"set-dns:{upstream}");
+    }
 
-    public Task<VpnConfig> ResetDnsAsync(CancellationToken ct = default) =>
-        Record("reset-dns");
+    public Task<VpnConfig> ResetDnsAsync(CancellationToken ct = default)
+    {
+        _current = _current with { DnsUpstream = "" };
+        return Record("reset-dns");
+    }
 
     public Task<VpnConfig> SetChangeSystemDnsAsync(bool on, CancellationToken ct = default) =>
         Record($"set-change-system-dns:{on}");

@@ -363,6 +363,15 @@ public partial class ConfigViewModel : ErrorAwareViewModel
             ? RunAsync(() => _config.ResetDnsAsync())
             : RunAsync(() => _config.SetDnsAsync(DnsUpstream.Trim()));
 
+    // Пресет DNS — известный публичный upstream одним кликом. Показываем его в поле
+    // (чтобы было видно применённое) и шлём тем же путём, что и ручной ввод.
+    [RelayCommand]
+    private Task SelectDnsPreset(string upstream)
+    {
+        DnsUpstream = upstream;
+        return RunAsync(() => _config.SetDnsAsync(upstream));
+    }
+
     // Пустое поле — осознанное отключение override; CLI принимает пустой аргумент.
     [RelayCommand]
     private Task ApplyInterfaceOverride() =>
