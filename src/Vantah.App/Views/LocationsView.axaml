@@ -37,6 +37,19 @@
       <Setter Property="HorizontalAlignment" Value="Stretch"/>
       <Setter Property="HorizontalContentAlignment" Value="Left"/>
     </Style>
+
+    <!-- Кнопка действия в строке: тянется на всю колонку (подпись не обрезается при любом
+         паддинге), компактный отступ под плотную таблицу. Подпись зависит от состояния строки:
+         активная локация → «Отключить», остальные → «Подключить» (класс on ставится по IsConnected). -->
+    <Style Selector="Button.rowaction">
+      <Setter Property="Padding" Value="8,4"/>
+      <Setter Property="HorizontalAlignment" Value="Stretch"/>
+      <Setter Property="HorizontalContentAlignment" Value="Center"/>
+      <Setter Property="Content" Value="{Binding [Common_Connect], Source={x:Static loc:Localizer.Instance}}"/>
+    </Style>
+    <Style Selector="Button.rowaction.on">
+      <Setter Property="Content" Value="{Binding [Common_Disconnect], Source={x:Static loc:Localizer.Instance}}"/>
+    </Style>
   </UserControl.Styles>
   <DockPanel Margin="12">
     <TextBox DockPanel.Dock="Top" Text="{Binding Search}" Margin="0,0,0,8"
@@ -44,7 +57,7 @@
 
     <!-- Шапка: те же ColumnDefinitions, что и у строки списка; отступ 4 слева/справа
          компенсирует Padding="4,2" рамки внутри шаблона строки. -->
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="36,34,48,*,*,120,120,110" Margin="4,0,4,4">
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="50,34,62,*,*,120,120,110" Margin="4,0,4,4">
       <Button Grid.Column="0" Classes="header" Content="{Binding FavoritesHeader}"
               Command="{Binding ToggleFavoritesFirstCommand}"
               ToolTip.Tip="{Binding [Locations_Tooltip_FavoritesFirst], Source={x:Static loc:Localizer.Instance}}"/>
@@ -68,7 +81,7 @@
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:LocationItemViewModel">
           <Border Classes.connected="{Binding IsConnected}" CornerRadius="4" Padding="4,2">
-            <Grid ColumnDefinitions="36,34,48,*,*,120,120,110">
+            <Grid ColumnDefinitions="50,34,62,*,*,120,120,110">
               <Button Grid.Column="0" Content="{Binding Star}"
                       Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ToggleFavoriteCommand}"
                       CommandParameter="{Binding}" Background="Transparent" BorderThickness="0"
@@ -86,9 +99,10 @@
                          Margin="6,0" VerticalAlignment="Center" IsVisible="{Binding IsConnected}"/>
               <TextBlock Grid.Column="6" Text="{Binding PingMs}" Opacity="0.7" Margin="6,0"
                          HorizontalAlignment="Right" VerticalAlignment="Center"/>
-              <Button Grid.Column="7"
-                      Content="{Binding [Common_Connect], Source={x:Static loc:Localizer.Instance}}"
-                      Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ConnectCommand}"
+              <Button Grid.Column="7" Classes="rowaction"
+                      Classes.on="{Binding IsConnected}" Classes.danger="{Binding IsConnected}"
+                      IsEnabled="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).IsStatusKnown}"
+                      Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ToggleConnectionCommand}"
                       CommandParameter="{Binding}" VerticalAlignment="Center"/>
             </Grid>
           </Border>
@@ -102,7 +116,7 @@
                     ToolTip.Tip="{Binding [Locations_Loading], Source={x:Static loc:Localizer.Instance}}">
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <Grid ColumnDefinitions="36,34,48,*,*,120,120,110" Height="34" Margin="4,3">
+            <Grid ColumnDefinitions="50,34,62,*,*,120,120,110" Height="34" Margin="4,3">
               <Border Grid.Column="1" Classes="skeleton" Width="24" Height="16" VerticalAlignment="Center"/>
               <Border Grid.Column="2" Classes="skeleton" Height="12" Margin="6,0" VerticalAlignment="Center"/>
               <Border Grid.Column="3" Classes="skeleton" Height="12" Margin="6,0" VerticalAlignment="Center"/>

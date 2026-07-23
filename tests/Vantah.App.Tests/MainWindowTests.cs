@@ -58,14 +58,14 @@ public class MainWindowTests
                 ipVersionStore),
             new LocationsViewModel(vpn, coordinator, new FavoritesStore(Path.Combine(temp, "favorites.json")), store),
             new DomainsViewModel(new ExclusionsService(runner, exclusionsStore), exclusionsStore, store),
-            new LicenseViewModel(vpn),
+            new LicenseViewModel(vpn, auth, coordinator),
             new AboutViewModel(vpn),
             new ProcessesViewModel(new StubMonitor()),
             new ConfigViewModel(
                 new FakeConfigService(), store, new LanguageStore(Path.Combine(temp, "language")),
                 new FakeUpdateChecker(), new FakeLogExporter(), () => Task.FromResult<string?>(null)),
             new LoginViewModel(auth, coordinator),
-            auth, coordinator, store);
+            store);
     }
 
     private static MainWindow Show()
@@ -163,8 +163,9 @@ public class MainWindowTests
         Assert.Empty(combos);
     }
 
+    // Выход переехал из меню на экран аккаунта («Лицензия»), поэтому в меню его быть не должно.
     [AvaloniaFact]
-    public void The_menu_lists_service_screens_and_logout()
+    public void The_menu_lists_service_screens_without_logout()
     {
         var window = Show();
 
@@ -175,9 +176,9 @@ public class MainWindowTests
                 Localizer.Instance[LocKeys.Menu_Settings],
                 Localizer.Instance[LocKeys.Menu_License],
                 Localizer.Instance[LocKeys.Menu_About],
-                Localizer.Instance[LocKeys.Login_Logout],
             ],
             headers);
+        Assert.DoesNotContain(Localizer.Instance[LocKeys.Login_Logout], headers);
     }
 
     [AvaloniaFact]

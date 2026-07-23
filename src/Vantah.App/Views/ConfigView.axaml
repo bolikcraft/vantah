@@ -76,18 +76,18 @@
           <StackPanel>
             <TextBlock Classes="header"
                        Text="{Binding [Settings_SocksSection], Source={x:Static loc:Localizer.Instance}}"/>
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <TextBox Width="140" Text="{Binding SocksPort}"
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBox Grid.Column="0" Text="{Binding SocksPort}"
                        PlaceholderText="{Binding [Settings_SocksPort], Source={x:Static loc:Localizer.Instance}}"/>
-              <Button Command="{Binding ApplySocksPortCommand}"
+              <Button Grid.Column="1" Command="{Binding ApplySocksPortCommand}"
                       Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <TextBox Width="200" Text="{Binding SocksHost}"
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBox Grid.Column="0" Text="{Binding SocksHost}"
                        PlaceholderText="{Binding [Settings_SocksHost], Source={x:Static loc:Localizer.Instance}}"/>
-              <Button Command="{Binding ApplySocksHostCommand}"
+              <Button Grid.Column="1" Command="{Binding ApplySocksHostCommand}"
                       Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
-            </StackPanel>
+            </Grid>
             <TextBox Text="{Binding SocksUsername}"
                      PlaceholderText="{Binding [Settings_SocksUsername], Source={x:Static loc:Localizer.Instance}}"/>
             <TextBox Text="{Binding SocksPassword}" PasswordChar="•"
@@ -132,12 +132,12 @@
           <StackPanel>
             <TextBlock Classes="header"
                        Text="{Binding [Settings_Dns], Source={x:Static loc:Localizer.Instance}}"/>
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <TextBox Width="224" Text="{Binding DnsUpstream}"
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBox Grid.Column="0" Text="{Binding DnsUpstream}"
                        PlaceholderText="{Binding [Settings_DnsPlaceholder], Source={x:Static loc:Localizer.Instance}}"/>
-              <Button Name="ApplyDnsButton" Command="{Binding ApplyDnsCommand}"
+              <Button Grid.Column="1" Name="ApplyDnsButton" Command="{Binding ApplyDnsCommand}"
                       Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
-            </StackPanel>
+            </Grid>
           </StackPanel>
         </Border>
 
@@ -146,8 +146,9 @@
           <StackPanel>
             <TextBlock Classes="header"
                        Text="{Binding [Settings_StartupSection], Source={x:Static loc:Localizer.Instance}}"/>
-            <CheckBox IsChecked="{Binding AutoConnectEnabled}"
-                      Content="{Binding [Settings_AutoConnect], Source={x:Static loc:Localizer.Instance}}"/>
+            <ToggleSwitch IsChecked="{Binding AutoConnectEnabled}"
+                          OnContent="{Binding [Settings_AutoConnect], Source={x:Static loc:Localizer.Instance}}"
+                          OffContent="{Binding [Settings_AutoConnect], Source={x:Static loc:Localizer.Instance}}"/>
             <StackPanel Margin="24,0,0,0" IsEnabled="{Binding AutoConnectEnabled}">
               <RadioButton GroupName="AutoConnectTarget"
                            IsChecked="{Binding !AutoConnectUseFastest}"
@@ -156,29 +157,38 @@
                            IsChecked="{Binding AutoConnectUseFastest}"
                            Content="{Binding [Settings_AutoConnectFastest], Source={x:Static loc:Localizer.Instance}}"/>
             </StackPanel>
-            <CheckBox IsChecked="{Binding AutostartEnabled}"
-                      Content="{Binding [Settings_Autostart], Source={x:Static loc:Localizer.Instance}}"/>
-            <CheckBox IsChecked="{Binding CheckAppUpdates}"
-                      Content="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"/>
+            <ToggleSwitch IsChecked="{Binding AutostartEnabled}"
+                          OnContent="{Binding [Settings_Autostart], Source={x:Static loc:Localizer.Instance}}"
+                          OffContent="{Binding [Settings_Autostart], Source={x:Static loc:Localizer.Instance}}"/>
+            <ToggleSwitch IsChecked="{Binding CheckAppUpdates}"
+                          OnContent="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"
+                          OffContent="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"/>
           </StackPanel>
         </Border>
 
         <Border Classes="card">
-          <StackPanel Spacing="6">
-            <CheckBox IsChecked="{Binding ChangeSystemDns}"
-                      Content="{Binding [Settings_ChangeSystemDns], Source={x:Static loc:Localizer.Instance}}"/>
-            <CheckBox IsChecked="{Binding PostQuantum}"
-                      Content="{Binding [Settings_PostQuantum], Source={x:Static loc:Localizer.Instance}}"/>
-            <CheckBox IsChecked="{Binding ShowNotifications}"
-                      Content="{Binding [Settings_ShowNotifications], Source={x:Static loc:Localizer.Instance}}"/>
-            <CheckBox IsChecked="{Binding DebugLogging}"
-                      Content="{Binding [Settings_DebugLogging], Source={x:Static loc:Localizer.Instance}}"/>
-            <CheckBox IsChecked="{Binding CrashReporting}"
-                      Content="{Binding [Settings_CrashReporting], Source={x:Static loc:Localizer.Instance}}"/>
-            <CheckBox IsChecked="{Binding Telemetry}"
-                      Content="{Binding [Settings_Telemetry], Source={x:Static loc:Localizer.Instance}}"/>
-            <CheckBox IsChecked="{Binding ShowHints}"
-                      Content="{Binding [Settings_ShowHints], Source={x:Static loc:Localizer.Instance}}"/>
+          <StackPanel Spacing="2">
+            <ToggleSwitch IsChecked="{Binding ChangeSystemDns}"
+                          OnContent="{Binding [Settings_ChangeSystemDns], Source={x:Static loc:Localizer.Instance}}"
+                          OffContent="{Binding [Settings_ChangeSystemDns], Source={x:Static loc:Localizer.Instance}}"/>
+            <ToggleSwitch IsChecked="{Binding PostQuantum}"
+                          OnContent="{Binding [Settings_PostQuantum], Source={x:Static loc:Localizer.Instance}}"
+                          OffContent="{Binding [Settings_PostQuantum], Source={x:Static loc:Localizer.Instance}}"/>
+            <ToggleSwitch IsChecked="{Binding ShowNotifications}"
+                          OnContent="{Binding [Settings_ShowNotifications], Source={x:Static loc:Localizer.Instance}}"
+                          OffContent="{Binding [Settings_ShowNotifications], Source={x:Static loc:Localizer.Instance}}"/>
+            <ToggleSwitch IsChecked="{Binding DebugLogging}"
+                          OnContent="{Binding [Settings_DebugLogging], Source={x:Static loc:Localizer.Instance}}"
+                          OffContent="{Binding [Settings_DebugLogging], Source={x:Static loc:Localizer.Instance}}"/>
+            <ToggleSwitch IsChecked="{Binding CrashReporting}"
+                          OnContent="{Binding [Settings_CrashReporting], Source={x:Static loc:Localizer.Instance}}"
+                          OffContent="{Binding [Settings_CrashReporting], Source={x:Static loc:Localizer.Instance}}"/>
+            <ToggleSwitch IsChecked="{Binding Telemetry}"
+                          OnContent="{Binding [Settings_Telemetry], Source={x:Static loc:Localizer.Instance}}"
+                          OffContent="{Binding [Settings_Telemetry], Source={x:Static loc:Localizer.Instance}}"/>
+            <ToggleSwitch IsChecked="{Binding ShowHints}"
+                          OnContent="{Binding [Settings_ShowHints], Source={x:Static loc:Localizer.Instance}}"
+                          OffContent="{Binding [Settings_ShowHints], Source={x:Static loc:Localizer.Instance}}"/>
           </StackPanel>
         </Border>
 
@@ -186,12 +196,12 @@
           <StackPanel>
             <TextBlock Classes="header"
                        Text="{Binding [Settings_InterfaceOverride], Source={x:Static loc:Localizer.Instance}}"/>
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <TextBox Width="224" Text="{Binding InterfaceOverride}"
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBox Grid.Column="0" Text="{Binding InterfaceOverride}"
                        PlaceholderText="{Binding [Settings_InterfacePlaceholder], Source={x:Static loc:Localizer.Instance}}"/>
-              <Button Command="{Binding ApplyInterfaceOverrideCommand}"
+              <Button Grid.Column="1" Command="{Binding ApplyInterfaceOverrideCommand}"
                       Content="{Binding [Common_Apply], Source={x:Static loc:Localizer.Instance}}"/>
-            </StackPanel>
+            </Grid>
           </StackPanel>
         </Border>
 

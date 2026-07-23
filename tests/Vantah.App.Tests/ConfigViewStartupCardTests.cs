@@ -59,16 +59,17 @@ public class ConfigViewStartupCardTests
     private static RadioButton FastestRadio(Window window) =>
         TargetRadios(window).Single(r => Equals(r.Content, Localizer.Instance[LocKeys.Settings_AutoConnectFastest]));
 
-    private static CheckBox AutoConnectCheckBox(Window window) =>
-        window.GetVisualDescendants().OfType<CheckBox>()
-            .Single(b => Equals(b.Content, Localizer.Instance[LocKeys.Settings_AutoConnect]));
+    // Переключатели опознаём по OnContent (в него привязана локализованная подпись настройки).
+    private static ToggleSwitch AutoConnectSwitch(Window window) =>
+        window.GetVisualDescendants().OfType<ToggleSwitch>()
+            .Single(b => Equals(b.OnContent, Localizer.Instance[LocKeys.Settings_AutoConnect]));
 
-    private static CheckBox AutostartCheckBox(Window window) =>
-        window.GetVisualDescendants().OfType<CheckBox>()
-            .Single(b => Equals(b.Content, Localizer.Instance[LocKeys.Settings_Autostart]));
+    private static ToggleSwitch AutostartSwitch(Window window) =>
+        window.GetVisualDescendants().OfType<ToggleSwitch>()
+            .Single(b => Equals(b.OnContent, Localizer.Instance[LocKeys.Settings_Autostart]));
 
     [AvaloniaFact]
-    public void Startup_card_renders_both_radios_and_both_checkboxes()
+    public void Startup_card_renders_both_radios_and_both_toggles()
     {
         var (vm, _, _) = VmWithStartup();
         var window = Show(vm);
@@ -78,8 +79,8 @@ public class ConfigViewStartupCardTests
         // — это именно те две радиокнопки, а не два произвольных RadioButton в группе.
         Assert.NotNull(LastRadio(window));
         Assert.NotNull(FastestRadio(window));
-        Assert.NotNull(AutoConnectCheckBox(window));
-        Assert.NotNull(AutostartCheckBox(window));
+        Assert.NotNull(AutoConnectSwitch(window));
+        Assert.NotNull(AutostartSwitch(window));
     }
 
     [AvaloniaFact]
@@ -125,13 +126,13 @@ public class ConfigViewStartupCardTests
     }
 
     [AvaloniaFact]
-    public void Toggling_the_autostart_checkbox_through_the_rendered_control_flips_the_service()
+    public void Toggling_the_autostart_switch_through_the_rendered_control_flips_the_service()
     {
         var (vm, _, autostart) = VmWithStartup();
         var window = Show(vm);
         Assert.False(autostart.IsEnabled());
 
-        var box = AutostartCheckBox(window);
+        var box = AutostartSwitch(window);
 
         box.IsChecked = true;
 

@@ -113,7 +113,7 @@ public partial class App : Application
                     new HistoryViewModel(coordinator, store), ipVersionStore),
                 new LocationsViewModel(vpn, coordinator, favorites, store),
                 new DomainsViewModel(exclusions, exclusionsStore, store),
-                new LicenseViewModel(vpn),
+                new LicenseViewModel(vpn, auth, coordinator),
                 new AboutViewModel(vpn),
                 new ProcessesViewModel(processes),
                 new ConfigViewModel(
@@ -121,7 +121,7 @@ public partial class App : Application
                     () => PickLogFolderAsync(mainWindowRef),
                     autoConnectStore, autostart, appUpdates),
                 login,
-                auth, coordinator, store, updateBanner);
+                store, updateBanner);
 
             var window = new MainWindow { DataContext = mainVm };
             mainWindowRef = window;

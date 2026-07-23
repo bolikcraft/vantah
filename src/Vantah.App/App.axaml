@@ -9,7 +9,61 @@
         <local:ViewLocator />
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <!-- Кнопки берут системный акцент — тот же SystemAccentColor, из которого FluentTheme
+             красит ToggleSwitch, так что переключатели и синие кнопки совпадают по цвету.
+             Полупрозрачные варианты (фон при наведении/нажатии) — тот же цвет через Opacity. -->
+        <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource SystemAccentColor}"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.1"/>
+        <SolidColorBrush x:Key="AccentPressedBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.2"/>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
+
+        <!-- Единый вид кнопок: полые (только контур), скруглённые «пилюлей», синие.
+             Фон/кисти FluentTheme заданы в шаблоне локально, поэтому наведение и нажатие
+             перекрашиваем через внутренний ContentPresenter (иначе сеттеры по Button молчат).
+             Исключение — кнопка «Выход»: у неё свой класс signout, она остаётся красной. -->
+        <Style Selector="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="18,8"/>
+            <!-- По умолчанию контент кнопки в Avalonia прижат влево-вверх: у кнопок фикс. ширины
+                 (например «Отключить» шириной 180) это оставляло текст в углу. Центрируем. -->
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentHoverBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}"/>
+        </Style>
+        <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}"/>
+        </Style>
+
+        <!-- «Опасные» кнопки (выход из аккаунта, отключение VPN) — тот же полый вид, но красный.
+             Класс danger переопределяет только цвета поверх базовой кнопки; форму и паддинг
+             задаёт вызывающая разметка. -->
+        <Style Selector="Button.danger">
+            <Setter Property="BorderBrush" Value="#D9524A"/>
+            <Setter Property="Foreground" Value="#D9524A"/>
+        </Style>
+        <Style Selector="Button.danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1AD9524A"/>
+            <Setter Property="BorderBrush" Value="#D9524A"/>
+            <Setter Property="TextElement.Foreground" Value="#D9524A"/>
+        </Style>
+        <Style Selector="Button.danger:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#33D9524A"/>
+            <Setter Property="BorderBrush" Value="#D9524A"/>
+            <Setter Property="TextElement.Foreground" Value="#D9524A"/>
+        </Style>
     </Application.Styles>
 </Application>

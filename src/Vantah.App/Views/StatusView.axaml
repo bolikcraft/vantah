@@ -92,6 +92,7 @@
         <TextBlock Text="{Binding TxTotalText}"/>
       </StackPanel>
       <Button Content="{Binding ToggleText}" Command="{Binding ToggleCommand}"
+              Classes.danger="{Binding IsConnected}"
               IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Center" Width="180"/>
       <TextBlock Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap" MaxWidth="480"
                  IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>

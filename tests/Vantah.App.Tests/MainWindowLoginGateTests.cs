@@ -68,14 +68,14 @@ public class MainWindowLoginGateTests
     [AvaloniaFact]
     public void Logout_command_calls_auth_and_flips_gate_to_login_form()
     {
-        // Пункт «Выйти» дёргает LogoutCommand вьюмодели (Click-обработчик привязан на этапе
-        // компиляции XAML). Проверяем, что команда реально вызывает logout и — после того как
-        // зонд увидит выход — гейт показывает форму входа.
+        // Кнопка «Выход» на экране аккаунта дёргает LogoutCommand вьюмодели лицензии. Проверяем,
+        // что команда реально вызывает logout и — после того как зонд увидит выход — гейт
+        // показывает форму входа.
         var (window, store, auth) = ShowWith(LoginState.LoggedIn);
         var vm = (MainWindowViewModel)window.DataContext!;
 
         auth.State = LoginState.LoggedOut;            // после logout зонд увидит «не залогинен»
-        vm.LogoutCommand.Execute(null);
+        vm.License.LogoutCommand.Execute(null);
         Dispatcher.UIThread.RunJobs();
 
         Assert.Equal(1, auth.LogoutCalls);
@@ -86,42 +86,57 @@ public class MainWindowLoginGateTests
     }
 
     /// <summary>
-    /// Выход необратим, поэтому пункт меню сначала спрашивает подтверждение: до ответа
-    /// пользователя logout не вызывается, «Отмена» отменяет его совсем, а кнопка подтверждения —
-    /// выполняет. Без headless-прогона это не доказать: обработчик мог бы молча разлогинивать.
+    /// Выход необратим, поэтому кнопка «Выход» на экране аккаунта сначала спрашивает подтверждение:
+    /// до ответа пользователя logout не вызывается, «Отмена» отменяет его совсем, а кнопка
+    /// подтверждения — выполняет. Без headless-прогона это не доказать: обработчик мог бы молча
+    /// разлогинивать, а сама кнопка — оказаться не привязанной (память проекта: no-op кнопки Kill).
     /// </summary>
     [AvaloniaFact]
-    public void Logout_menu_item_asks_for_confirmation_first()
+    public void Sign_out_on_the_account_screen_asks_for_confirmation_first()
     {
         var (window, _, auth) = ShowWith(LoginState.LoggedIn);
 
-        ClickLogout(window);
-        var confirm = ConfirmWindow(window);
+        var license = OpenLicense(window);
+        var signOut = SignOutButton(license);
 
+        signOut.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Dispatcher.UIThread.RunJobs();
         Assert.Equal(0, auth.LogoutCalls);             // ничего не произошло, пока не подтвердили
 
-        DialogButton(confirm, LocKeys.Common_Cancel).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        DialogButton(ConfirmWindow(license), LocKeys.Common_Cancel)
+            .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Dispatcher.UIThread.RunJobs();
         Assert.Equal(0, auth.LogoutCalls);             // «Отмена» — выхода нет
-        Assert.Empty(window.OwnedWindows);             // и диалог закрылся
+        Assert.Empty(license.OwnedWindows);            // и диалог закрылся
 
-        ClickLogout(window);
-        DialogButton(ConfirmWindow(window), LocKeys.Login_LogoutConfirmAction)
+        signOut.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        Dispatcher.UIThread.RunJobs();
+        DialogButton(ConfirmWindow(license), LocKeys.Login_LogoutConfirmAction)
             .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         Dispatcher.UIThread.RunJobs();
 
         Assert.Equal(1, auth.LogoutCalls);             // подтверждение доводит выход до конца
     }
 
-    private static Window ConfirmWindow(MainWindow window) =>
-        Assert.Single(window.OwnedWindows, w => w.Title == Localizer.Instance[LocKeys.Login_LogoutConfirmTitle]);
+    // Открываем окно аккаунта («Лицензия») кликом по пункту меню — как у пользователя.
+    private static Window OpenLicense(MainWindow window)
+    {
+        ClickMenu(window, LocKeys.Menu_License);
+        return window.OwnedWindows.Single(w => w.Content is LicenseView);
+    }
+
+    private static Button SignOutButton(Window license) =>
+        license.GetVisualDescendants().OfType<Button>().Single(b => b.Classes.Contains("danger"));
+
+    private static Window ConfirmWindow(Window owner) =>
+        Assert.Single(owner.OwnedWindows, w => w.Title == Localizer.Instance[LocKeys.Login_LogoutConfirmTitle]);
 
     private static Button DialogButton(Window dialog, string textKey) =>
         dialog.GetVisualDescendants().OfType<Button>()
             .Single(b => (b.Content as string) == Localizer.Instance[textKey]);
 
     // Клик по пункту меню — как у пользователя: раскрываем флайаут и жмём мышью (см. MainWindowTests).
-    private static void ClickLogout(MainWindow window)
+    private static void ClickMenu(MainWindow window, string headerKey)
     {
         var button = window.GetVisualDescendants().OfType<Button>().Single(b => b.Flyout is MenuFlyout);
         var flyout = (MenuFlyout)button.Flyout!;
@@ -129,7 +144,7 @@ public class MainWindowLoginGateTests
         Dispatcher.UIThread.RunJobs();
 
         var item = flyout.Items.OfType<MenuItem>()
-            .Single(i => (i.Header as string) == Localizer.Instance[LocKeys.Login_Logout]);
+            .Single(i => (i.Header as string) == Localizer.Instance[headerKey]);
         var center = item.TranslatePoint(new Point(item.Bounds.Width / 2, item.Bounds.Height / 2), window);
         Assert.NotNull(center);
 

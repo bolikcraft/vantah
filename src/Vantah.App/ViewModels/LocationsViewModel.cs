@@ -46,6 +46,11 @@ public partial class LocationsViewModel : ObservableObject
 
     public ObservableCollection<LocationItemViewModel> Items { get; } = new();
 
+    // Пока статус подключения не определён (Unknown — до первого ответа CLI), кнопки
+    // «Подключить/Отключить» в строках заблокированы: иначе список уже предлагает подключиться,
+    // хотя туннель, возможно, уже поднят. Разблокируются, как только статус становится известен.
+    [ObservableProperty] private bool _isStatusKnown;
+
     /// <summary>Строки-заглушки «скелетона» на время загрузки (значения не важны, важно их число).</summary>
     public IReadOnlyList<int> SkeletonRows { get; } = Enumerable.Range(0, 9).ToList();
 
@@ -209,15 +214,20 @@ public partial class LocationsViewModel : ObservableObject
 
     private void ApplyConnected(AppSnapshot s)
     {
+        IsStatusKnown = s.Connection != ConnectionState.Unknown;
         var connectedCity = s.Connection == ConnectionState.Connected ? s.Location : null;
         foreach (var item in _all)
             item.IsConnected = connectedCity is not null &&
                 string.Equals(item.City, connectedCity, StringComparison.OrdinalIgnoreCase);
     }
 
+    // Кнопка строки одна на оба действия: для активной локации — «Отключить», для остальных —
+    // «Подключить». Так подпись всегда совпадает с реальным состоянием строки.
     [RelayCommand]
-    private Task Connect(LocationItemViewModel item) =>
-        _coordinator.ConnectAsync(item.City, fastest: false);
+    private Task ToggleConnection(LocationItemViewModel item) =>
+        item.IsConnected
+            ? _coordinator.DisconnectAsync()
+            : _coordinator.ConnectAsync(item.City, fastest: false);
 
     [RelayCommand]
     private void ToggleFavorite(LocationItemViewModel item)

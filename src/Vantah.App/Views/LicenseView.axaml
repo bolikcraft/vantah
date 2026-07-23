@@ -4,21 +4,56 @@
              xmlns:loc="clr-namespace:Vantah.App.Localization"
              x:DataType="vm:LicenseViewModel"
              x:Class="Vantah.App.Views.LicenseView">
-  <StackPanel Margin="16" Spacing="10">
-    <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
-      <TextBlock Grid.Row="0" Grid.Column="0" Opacity="0.7"
-                 Text="{Binding [License_Account], Source={x:Static loc:Localizer.Instance}}"/>
-      <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Email}" TextWrapping="Wrap"/>
-      <TextBlock Grid.Row="1" Grid.Column="0" Opacity="0.7"
-                 Text="{Binding [License_Plan], Source={x:Static loc:Localizer.Instance}}"/>
-      <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Plan}" TextWrapping="Wrap"/>
-      <TextBlock Grid.Row="2" Grid.Column="0" Opacity="0.7"
-                 Text="{Binding [License_Devices], Source={x:Static loc:Localizer.Instance}}"/>
-      <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Devices}"/>
-      <TextBlock Grid.Row="3" Grid.Column="0" Opacity="0.7"
-                 Text="{Binding [License_Renewal], Source={x:Static loc:Localizer.Instance}}"/>
-      <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Renewal}"/>
-    </Grid>
+
+  <StackPanel Margin="16" Spacing="12">
+    <!-- Карточка аккаунта: аватар, e-mail, плашка тарифа и кнопка выхода в одну строку —
+         как на референсном экране adguardvpn-gui. -->
+    <Border Padding="20" CornerRadius="10" Background="#0D808080">
+      <StackPanel Spacing="16">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <Border Grid.Column="0" Width="60" Height="60" CornerRadius="30"
+                  Background="#1A808080" VerticalAlignment="Center">
+            <!-- Контурная иконка пользователя (только обводка): круг-голова + дуга плеч. -->
+            <Viewbox Width="34" Height="34">
+              <Canvas Width="24" Height="24">
+                <Ellipse Canvas.Left="8" Canvas.Top="3" Width="8" Height="8"
+                         Stroke="#4CA366" StrokeThickness="1.8"/>
+                <Path Stroke="#4CA366" StrokeThickness="1.8"
+                      StrokeLineCap="Round" StrokeJoin="Round"
+                      Data="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+              </Canvas>
+            </Viewbox>
+          </Border>
+
+          <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center" Spacing="6">
+            <TextBlock Text="{Binding Email}" FontSize="18" FontWeight="Bold" TextWrapping="Wrap"/>
+            <Border Background="#2234C759" CornerRadius="6" Padding="8,2" HorizontalAlignment="Left"
+                    IsVisible="{Binding HasPlan}">
+              <TextBlock Text="{Binding Plan}" FontSize="12" FontWeight="Bold" Foreground="#2E9E4F"/>
+            </Border>
+          </StackPanel>
+
+          <Button Grid.Column="2" Classes="danger" VerticalAlignment="Center"
+                  Click="OnLogoutClick"
+                  Content="{Binding [Login_Logout], Source={x:Static loc:Localizer.Instance}}"/>
+        </Grid>
+
+        <Border Height="1" Background="#22808080"/>
+
+        <Grid ColumnDefinitions="*,*">
+          <StackPanel Grid.Column="0" Spacing="4">
+            <TextBlock Text="{Binding [License_Devices], Source={x:Static loc:Localizer.Instance}}"
+                       FontSize="12" Opacity="0.6"/>
+            <TextBlock Text="{Binding Devices}" FontSize="16" FontWeight="SemiBold"/>
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="4">
+            <TextBlock Text="{Binding [License_Renewal], Source={x:Static loc:Localizer.Instance}}"
+                       FontSize="12" Opacity="0.6"/>
+            <TextBlock Text="{Binding Renewal}" FontSize="16" FontWeight="SemiBold"/>
+          </StackPanel>
+        </Grid>
+      </StackPanel>
+    </Border>
 
     <TextBlock Text="{Binding Status}" Opacity="0.7" TextWrapping="Wrap"
                IsVisible="{Binding Status, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>

@@ -1,6 +1,7 @@
 using Vantah.Core.Errors;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
 using Vantah.App.Services;
 using Vantah.App.Tests.Fakes;
 using Vantah.App.ViewModels;
@@ -51,10 +52,10 @@ public class LocationsViewTests
     private static Location Loc(string iso, string country, string city, int ping) =>
         new(iso, country, city, ping);
 
-    private static LocationsViewModel MakeVm(IVpnService vpn)
+    private static LocationsViewModel MakeVm(IVpnService vpn, AppStateStore? store = null)
     {
         var dir = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
-        var store = new AppStateStore();
+        store ??= new AppStateStore();
         var traffic = new TrafficMonitor(new FakeTrafficReader());
         var history = new ConnectionHistoryTracker(
             new ConnectionHistoryStore(Path.Combine(dir, "connections-history")),
@@ -91,6 +92,23 @@ public class LocationsViewTests
         Assert.Empty(vm.Items);
         Assert.False(vm.IsLoading);
         Assert.Equal("не выполнен вход", vm.LoadError);
+    }
+
+    // Пока статус подключения не определён (Unknown — до первого ответа CLI), кнопки
+    // «Подключить/Отключить» заблокированы: список не должен предлагать подключиться, когда
+    // туннель, возможно, уже поднят. Как только статус известен — действия доступны.
+    [AvaloniaFact]
+    public async Task Row_actions_stay_disabled_until_status_is_known()
+    {
+        var store = new AppStateStore();
+        var vm = MakeVm(new ScriptedVpn(() => new[] { Loc("NL", "Netherlands", "Amsterdam", 10) }), store);
+
+        await vm.LoadTask;
+        Assert.False(vm.IsStatusKnown);   // статус ещё Unknown — кнопки строк заблокированы
+
+        store.Set(s => s with { Connection = ConnectionState.Disconnected });
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(vm.IsStatusKnown);    // статус определился — кнопки строк доступны
     }
 
     // Заполнение списка, привязанного к отрисованному ListBox, при асинхронном ответе CLI

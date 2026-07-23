@@ -1,10 +1,5 @@
-using System;
-using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Vantah.App.Services;
-using Vantah.Core.Auth;
 using Vantah.Core.Models;
 using Vantah.Core.State;
 
@@ -12,9 +7,6 @@ namespace Vantah.App.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
-    private readonly IAuthService _auth;
-    private readonly VpnCoordinator _coordinator;
-
     public StatusViewModel Status { get; }
     public LocationsViewModel Locations { get; }
     public DomainsViewModel Domains { get; }
@@ -45,8 +37,6 @@ public partial class MainWindowViewModel : ObservableObject
         ProcessesViewModel processes,
         ConfigViewModel config,
         LoginViewModel login,
-        IAuthService auth,
-        VpnCoordinator coordinator,
         AppStateStore store,
         UpdateBannerViewModel? updateBanner = null)
     {
@@ -59,8 +49,6 @@ public partial class MainWindowViewModel : ObservableObject
         Config = config;
         Login = login;
         UpdateBanner = updateBanner;
-        _auth = auth;
-        _coordinator = coordinator;
 
         store.Changed += (_, s) => Dispatcher.UIThread.Post(
             () => IsLoggedIn = s.LoginState != LoginState.LoggedOut);
@@ -72,19 +60,5 @@ public partial class MainWindowViewModel : ObservableObject
     partial void OnSelectedTabChanged(int value)
     {
         if (value == 2) Domains.ReloadIfFailed();
-    }
-
-    [RelayCommand]
-    private async Task LogoutAsync()
-    {
-        try
-        {
-            await _auth.LogoutAsync();
-            await _coordinator.RefreshLoginStateAsync();   // гейт покажет форму входа
-        }
-        catch
-        {
-            // Разлогин упал — состояние не меняем; следующий опрос всё равно сверит логин.
-        }
     }
 }

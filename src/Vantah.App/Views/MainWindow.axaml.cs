@@ -24,25 +24,13 @@ public partial class MainWindow : Window
         Open("settings", LocKeys.Menu_Settings, vm => new ConfigView { DataContext = vm.Config },
              width: 820, height: 820);
 
+    // Экран аккаунта — одна карточка и кнопка обновления: высоким окном ему быть незачем.
     private void OnLicenseClick(object? sender, RoutedEventArgs e) =>
-        Open("license", LocKeys.Menu_License, vm => new LicenseView { DataContext = vm.License });
+        Open("license", LocKeys.Menu_License, vm => new LicenseView { DataContext = vm.License },
+             width: 560, height: 320);
 
     private void OnAboutClick(object? sender, RoutedEventArgs e) =>
         Open("about", LocKeys.Menu_About, vm => new AboutView { DataContext = vm.About });
-
-    // Выход — не служебное окно, а команда вьюмодели, но необратимая: сначала спрашиваем
-    // подтверждение. Пункты MenuFlyout не наследуют DataContext окна (грабли «MenuFlyout ≠ Flyout»),
-    // поэтому Command в разметке к ним не привязать: дёргаем команду из code-behind, как и
-    // остальные пункты меню.
-    private async void OnLogoutClick(object? sender, RoutedEventArgs e)
-    {
-        if (Vm is not { } vm) return;
-        var loc = Localizer.Instance;
-        if (await ConfirmDialog.ShowAsync(this,
-                loc[LocKeys.Login_LogoutConfirmTitle], loc[LocKeys.Login_LogoutConfirmMessage],
-                loc[LocKeys.Login_LogoutConfirmAction], loc[LocKeys.Common_Cancel]))
-            vm.LogoutCommand.Execute(null);
-    }
 
     /// <summary>
     /// Открытие откладываем на следующий такт диспетчера: Avalonia поднимает Click ДО того, как

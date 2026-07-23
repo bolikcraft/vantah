@@ -1,8 +1,13 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Vantah.App.Services;
+using Vantah.App.Tests.Fakes;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
+using Vantah.Core.History;
 using Vantah.Core.Models;
+using Vantah.Core.State;
+using Vantah.Core.Traffic;
 using Vantah.Core.Vpn;
 using Location = Vantah.Core.Models.Location;
 
@@ -38,11 +43,26 @@ public class LicenseViewModelThreadingTests
             Task.FromResult<string?>("test");
     }
 
+    // Логаут этим тестам не нужен, но конструктор его требует: собираем координатор на фейках.
+    private static LicenseViewModel NewVm(IVpnService vpn)
+    {
+        var temp = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
+        var store = new AppStateStore();
+        var auth = new FakeAuthService();
+        var coordinator = new VpnCoordinator(
+            vpn, new TrafficMonitor(new FakeTrafficReader()), store,
+            new ConnectionHistoryTracker(
+                new ConnectionHistoryStore(Path.Combine(temp, "history")),
+                new ActiveSessionStore(Path.Combine(temp, "connection-active"))),
+            new IpVersionStore(Path.Combine(temp, "ip-version")), auth);
+        return new LicenseViewModel(vpn, auth, coordinator);
+    }
+
     [AvaloniaFact]
     public async Task Successful_load_populates_the_license_fields()
     {
         var license = new License("user@example.com", "Premium", 5, "2027-01-01");
-        var vm = new LicenseViewModel(new ScriptedVpn(license));
+        var vm = NewVm(new ScriptedVpn(license));
 
         await vm.LoadTask;
 
@@ -60,7 +80,7 @@ public class LicenseViewModelThreadingTests
     public async Task Rendered_view_populates_on_async_load()
     {
         var license = new License("user@example.com", "Premium", 5, "2027-01-01");
-        var vm = new LicenseViewModel(new ScriptedVpn(license));
+        var vm = NewVm(new ScriptedVpn(license));
         var window = new Window { Content = new LicenseView { DataContext = vm }, Width = 400, Height = 400 };
         window.Show();
 

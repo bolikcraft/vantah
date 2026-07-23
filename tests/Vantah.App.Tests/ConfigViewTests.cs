@@ -73,9 +73,10 @@ public class ConfigViewTests
         Assert.Equal("beta", vm.SelectedChannel);
         Assert.Equal("script", vm.SelectedRouting);
 
-        var boxes = window.GetVisualDescendants().OfType<CheckBox>().ToArray();
-        Assert.Equal(10, boxes.Length);  // +3 за карточку «Запуск»: автоподключение, автозапуск, проверка обновлений
-        Assert.Contains(boxes, b => b.IsChecked == true);   // post-quantum и debug пришли включёнными
+        // Все флажки настроек — переключатели ToggleSwitch (10 штук) плюс «Режим работы» = 11.
+        var toggles = window.GetVisualDescendants().OfType<ToggleSwitch>().ToArray();
+        Assert.Equal(11, toggles.Length);
+        Assert.Contains(toggles, b => b.IsChecked == true);   // post-quantum и debug пришли включёнными
     }
 
     // Гарантия от петли «прочитали → тут же записали обратно»: загрузка формы не шлёт set-*.

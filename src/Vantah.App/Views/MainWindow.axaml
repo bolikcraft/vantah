@@ -92,9 +92,6 @@
                     Click="OnLicenseClick"/>
           <MenuItem Header="{Binding [Menu_About], Source={x:Static loc:Localizer.Instance}}"
                     Click="OnAboutClick"/>
-          <Separator/>
-          <MenuItem Header="{Binding [Login_Logout], Source={x:Static loc:Localizer.Instance}}"
-                    Click="OnLogoutClick"/>
         </MenuFlyout>
       </Button.Flyout>
     </Button>
