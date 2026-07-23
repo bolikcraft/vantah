@@ -423,6 +423,15 @@
   <data name="Settings_UpdateAvailable" xml:space="preserve">
     <value>Versi baru adguardvpn-cli tersedia</value>
   </data>
+  <data name="Settings_InstallUpdate" xml:space="preserve">
+    <value>Perbarui sekarang</value>
+  </data>
+  <data name="Settings_UpdateDone" xml:space="preserve">
+    <value>Diperbarui. Mulai ulang Vantah untuk menerapkan.</value>
+  </data>
+  <data name="Settings_UpdateUpToDate" xml:space="preserve">
+    <value>Anda sudah menggunakan versi terbaru</value>
+  </data>
   <data name="Settings_ExportLogs" xml:space="preserve">
     <value>Ekspor log…</value>
   </data>

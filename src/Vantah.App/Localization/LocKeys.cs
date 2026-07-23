@@ -146,6 +146,9 @@ public static class LocKeys
     public const string Settings_ErrorInvalidPort = "Settings_ErrorInvalidPort";
     public const string Settings_ErrorEmptyHost = "Settings_ErrorEmptyHost";
     public const string Settings_UpdateAvailable = "Settings_UpdateAvailable";
+    public const string Settings_InstallUpdate = "Settings_InstallUpdate";
+    public const string Settings_UpdateDone = "Settings_UpdateDone";
+    public const string Settings_UpdateUpToDate = "Settings_UpdateUpToDate";
     public const string Settings_ExportLogs = "Settings_ExportLogs";
     public const string Settings_LogsExported = "Settings_LogsExported";
     public const string Settings_StartupSection = "Settings_StartupSection";
