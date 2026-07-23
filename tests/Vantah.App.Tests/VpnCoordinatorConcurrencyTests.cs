@@ -82,7 +82,8 @@ public class VpnCoordinatorConcurrencyTests
         public void Release() => _gate.TrySetResult(true);
 
         public async Task<VpnStatus> ConnectAsync(string? location, bool fastest,
-            IpVersionPreference ipVersion = IpVersionPreference.Auto, CancellationToken ct = default)
+            IpVersionPreference ipVersion = IpVersionPreference.Auto,
+            bool killSwitch = false, CancellationToken ct = default)
         {
             lock (_lock)
             {

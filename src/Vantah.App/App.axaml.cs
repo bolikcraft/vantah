@@ -70,11 +70,12 @@ public partial class App : Application
             var activeStore = new ActiveSessionStore();
             var history = new ConnectionHistoryTracker(historyStore, activeStore);
             var ipVersionStore = new IpVersionStore();
+            var killSwitchStore = new KillSwitchStore();
             // CliRunner реализует и ICliRunner, и IInteractiveCliRunner: обычные команды и
             // интерактивный login идут через один и тот же процесс-раннер.
             var auth = new AuthService(runner, runner);
             var lastLocationStore = new LastLocationStore();
-            var coordinator = new VpnCoordinator(vpn, traffic, store, history, ipVersionStore, auth, lastLocationStore);
+            var coordinator = new VpnCoordinator(vpn, traffic, store, history, ipVersionStore, auth, lastLocationStore, killSwitchStore);
             var favorites = new FavoritesStore();
             var exclusionsStore = new ExclusionsStore();
             var exclusions = new ExclusionsService(runner, exclusionsStore);
@@ -119,7 +120,7 @@ public partial class App : Application
                 new ConfigViewModel(
                     vpnConfig, store, languageStore, updateChecker, logExporter,
                     () => PickLogFolderAsync(mainWindowRef),
-                    autoConnectStore, autostart, appUpdates),
+                    autoConnectStore, autostart, appUpdates, killSwitchStore),
                 login,
                 store, updateBanner);
 

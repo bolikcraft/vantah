@@ -447,6 +447,9 @@
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
     <value>Vantah güncellemelerini denetle</value>
   </data>
+  <data name="Settings_KillSwitch" xml:space="preserve">
+    <value>Kill switch (bağlantı koparsa korumayı sürdür)</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Vantah için yeni sürüm mevcut — {0}</value>
   </data>

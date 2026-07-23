@@ -19,7 +19,8 @@ public sealed class VpnCoordinator(
     ConnectionHistoryTracker history,
     IpVersionStore ipVersionStore,
     IAuthService auth,
-    LastLocationStore? lastLocation = null)
+    LastLocationStore? lastLocation = null,
+    KillSwitchStore? killSwitch = null)
 {
     private DateTime _lastPollUtc = DateTime.UtcNow;
     // _opGate сериализует операции; _operationInFlight гейтит опрос — самодостаточен,
@@ -109,7 +110,8 @@ public sealed class VpnCoordinator(
             store.Set(s => s with { Connection = ConnectionState.Connecting, Error = null });
             try
             {
-                var status = await vpn.ConnectAsync(location, fastest, ipVersionStore.Load(), ct);
+                var status = await vpn.ConnectAsync(
+                    location, fastest, ipVersionStore.Load(), killSwitch?.Load() ?? false, ct);
                 TrackHistory(status);
                 if (status.IsConnected)
                 {

@@ -39,7 +39,8 @@ public class LocationsViewTests
         public Task<VpnStatus> GetStatusAsync(CancellationToken ct = default) =>
             Task.FromResult(VpnStatus.Disconnected);
         public Task<VpnStatus> ConnectAsync(string? location, bool fastest,
-            IpVersionPreference ipVersion = IpVersionPreference.Auto, CancellationToken ct = default) =>
+            IpVersionPreference ipVersion = IpVersionPreference.Auto,
+            bool killSwitch = false, CancellationToken ct = default) =>
             Task.FromResult(VpnStatus.Disconnected);
         public Task<VpnStatus> DisconnectAsync(CancellationToken ct = default) =>
             Task.FromResult(VpnStatus.Disconnected);

@@ -178,6 +178,9 @@
             <ToggleSwitch IsChecked="{Binding CheckAppUpdates}"
                           OnContent="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"
                           OffContent="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"/>
+            <ToggleSwitch IsChecked="{Binding KillSwitchEnabled}"
+                          OnContent="{Binding [Settings_KillSwitch], Source={x:Static loc:Localizer.Instance}}"
+                          OffContent="{Binding [Settings_KillSwitch], Source={x:Static loc:Localizer.Instance}}"/>
           </StackPanel>
         </Border>
 

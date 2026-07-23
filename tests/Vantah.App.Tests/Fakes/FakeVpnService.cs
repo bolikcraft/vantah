@@ -5,12 +5,13 @@ namespace Vantah.App.Tests.Fakes;
 
 public sealed class FakeVpnService : IVpnService
 {
-    public List<(string? Location, bool Fastest, IpVersionPreference Ip)> Connects { get; } = [];
+    public List<(string? Location, bool Fastest, IpVersionPreference Ip, bool KillSwitch)> Connects { get; } = [];
 
     public Task<VpnStatus> ConnectAsync(string? location, bool fastest,
-        IpVersionPreference ipVersion = IpVersionPreference.Auto, CancellationToken ct = default)
+        IpVersionPreference ipVersion = IpVersionPreference.Auto,
+        bool killSwitch = false, CancellationToken ct = default)
     {
-        Connects.Add((location, fastest, ipVersion));
+        Connects.Add((location, fastest, ipVersion, killSwitch));
         return Task.FromResult(VpnStatus.Disconnected);
     }
 
