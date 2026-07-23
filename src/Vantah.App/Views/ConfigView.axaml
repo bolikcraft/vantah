@@ -182,9 +182,18 @@
             <ToggleSwitch IsChecked="{Binding CheckAppUpdates}"
                           OnContent="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"
                           OffContent="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"/>
-            <ToggleSwitch IsChecked="{Binding KillSwitchEnabled}"
-                          OnContent="{Binding [Settings_KillSwitch], Source={x:Static loc:Localizer.Instance}}"
-                          OffContent="{Binding [Settings_KillSwitch], Source={x:Static loc:Localizer.Instance}}"/>
+            <!-- Подпись длинная и на разных языках разной длины — переносим, а не обрезаем.
+                 Content задан TextBlock'ом с Wrap+MaxWidth, иначе ToggleSwitch тянет текст в одну строку. -->
+            <ToggleSwitch IsChecked="{Binding KillSwitchEnabled}">
+              <ToggleSwitch.OnContent>
+                <TextBlock TextWrapping="Wrap" MaxWidth="230"
+                           Text="{Binding [Settings_KillSwitch], Source={x:Static loc:Localizer.Instance}}"/>
+              </ToggleSwitch.OnContent>
+              <ToggleSwitch.OffContent>
+                <TextBlock TextWrapping="Wrap" MaxWidth="230"
+                           Text="{Binding [Settings_KillSwitch], Source={x:Static loc:Localizer.Instance}}"/>
+              </ToggleSwitch.OffContent>
+            </ToggleSwitch>
           </StackPanel>
         </Border>
 
