@@ -92,10 +92,11 @@
                      PlaceholderText="{Binding [Settings_SocksUsername], Source={x:Static loc:Localizer.Instance}}"/>
             <TextBox Text="{Binding SocksPassword}" PasswordChar="•"
                      PlaceholderText="{Binding [Settings_SocksPassword], Source={x:Static loc:Localizer.Instance}}"/>
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <Button Command="{Binding ApplySocksAuthCommand}"
+            <!-- Подписи длинные — в один ряд не помещаются, ставим в столбик на всю ширину карточки. -->
+            <StackPanel Spacing="8">
+              <Button HorizontalAlignment="Stretch" Command="{Binding ApplySocksAuthCommand}"
                       Content="{Binding [Settings_SaveAuth], Source={x:Static loc:Localizer.Instance}}"/>
-              <Button Command="{Binding ClearSocksAuthCommand}"
+              <Button HorizontalAlignment="Stretch" Command="{Binding ClearSocksAuthCommand}"
                       Content="{Binding [Settings_ClearAuth], Source={x:Static loc:Localizer.Instance}}"/>
             </StackPanel>
           </StackPanel>
