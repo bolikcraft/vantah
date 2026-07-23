@@ -153,6 +153,24 @@ tar -xzf vantah-*-linux-x64.tar.gz
 ./vantah-*-linux-x64/vantah
 ```
 
+**.deb** (Debian, Ubuntu, and derivatives) — install with your package manager;
+the application-menu entry with an icon appears right after installation:
+
+```bash
+sudo apt install ./vantah_*.deb
+```
+
+**.rpm** (Fedora, RHEL, openSUSE, and derivatives) — same, via dnf:
+
+```bash
+sudo dnf install ./vantah-*.rpm
+```
+
+Both packages install the binary to `/usr/lib/vantah` (with a `/usr/bin/vantah`
+symlink) and register the menu entry and icons automatically. They do **not**
+pull in `adguardvpn-cli` (it is not in distro repositories) — install it
+yourself, see [Requirements](#requirements).
+
 Every asset ships with a `.sha256` file next to it; verify the download with:
 
 ```bash
@@ -227,9 +245,6 @@ Windows and macOS, so there is no point duplicating them.
 
 - IP-address and region leak detection — verifying that traffic actually goes
   through the VPN.
-- Packaging and distribution: rpm/deb (AppImage and tar.gz are already published
-  with every release, and there is `packaging/install.sh` plus application-menu
-  integration).
 
 ## License
 

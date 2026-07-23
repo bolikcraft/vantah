@@ -94,6 +94,28 @@ jobs:
           ARCH=x86_64 ./appimagetool --appimage-extract-and-run "$APPDIR" "$OUT"
           sha256sum "$OUT" > "${OUT}.sha256"
 
+      - name: Package deb/rpm (nfpm)
+        run: |
+          VER="${{ steps.ver.outputs.version }}"
+          # nfpm из goreleaser/nfpm, pinned релиз 2.47.0
+          curl -fsSL -o nfpm.tar.gz \
+            https://github.com/goreleaser/nfpm/releases/download/v2.47.0/nfpm_2.47.0_Linux_x86_64.tar.gz
+          tar -xzf nfpm.tar.gz nfpm
+          chmod +x nfpm
+
+          # Версию nfpm подставляет из ${VERSION} при чтении конфига (см. packaging/nfpm.yaml),
+          # поэтому версия пакета всегда совпадает с тегом релиза.
+          export VERSION="$VER"
+          ./nfpm pkg --config packaging/nfpm.yaml --packager deb --target .
+          ./nfpm pkg --config packaging/nfpm.yaml --packager rpm --target .
+
+          # .sha256 рядом с каждым пакетом (имена nfpm задаёт сам: vantah_<ver>_amd64.deb,
+          # vantah-<ver>-1.x86_64.rpm) — маски ниже от точного имени не зависят.
+          for f in vantah_*.deb vantah-*.rpm; do
+            sha256sum "$f" > "${f}.sha256"
+          done
+          ls -la vantah_*.deb vantah-*.rpm
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -103,6 +125,10 @@ jobs:
             vantah-*-linux-x64.tar.gz.sha256
             Vantah-*-x86_64.AppImage
             Vantah-*-x86_64.AppImage.sha256
+            vantah_*.deb
+            vantah_*.deb.sha256
+            vantah-*.rpm
+            vantah-*.rpm.sha256
 
       - name: Publish GitHub Release
         if: github.ref_type == 'tag'
@@ -114,3 +140,7 @@ jobs:
             vantah-*-linux-x64.tar.gz.sha256
             Vantah-*-x86_64.AppImage
             Vantah-*-x86_64.AppImage.sha256
+            vantah_*.deb
+            vantah_*.deb.sha256
+            vantah-*.rpm
+            vantah-*.rpm.sha256

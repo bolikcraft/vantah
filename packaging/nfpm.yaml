@@ -1,0 +1,82 @@
+# nfpm configuration for building native Linux packages (.deb / .rpm).
+# https://nfpm.goreleaser.com/configuration/
+#
+# Run from the repository root (paths below are relative to it) with the
+# self-contained binary already published to ./publish/Vantah.App:
+#
+#   dotnet publish src/Vantah.App -c Release -r linux-x64 -o publish
+#   VERSION=1.2.3 nfpm pkg --config packaging/nfpm.yaml --packager deb
+#   VERSION=1.2.3 nfpm pkg --config packaging/nfpm.yaml --packager rpm
+#
+# nfpm expands ${VERSION} from the environment when it reads this file, so the
+# package version always matches the release tag passed by CI.
+
+name: vantah
+arch: amd64            # nfpm maps this to x86_64 for rpm automatically
+platform: linux
+version: ${VERSION}
+section: net
+priority: optional
+maintainer: bolikcraft
+homepage: https://github.com/bolikcraft/vantah
+license: GPL-3.0-or-later
+description: |
+  GUI / system-tray client for adguardvpn-cli on Linux.
+  Vantah is a graphical front-end that runs the official adguardvpn-cli
+  command-line tool as an external process and shows its state in a window and a
+  tray icon. It does not implement a VPN itself.
+  The adguardvpn-cli tool is NOT bundled and must be installed separately; a
+  valid AdGuard VPN account is required. See the project page for details.
+
+# Weak dependency only: adguardvpn-cli is not in distro repositories and is
+# installed separately, so it must never block installation of this package.
+recommends:
+  - adguardvpn-cli
+
+contents:
+  # Self-contained single-file binary (the .NET runtime is embedded).
+  - src: ./publish/Vantah.App
+    dst: /usr/lib/vantah/vantah
+    file_info:
+      mode: 0755
+
+  # PATH entry -> the binary in /usr/lib.
+  - src: /usr/lib/vantah/vantah
+    dst: /usr/bin/vantah
+    type: symlink
+
+  # Application-menu entry.
+  - src: ./packaging/vantah.desktop
+    dst: /usr/share/applications/vantah.desktop
+    file_info:
+      mode: 0644
+
+  # hicolor icon theme (every size shipped in the repository).
+  - src: ./packaging/icons/hicolor/16x16/apps/vantah.png
+    dst: /usr/share/icons/hicolor/16x16/apps/vantah.png
+    file_info:
+      mode: 0644
+  - src: ./packaging/icons/hicolor/32x32/apps/vantah.png
+    dst: /usr/share/icons/hicolor/32x32/apps/vantah.png
+    file_info:
+      mode: 0644
+  - src: ./packaging/icons/hicolor/48x48/apps/vantah.png
+    dst: /usr/share/icons/hicolor/48x48/apps/vantah.png
+    file_info:
+      mode: 0644
+  - src: ./packaging/icons/hicolor/64x64/apps/vantah.png
+    dst: /usr/share/icons/hicolor/64x64/apps/vantah.png
+    file_info:
+      mode: 0644
+  - src: ./packaging/icons/hicolor/128x128/apps/vantah.png
+    dst: /usr/share/icons/hicolor/128x128/apps/vantah.png
+    file_info:
+      mode: 0644
+  - src: ./packaging/icons/hicolor/256x256/apps/vantah.png
+    dst: /usr/share/icons/hicolor/256x256/apps/vantah.png
+    file_info:
+      mode: 0644
+
+scripts:
+  postinstall: ./packaging/postinstall.sh
+  postremove: ./packaging/postinstall.sh
