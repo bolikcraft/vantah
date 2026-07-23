@@ -447,6 +447,9 @@
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
     <value>Check for Vantah updates</value>
   </data>
+  <data name="Settings_KillSwitch" xml:space="preserve">
+    <value>Kill switch (stay protected if the connection drops)</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>A new version of Vantah is available — {0}</value>
   </data>
