@@ -176,7 +176,9 @@ public class ConfigViewTests
     }
 
     // Собственные кнопки формы: порт, хост, save-auth, clear-auth, DNS, интерфейс,
-    // route-скрипт, обновить, выгрузить логи = 9, плюс 5 DNS-пресетов = 14.
+    // route-скрипт, обновить, выгрузить логи = 9, плюс 5 DNS-пресетов = 14, плюс кнопка
+    // «Обновить сейчас» в баннере обновления (она в визуальном дереве даже при спрятанном
+    // баннере — IsVisible гасит отрисовку, но узел остаётся) = 15.
     [AvaloniaFact]
     public void All_own_buttons_still_wired()
     {
@@ -185,7 +187,7 @@ public class ConfigViewTests
 
         var buttons = OwnButtons(window);
 
-        Assert.Equal(14, buttons.Length);
+        Assert.Equal(15, buttons.Length);
         Assert.All(buttons, b => Assert.NotNull(b.Command));
     }
 

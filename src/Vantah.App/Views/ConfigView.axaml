@@ -38,7 +38,11 @@
 
       <Border Background="#333B82F6" CornerRadius="6" Padding="10"
               IsVisible="{Binding IsUpdateAvailable}">
-        <TextBlock TextWrapping="Wrap" Text="{Binding UpdateMessage}"/>
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+          <TextBlock Grid.Column="0" VerticalAlignment="Center" TextWrapping="Wrap" Text="{Binding UpdateMessage}"/>
+          <Button Grid.Column="1" Command="{Binding InstallUpdateCommand}" IsEnabled="{Binding !IsBusy}"
+                  Content="{Binding [Settings_InstallUpdate], Source={x:Static loc:Localizer.Instance}}"/>
+        </Grid>
       </Border>
 
       <!-- Порядок карточек подобран под построчную раскладку WrapPanel: высота строки равна

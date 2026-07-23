@@ -83,6 +83,7 @@ public partial class App : Application
             // это INI-конфиг Vantah (~/.config/vantah/vantah.conf).
             var vpnConfig = new ConfigService(runner);
             var updateChecker = new UpdateChecker(runner);
+            var cliUpdater = new CliUpdater(runner);
             var logExporter = new LogExporter(runner);
             var autoConnectStore = new AutoConnectStore();
             var autostart = new AutostartService(
@@ -119,7 +120,7 @@ public partial class App : Application
                 new ConfigViewModel(
                     vpnConfig, store, languageStore, updateChecker, logExporter,
                     () => PickLogFolderAsync(mainWindowRef),
-                    autoConnectStore, autostart, appUpdates),
+                    autoConnectStore, autostart, appUpdates, cliUpdater),
                 login,
                 store, updateBanner);
 
