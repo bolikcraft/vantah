@@ -36,6 +36,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel
     private readonly AutoConnectStore _autoConnect;
     private readonly AutostartService _autostart;
     private readonly AppUpdateService? _appUpdates;
+    private readonly KillSwitchStore _killSwitch;
     private bool _lastRadioWasFastest;
 
     // Подавляет авто-применение, пока форму заполняем программно: иначе загрузка конфига
@@ -51,7 +52,8 @@ public partial class ConfigViewModel : ErrorAwareViewModel
         Func<Task<string?>> pickFolder,
         AutoConnectStore? autoConnect = null,
         AutostartService? autostart = null,
-        AppUpdateService? appUpdates = null)
+        AppUpdateService? appUpdates = null,
+        KillSwitchStore? killSwitch = null)
     {
         _config = config;
         _languageStore = languageStore;
@@ -68,6 +70,8 @@ public partial class ConfigViewModel : ErrorAwareViewModel
         // Проверка обновлений самого Vantah тоже опциональна: без неё тумблер просто
         // показывает значение по умолчанию и никуда не пишет.
         _appUpdates = appUpdates;
+        // Kill switch — свой локальный стор (флаг connect --boot); опционален как автозапуск.
+        _killSwitch = killSwitch ?? new KillSwitchStore();
 
         // Пишем в backing-поле, а не в свойство: стартовый язык — не выбор пользователя,
         // сохранять его в ~/.config/vantah/language незачем.
@@ -93,6 +97,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel
             _lastRadioWasFastest = AutoConnectUseFastest;
             AutostartEnabled = _autostart.IsEnabled();
             CheckAppUpdates = _appUpdates?.Enabled ?? true;
+            KillSwitchEnabled = _killSwitch.Load();
         }
         finally { _loading = false; }
 
@@ -170,6 +175,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel
     [ObservableProperty] private bool _autoConnectUseFastest;
     [ObservableProperty] private bool _autostartEnabled;
     [ObservableProperty] private bool _checkAppUpdates = true;
+    [ObservableProperty] private bool _killSwitchEnabled;
 
     partial void OnAutoConnectEnabledChanged(bool value) => PersistAutoConnect();
 
@@ -190,6 +196,12 @@ public partial class ConfigViewModel : ErrorAwareViewModel
     {
         if (_loading || _appUpdates is null) return;
         _appUpdates.Enabled = value;
+    }
+
+    partial void OnKillSwitchEnabledChanged(bool value)
+    {
+        if (_loading) return;
+        _killSwitch.Save(value);
     }
 
     // Единственный источник истины — AutoConnectStore: чекбокс и радиокнопка «сжимаются»
