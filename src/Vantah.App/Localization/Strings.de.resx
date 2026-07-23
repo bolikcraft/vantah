@@ -555,4 +555,10 @@
   <data name="Settings_UpdateAvailableFormat" xml:space="preserve">
     <value>Eine neue Version von adguardvpn-cli ist verfügbar: {0}</value>
   </data>
+  <data name="Status_DurationHm" xml:space="preserve">
+    <value>{0} Std. {1} Min.</value>
+  </data>
+  <data name="Status_DurationMinutes" xml:space="preserve">
+    <value>{0} Min.</value>
+  </data>
 </root>

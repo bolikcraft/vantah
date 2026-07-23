@@ -555,4 +555,10 @@
   <data name="Settings_UpdateAvailableFormat" xml:space="preserve">
     <value>adguardvpn-cli için yeni sürüm mevcut: {0}</value>
   </data>
+  <data name="Status_DurationHm" xml:space="preserve">
+    <value>{0} sa {1} dk</value>
+  </data>
+  <data name="Status_DurationMinutes" xml:space="preserve">
+    <value>{0} dk</value>
+  </data>
 </root>

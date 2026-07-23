@@ -50,6 +50,8 @@ public static class LocKeys
     public const string Status_SubTab_Log = "Status_SubTab_Log";
     public const string Status_HistoryEmpty = "Status_HistoryEmpty";
     public const string Status_HistoryEntryFormat = "Status_HistoryEntryFormat";
+    public const string Status_DurationHm = "Status_DurationHm";
+    public const string Status_DurationMinutes = "Status_DurationMinutes";
     public const string Status_IpVersion = "Status_IpVersion";
 
     // Вкладка «Локации»
