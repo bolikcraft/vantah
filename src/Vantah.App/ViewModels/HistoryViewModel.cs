@@ -39,11 +39,23 @@ public partial class HistoryViewModel : ObservableObject
         HasHistory = Items.Count > 0;
     }
 
-    private static string FormatEntry(ConnectionHistoryEntry e)
+    // internal (не private): прямой юнит-тест форматирования строки истории.
+    internal static string FormatEntry(ConnectionHistoryEntry e)
     {
         var location = string.IsNullOrEmpty(e.Country) ? e.City : $"{e.City}, {e.Country}";
         var started = e.StartedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
         var ended = e.EndedAt is { } x ? x.ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "—";
-        return Localizer.Instance.Format(LocKeys.Status_HistoryEntryFormat, location, started, ended);
+        var line = Localizer.Instance.Format(LocKeys.Status_HistoryEntryFormat, location, started, ended);
+        // Длительность — только у завершённой сессии. Шаблоны берём сырыми через индексатор
+        // (в них живут {0}/{1}), их подставляет SessionDuration, а не Localizer.Format.
+        if (e.EndedAt is { } end)
+        {
+            var dur = SessionDuration.Format(
+                end - e.StartedAt,
+                Localizer.Instance[LocKeys.Status_DurationHm],
+                Localizer.Instance[LocKeys.Status_DurationMinutes]);
+            line += $" ({dur})";
+        }
+        return line;
     }
 }
