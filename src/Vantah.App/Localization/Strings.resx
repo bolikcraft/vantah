@@ -573,4 +573,7 @@
   <data name="Status_DurationMinutes" xml:space="preserve">
     <value>{0} мин</value>
   </data>
+  <data name="Settings_KillSwitchHelp" xml:space="preserve">
+    <value>При обрыве связи VPN переподключается автоматически (флаг --boot). Это не блокировка трафика: между обрывом и переподключением возможна кратковременная утечка. Настройка применяется при следующем подключении.</value>
+  </data>
 </root>

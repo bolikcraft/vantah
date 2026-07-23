@@ -573,4 +573,7 @@
   <data name="Status_DurationMinutes" xml:space="preserve">
     <value>{0} mnt</value>
   </data>
+  <data name="Settings_KillSwitchHelp" xml:space="preserve">
+    <value>Jika VPN terputus, koneksi tersambung kembali secara otomatis (flag --boot). Ini tidak memblokir lalu lintas: kebocoran singkat mungkin terjadi antara putus dan sambung ulang. Berlaku pada koneksi berikutnya.</value>
+  </data>
 </root>

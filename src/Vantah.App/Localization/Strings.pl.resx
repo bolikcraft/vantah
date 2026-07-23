@@ -573,4 +573,7 @@
   <data name="Status_DurationMinutes" xml:space="preserve">
     <value>{0} min</value>
   </data>
+  <data name="Settings_KillSwitchHelp" xml:space="preserve">
+    <value>Po zerwaniu połączenia VPN łączy się ponownie automatycznie (flaga --boot). Nie blokuje ruchu: między zerwaniem a ponownym połączeniem możliwy jest krótki wyciek. Działa przy następnym połączeniu.</value>
+  </data>
 </root>

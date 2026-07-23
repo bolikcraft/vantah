@@ -182,18 +182,32 @@
             <ToggleSwitch IsChecked="{Binding CheckAppUpdates}"
                           OnContent="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"
                           OffContent="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"/>
-            <!-- Подпись длинная и на разных языках разной длины — переносим, а не обрезаем.
-                 Content задан TextBlock'ом с Wrap+MaxWidth, иначе ToggleSwitch тянет текст в одну строку. -->
-            <ToggleSwitch IsChecked="{Binding KillSwitchEnabled}">
-              <ToggleSwitch.OnContent>
-                <TextBlock TextWrapping="Wrap" MaxWidth="230"
-                           Text="{Binding [Settings_KillSwitch], Source={x:Static loc:Localizer.Instance}}"/>
-              </ToggleSwitch.OnContent>
-              <ToggleSwitch.OffContent>
-                <TextBlock TextWrapping="Wrap" MaxWidth="230"
-                           Text="{Binding [Settings_KillSwitch], Source={x:Static loc:Localizer.Instance}}"/>
-              </ToggleSwitch.OffContent>
-            </ToggleSwitch>
+            <!-- Тумблер + «?» со справкой. Подпись длинная и на разных языках разной длины —
+                 переносим (Wrap+MaxWidth), иначе ToggleSwitch тянет текст в одну строку. -->
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <ToggleSwitch IsChecked="{Binding KillSwitchEnabled}">
+                <ToggleSwitch.OnContent>
+                  <TextBlock TextWrapping="Wrap" MaxWidth="200"
+                             Text="{Binding [Settings_KillSwitch], Source={x:Static loc:Localizer.Instance}}"/>
+                </ToggleSwitch.OnContent>
+                <ToggleSwitch.OffContent>
+                  <TextBlock TextWrapping="Wrap" MaxWidth="200"
+                             Text="{Binding [Settings_KillSwitch], Source={x:Static loc:Localizer.Instance}}"/>
+                </ToggleSwitch.OffContent>
+              </ToggleSwitch>
+              <!-- Кружок «?»: при наведении — справка о том, что делает kill switch (и чего НЕ делает). -->
+              <Border Width="17" Height="17" CornerRadius="9" BorderThickness="1"
+                      BorderBrush="{DynamicResource SystemAccentColor}"
+                      VerticalAlignment="Center" Cursor="Help">
+                <TextBlock Text="?" FontSize="11" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SystemAccentColor}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <ToolTip.Tip>
+                  <TextBlock TextWrapping="Wrap" MaxWidth="300"
+                             Text="{Binding [Settings_KillSwitchHelp], Source={x:Static loc:Localizer.Instance}}"/>
+                </ToolTip.Tip>
+              </Border>
+            </StackPanel>
           </StackPanel>
         </Border>
 

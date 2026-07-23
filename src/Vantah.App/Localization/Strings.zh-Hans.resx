@@ -573,4 +573,7 @@
   <data name="Status_DurationMinutes" xml:space="preserve">
     <value>{0}分</value>
   </data>
+  <data name="Settings_KillSwitchHelp" xml:space="preserve">
+    <value>VPN 断开时会自动重新连接（--boot 参数）。它不会阻断流量：在断开与重连之间可能出现短暂泄漏。将在下次连接时生效。</value>
+  </data>
 </root>

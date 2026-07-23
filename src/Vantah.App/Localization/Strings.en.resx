@@ -573,4 +573,7 @@
   <data name="Status_DurationMinutes" xml:space="preserve">
     <value>{0}m</value>
   </data>
+  <data name="Settings_KillSwitchHelp" xml:space="preserve">
+    <value>If the VPN drops, the connection reconnects automatically (--boot flag). This does not block traffic: a brief leak is possible between the drop and reconnection. Applies on the next connection.</value>
+  </data>
 </root>

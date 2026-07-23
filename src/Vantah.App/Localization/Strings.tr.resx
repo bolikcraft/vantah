@@ -573,4 +573,7 @@
   <data name="Status_DurationMinutes" xml:space="preserve">
     <value>{0} dk</value>
   </data>
+  <data name="Settings_KillSwitchHelp" xml:space="preserve">
+    <value>VPN koptuğunda bağlantı otomatik olarak yeniden kurulur (--boot bayrağı). Trafiği engellemez: kopma ile yeniden bağlanma arasında kısa bir sızıntı olabilir. Sonraki bağlantıda geçerli olur.</value>
+  </data>
 </root>

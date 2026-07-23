@@ -573,4 +573,7 @@
   <data name="Status_DurationMinutes" xml:space="preserve">
     <value>{0} Min.</value>
   </data>
+  <data name="Settings_KillSwitchHelp" xml:space="preserve">
+    <value>Bei Verbindungsabbruch verbindet sich das VPN automatisch neu (Flag --boot). Der Datenverkehr wird nicht blockiert: zwischen Abbruch und Neuverbindung ist ein kurzes Leck möglich. Wird bei der nächsten Verbindung wirksam.</value>
+  </data>
 </root>

@@ -573,4 +573,7 @@
   <data name="Status_DurationMinutes" xml:space="preserve">
     <value>{0} хв</value>
   </data>
+  <data name="Settings_KillSwitchHelp" xml:space="preserve">
+    <value>У разі обриву VPN перепідключається автоматично (прапорець --boot). Це не блокування трафіку: між обривом і перепідключенням можливий короткий витік. Застосовується під час наступного підключення.</value>
+  </data>
 </root>

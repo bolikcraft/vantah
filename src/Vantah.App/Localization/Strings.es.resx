@@ -573,4 +573,7 @@
   <data name="Status_DurationMinutes" xml:space="preserve">
     <value>{0} min</value>
   </data>
+  <data name="Settings_KillSwitchHelp" xml:space="preserve">
+    <value>Si el VPN se cae, la conexión se restablece automáticamente (opción --boot). No bloquea el tráfico: entre la caída y la reconexión es posible una breve fuga. Se aplica en la próxima conexión.</value>
+  </data>
 </root>

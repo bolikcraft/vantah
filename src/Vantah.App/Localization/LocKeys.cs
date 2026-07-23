@@ -158,6 +158,7 @@ public static class LocKeys
     public const string Settings_Autostart = "Settings_Autostart";
     public const string Settings_CheckAppUpdates = "Settings_CheckAppUpdates";
     public const string Settings_KillSwitch = "Settings_KillSwitch";
+    public const string Settings_KillSwitchHelp = "Settings_KillSwitchHelp";
 
     // Плашка «доступна новая версия Vantah» в главном окне
     public const string Update_Available = "Update_Available";

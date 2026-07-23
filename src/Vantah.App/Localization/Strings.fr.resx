@@ -573,4 +573,7 @@
   <data name="Status_DurationMinutes" xml:space="preserve">
     <value>{0} min</value>
   </data>
+  <data name="Settings_KillSwitchHelp" xml:space="preserve">
+    <value>En cas de coupure, le VPN se reconnecte automatiquement (option --boot). Cela ne bloque pas le trafic : une brève fuite est possible entre la coupure et la reconnexion. Prend effet à la prochaine connexion.</value>
+  </data>
 </root>
