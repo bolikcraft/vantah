@@ -78,6 +78,9 @@
   <data name="Common_Disconnect" xml:space="preserve">
     <value>Disconnect</value>
   </data>
+  <data name="Common_StopConnecting" xml:space="preserve">
+    <value>Stop connecting</value>
+  </data>
   <data name="Common_Add" xml:space="preserve">
     <value>Add</value>
   </data>

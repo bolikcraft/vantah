@@ -31,13 +31,21 @@ public partial class StatusViewModel : ErrorAwareViewModel
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ToggleText))]
     private bool _isConnected;
+    // Подключение с kill switch (--boot) ретраит бесконечно, пока нет сети: держать кнопку
+    // заблокированной нельзя — из окна нельзя было бы прервать попытку.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ToggleText))]
+    private bool _isConnecting;
     [ObservableProperty] private bool _isBusy = true;
     // Статус ещё не опрошен: вместо блока статуса показываем скелетон, кнопку держим заблокированной.
     [ObservableProperty] private bool _isStatusUnknown = true;
     [ObservableProperty] private string _log = "";
 
     // Подпись кнопки = действие, которое она выполнит (не статус).
-    public string ToggleText => Localizer.Instance[IsConnected ? LocKeys.Common_Disconnect : LocKeys.Common_Connect];
+    public string ToggleText => Localizer.Instance[
+        IsConnecting ? LocKeys.Common_StopConnecting
+        : IsConnected ? LocKeys.Common_Disconnect
+        : LocKeys.Common_Connect];
 
     // История подключений — под-панель на вкладке Статус.
     public HistoryViewModel History { get; }
@@ -117,9 +125,10 @@ public partial class StatusViewModel : ErrorAwareViewModel
             : LocKeys.Status_Exclusions_General];
         SetError(s.Error is { } e ? UiText.Of(e) : UiText.None);
         IsConnected = s.Connection == ConnectionState.Connected;
+        IsConnecting = s.Connection == ConnectionState.Connecting;
         IsStatusUnknown = s.Connection == ConnectionState.Unknown;
-        IsBusy = s.Connection is ConnectionState.Connecting or ConnectionState.Disconnecting
-                                or ConnectionState.Unknown;
+        // Connecting сюда НЕ входит: кнопка в этом состоянии активна и прерывает подключение.
+        IsBusy = s.Connection is ConnectionState.Disconnecting or ConnectionState.Unknown;
         if (s.Traffic is { } t)
         {
             RxText = "↓ " + Format(t.RxBytesPerSec) + "/s";
@@ -138,7 +147,10 @@ public partial class StatusViewModel : ErrorAwareViewModel
 
     [RelayCommand]
     private Task Toggle() =>
-        IsConnected ? _coordinator.DisconnectAsync() : _coordinator.ConnectAsync(null, fastest: false);
+        // Прервать подключение — тот же disconnect: он гасит и бесконечные ретраи `--boot`.
+        IsConnecting || IsConnected
+            ? _coordinator.DisconnectAsync()
+            : _coordinator.ConnectAsync(null, fastest: false);
 
     private static string Format(double bytesPerSec)
     {

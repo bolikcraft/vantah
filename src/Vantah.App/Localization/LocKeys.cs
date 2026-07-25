@@ -22,6 +22,7 @@ public static class LocKeys
     // Общие подписи кнопок и состояний
     public const string Common_Connect = "Common_Connect";
     public const string Common_Disconnect = "Common_Disconnect";
+    public const string Common_StopConnecting = "Common_StopConnecting";
     public const string Common_Add = "Common_Add";
     public const string Common_Clear = "Common_Clear";
     public const string Common_Cancel = "Common_Cancel";

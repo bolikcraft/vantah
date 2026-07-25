@@ -78,6 +78,9 @@
   <data name="Common_Disconnect" xml:space="preserve">
     <value>Bağlantıyı kes</value>
   </data>
+  <data name="Common_StopConnecting" xml:space="preserve">
+    <value>Bağlanmayı durdur</value>
+  </data>
   <data name="Common_Add" xml:space="preserve">
     <value>Ekle</value>
   </data>
