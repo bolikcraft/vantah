@@ -23,10 +23,27 @@
     <Style Selector="Border.card TextBlock.header">
       <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
+    <!-- Плитка-заглушка «скелетона»: нейтральный серый, читаемый в обеих темах, с мягкой пульсацией. -->
+    <Style Selector="Border.skeleton">
+      <Setter Property="Background" Value="#26808080"/>
+      <Setter Property="CornerRadius" Value="4"/>
+      <Style.Animations>
+        <Animation Duration="0:0:1.3" IterationCount="INFINITE">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.35"/></KeyFrame>
+          <KeyFrame Cue="50%"><Setter Property="Opacity" Value="0.85"/></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.35"/></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
   </UserControl.Styles>
 
+  <!-- Три состояния вкладки: форма (конфиг прочитан), скелетон (грузим) и сбой загрузки.
+       До ответа `config show` форму не показываем — иначе на экране дефолты, а не настройки. -->
   <ScrollViewer>
-    <StackPanel Margin="20" Spacing="14" MaxWidth="746" HorizontalAlignment="Center">
+    <Grid MinHeight="240">
+
+    <StackPanel Margin="20" Spacing="14" MaxWidth="746" HorizontalAlignment="Center"
+                Name="ConfigForm" IsVisible="{Binding IsLoaded}">
 
       <!-- Предупреждения — на всю ширину над карточками. -->
       <!-- Смена настроек на живом туннеле применяется, но подхватывается лишь при следующем подключении. -->
@@ -254,8 +271,6 @@
 
       <!-- Действия и статус — на всю ширину под карточками. -->
       <StackPanel Orientation="Horizontal" Spacing="8">
-        <Button Command="{Binding ReloadCommand}" IsEnabled="{Binding !IsBusy}"
-                Content="{Binding [Common_Refresh], Source={x:Static loc:Localizer.Instance}}"/>
         <Button Command="{Binding ExportLogsCommand}" IsEnabled="{Binding !IsBusy}"
                 Content="{Binding [Settings_ExportLogs], Source={x:Static loc:Localizer.Instance}}"/>
         <TextBlock VerticalAlignment="Center" Foreground="MediumSeaGreen" Text="{Binding StatusText}"
@@ -266,5 +281,40 @@
                  IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
     </StackPanel>
+
+    <!-- Пока грузим — одинаковые карточки-заглушки вместо формы: раскладку каждой карточки
+         не повторяем, важен лишь общий силуэт из двух колонок (тот же WrapPanel). -->
+    <ItemsControl Name="ConfigSkeleton" IsVisible="{Binding IsLoading}"
+                  ItemsSource="{Binding SkeletonCards}"
+                  Margin="20" MaxWidth="746" HorizontalAlignment="Center" VerticalAlignment="Top"
+                  ToolTip.Tip="{Binding [Locations_Loading], Source={x:Static loc:Localizer.Instance}}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <WrapPanel Orientation="Horizontal"/>
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Border Classes="card">
+            <StackPanel>
+              <Border Classes="skeleton" Height="14" Width="120" HorizontalAlignment="Left"/>
+              <Border Classes="skeleton" Height="30" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+    <!-- Сбой загрузки — текст ошибки и кнопка «Обновить» вместо формы с чужими значениями. -->
+    <StackPanel Name="ConfigLoadError"
+                IsVisible="{Binding LoadError, Converter={x:Static ObjectConverters.IsNotNull}}"
+                HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10" MaxWidth="380">
+      <TextBlock Text="{Binding LoadError}" Foreground="IndianRed" TextWrapping="Wrap"
+                 HorizontalAlignment="Center" TextAlignment="Center"/>
+      <Button Command="{Binding ReloadCommand}" HorizontalAlignment="Center"
+              Content="{Binding [Common_Refresh], Source={x:Static loc:Localizer.Instance}}"/>
+    </StackPanel>
+
+    </Grid>
   </ScrollViewer>
 </UserControl>

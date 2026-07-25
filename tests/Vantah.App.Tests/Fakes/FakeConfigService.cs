@@ -8,8 +8,27 @@ public sealed class FakeConfigService(VpnConfig? current = null) : IConfigServic
 {
     private VpnConfig _current = current ?? new VpnConfig();
 
+    // Ворота для `config show`: пока взведены, чтение конфига «висит» — так тест видит
+    // вкладку в состоянии загрузки. По умолчанию не взведены, ответ синхронный, как раньше.
+    private TaskCompletionSource? _getGate;
+
     /// <summary>Имена вызванных операций по порядку: «get», «set-mode:socks», …</summary>
     public List<string> Calls { get; } = [];
+
+    /// <summary>Чем падает чтение конфига; null — читается успешно.</summary>
+    public Exception? GetError { get; set; }
+
+    /// <summary>Задержать ответ на чтение конфига до <see cref="ReleaseGet"/>.</summary>
+    public void HoldGet() =>
+        _getGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    /// <summary>Отпустить задержанное чтение конфига.</summary>
+    public void ReleaseGet()
+    {
+        var gate = _getGate;
+        _getGate = null;
+        gate?.TrySetResult();
+    }
 
     private Task<VpnConfig> Record(string call)
     {
@@ -17,7 +36,13 @@ public sealed class FakeConfigService(VpnConfig? current = null) : IConfigServic
         return Task.FromResult(_current);
     }
 
-    public Task<VpnConfig> GetAsync(CancellationToken ct = default) => Record("get");
+    public async Task<VpnConfig> GetAsync(CancellationToken ct = default)
+    {
+        if (_getGate is { } gate) await gate.Task;
+        Calls.Add("get");
+        if (GetError is not null) throw GetError;
+        return _current;
+    }
 
     public Task<VpnConfig> SetModeAsync(VpnMode mode, CancellationToken ct = default)
     {

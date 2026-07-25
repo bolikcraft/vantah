@@ -167,6 +167,24 @@ public partial class ConfigViewModel : ErrorAwareViewModel
     [ObservableProperty] private string _selectedRouting = "auto";
 
     [ObservableProperty] private bool _isBusy;
+
+    // Состояние загрузки конфига. До первого ответа `config show` форму показывать нельзя:
+    // иначе пользователь видит дефолты вьюмодели и принимает их за свои настройки.
+    // Пока грузим — скелетон, при сбое — текст ошибки и «Обновить», и только потом сама форма.
+    [ObservableProperty] private bool _isLoading = true;
+    // Причина сбоя, а не готовая строка: после смены языка сообщение пересобирается (см. RefreshTexts).
+    private UiText _loadErrorValue;
+    [ObservableProperty] private string? _loadError;
+
+    /// <summary>Конфиг прочитан — можно показывать карточки, баннеры и нижний ряд действий.</summary>
+    public bool IsLoaded => !IsLoading && LoadError is null;
+
+    partial void OnIsLoadingChanged(bool value) => OnPropertyChanged(nameof(IsLoaded));
+    partial void OnLoadErrorChanged(string? value) => OnPropertyChanged(nameof(IsLoaded));
+
+    /// <summary>Карточки-заглушки «скелетона» на время загрузки (значения не важны, важно их число).</summary>
+    public IReadOnlyList<int> SkeletonCards { get; } = Enumerable.Range(0, 8).ToList();
+
     // Статус («сохранено», путь к логам) и плашка обновления — тоже значения, а не готовые
     // строки: после смены языка пересобираются из тех же ключей (см. RefreshTexts).
     private UiText _statusValue;
@@ -229,6 +247,9 @@ public partial class ConfigViewModel : ErrorAwareViewModel
 
     private async Task LoadAsync()
     {
+        IsLoading = true;
+        _loadErrorValue = UiText.None;
+        LoadError = null;
         try
         {
             var cfg = await _config.GetAsync();
@@ -240,7 +261,18 @@ public partial class ConfigViewModel : ErrorAwareViewModel
         }
         catch (Exception ex)
         {
-            await UiThread.RunAsync(() => SetError(ex));
+            // Сбой чтения конфига — состояние всей вкладки (вместо формы: текст + «Обновить»),
+            // поэтому не в общий Error: тот остаётся под ошибки отдельных действий (применить DNS и т.п.).
+            await UiThread.RunAsync(() =>
+            {
+                var error = UiText.From(ex);
+                _loadErrorValue = error;
+                LoadError = error.Text;
+            });
+        }
+        finally
+        {
+            await UiThread.RunAsync(() => IsLoading = false);
         }
     }
 
@@ -394,8 +426,11 @@ public partial class ConfigViewModel : ErrorAwareViewModel
     private Task ApplyInterfaceOverride() =>
         RunAsync(() => _config.SetBoundIfOverrideAsync(InterfaceOverride.Trim()));
 
+    /// <summary>Повторная загрузка конфига (кнопка «Обновить» в блоке ошибки).</summary>
+    // Именно LoadAsync, а не RunAsync(GetAsync): только он снимает LoadError и возвращает
+    // вкладку из состояния сбоя обратно к форме.
     [RelayCommand]
-    private Task Reload() => RunAsync(() => _config.GetAsync());
+    private Task Reload() => LoadTask = LoadAsync();
 
     [RelayCommand]
     private async Task ExportLogs()
@@ -489,11 +524,12 @@ public partial class ConfigViewModel : ErrorAwareViewModel
         UpdateMessage = value.Text ?? "";
     }
 
-    /// <summary>Пересобирает статус и плашку обновления после смены языка.</summary>
+    /// <summary>Пересобирает статус, плашку обновления и сообщение о сбое после смены языка.</summary>
     private void RefreshTexts()
     {
         StatusText = _statusValue.Text;
         UpdateMessage = _updateValue.Text ?? "";
+        LoadError = _loadErrorValue.Text;
     }
 
     private Task Fail(string messageKey)
