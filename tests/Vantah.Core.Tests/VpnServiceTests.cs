@@ -31,6 +31,21 @@ public class VpnServiceTests
     }
 
     [Fact]
+    public async Task Connect_with_kill_switch_reports_starting_while_tunnel_comes_up()
+    {
+        // С --boot connect возвращается за доли секунды, и следующий `status` ещё
+        // несколько секунд отдаёт «VPN is starting» — это не «отключено».
+        var cli = new FakeCliRunner()
+            .Enqueue("VPN is starting")   // connect
+            .Enqueue("VPN is starting\nYou can disconnect by running `adguardvpn-cli disconnect`");
+
+        var status = await new VpnService(cli).ConnectAsync("Amsterdam", fastest: false, killSwitch: true);
+
+        Assert.True(status.IsStarting);
+        Assert.False(status.IsConnected);
+    }
+
+    [Fact]
     public async Task Connect_failure_throws_with_stderr()
     {
         var cli = new FakeCliRunner().Enqueue(new Vantah.Core.Cli.CliResult(1, "", "no such location"));

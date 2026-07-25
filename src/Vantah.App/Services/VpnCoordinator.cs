@@ -75,6 +75,20 @@ public sealed class VpnCoordinator(
                 else
                     traffic.Reset();
 
+                if (status.IsStarting)
+                {
+                    // Туннель поднимается: показываем «Подключение», но не трогаем историю
+                    // (бесконечные ретраи kill switch иначе плодили бы ложные разрывы сессий)
+                    // и не стираем известную локацию — её допишет следующий тик.
+                    store.Set(s => s with
+                    {
+                        Connection = ConnectionState.Connecting,
+                        Traffic = null,
+                        Error = null,
+                    });
+                    return;
+                }
+
                 TrackHistory(status);
 
                 store.Set(s => s with
@@ -112,6 +126,18 @@ public sealed class VpnCoordinator(
             {
                 var status = await vpn.ConnectAsync(
                     location, fastest, ipVersionStore.Load(), killSwitch?.Load() ?? false, ct);
+
+                if (status.IsStarting)
+                {
+                    // С kill switch (--boot) CLI возвращается раньше, чем поднят туннель:
+                    // писать Disconnected нельзя — на «Статусе» мигало бы «Отключено», а история
+                    // закрывала бы только что открытую сессию. Реальное состояние допишет опрос.
+                    try { if (!string.IsNullOrWhiteSpace(location)) lastLocation?.Save(location); }
+                    catch { /* best-effort persist, не роняем состояние подключения */ }
+                    store.Set(s => s with { Connection = ConnectionState.Connecting, Error = null });
+                    return;
+                }
+
                 TrackHistory(status);
                 if (status.IsConnected)
                 {
