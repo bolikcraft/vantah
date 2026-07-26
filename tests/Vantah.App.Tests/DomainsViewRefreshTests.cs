@@ -2,6 +2,7 @@ using Vantah.Core.Cli;
 using Vantah.Core.Errors;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Vantah.App.Localization;
 using Vantah.App.ViewModels;
@@ -52,11 +53,19 @@ public class DomainsViewRefreshTests
         window.Show();
 
         await vm.LoadTask;
-        Assert.NotNull(vm.Error);
+        Dispatcher.UIThread.RunJobs();
+        window.UpdateLayout();
+
+        // Сбой ПЕРВОЙ загрузки описывает состояние всей вкладки, а не отдельного действия:
+        // сообщение уходит в LoadError (вместо списка), общий баннер остаётся пустым.
+        Assert.NotNull(vm.LoadError);
+        Assert.Null(vm.Error);
         Assert.Empty(vm.Items);
 
+        // Кнопок «Обновить» в разметке две (нижний ряд и блок сбоя), но видна ровно одна —
+        // та, что относится к текущему состоянию экрана.
         var refresh = window.GetVisualDescendants().OfType<Button>()
-            .Single(b => Equals(b.Content, Localizer.Instance[LocKeys.Common_Refresh]));
+            .Single(b => Equals(b.Content, Localizer.Instance[LocKeys.Common_Refresh]) && b.IsEffectivelyVisible);
         Assert.True(refresh.IsEffectivelyEnabled);
         // RaiseEvent(ClickEvent) команду кнопки не запускает (её дёргает Button.OnClick),
         // поэтому нажатие эмулируем вызовом той самой команды, что привязана к кнопке.
@@ -77,7 +86,8 @@ public class DomainsViewRefreshTests
         var vm = MakeVm(flaky);
 
         await vm.LoadTask;
-        Assert.NotNull(vm.Error);
+        Assert.NotNull(vm.LoadError);
+        Assert.Null(vm.Error);
 
         vm.ReloadIfFailed();
         await vm.LoadTask;

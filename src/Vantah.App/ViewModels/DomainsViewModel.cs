@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Localization;
@@ -23,11 +24,31 @@ public partial class DomainsViewModel : ErrorAwareViewModel
     private bool _switchingMode;   // защита от реентранта при программной установке радио
     private bool _errorFromInput;  // текущая ошибка — про введённую строку, а не про CLI
     private bool _loadFailed;      // последняя загрузка списка упала (таймаут/ошибка CLI)
+    private bool _loaded;          // список хоть раз успешно загрузился — на экране есть что показывать
 
     [ObservableProperty] private string _query = "";  // одно поле: ввод домена и фильтр списка
     [ObservableProperty] private bool _isGeneral = true;
     [ObservableProperty] private bool _isSelective;
     [ObservableProperty] private bool _isBusy;
+
+    // Состояние ПЕРВОЙ загрузки списка: до ответа `site-exclusions show` показывать пустой
+    // список и рабочие кнопки нельзя — экран читается как «исключений нет».
+    [ObservableProperty] private bool _isLoading = true;
+    // Причина сбоя, а не готовая строка: после смены языка сообщение пересобирается.
+    private UiText _loadErrorValue;
+    [ObservableProperty] private string? _loadError;
+
+    /// <summary>Список получен — можно показывать режимы, поле ввода, кнопки и сам перечень.</summary>
+    public bool IsLoaded => !IsLoading && LoadError is null;
+
+    partial void OnIsLoadingChanged(bool value) => OnPropertyChanged(nameof(IsLoaded));
+    partial void OnLoadErrorChanged(string? value) => OnPropertyChanged(nameof(IsLoaded));
+
+    /// <summary>Строки-заглушки «скелетона»: ширины намеренно разные, иначе ровный столбик
+    /// плиток читается как таблица с данными. Считаются формулой, а не Random — чтобы кадр
+    /// экрана был воспроизводимым.</summary>
+    public IReadOnlyList<double> SkeletonRows { get; } =
+        Enumerable.Range(0, 9).Select(i => 96.0 + (i * 53 % 140)).ToList();
 
     public ObservableCollection<DomainItemViewModel> Items { get; } = new();
 
@@ -39,6 +60,10 @@ public partial class DomainsViewModel : ErrorAwareViewModel
         _exclusions = exclusions;
         _store = store;
         _appState = appState;
+        // ErrorAwareViewModel пересобирает при смене языка только Error; сообщение о сбое
+        // загрузки живёт отдельно, поэтому переводим его сами — иначе оно останется на языке,
+        // который был в момент сбоя.
+        Localizer.Instance.LanguageChanged += (_, _) => Dispatcher.UIThread.Post(() => LoadError = _loadErrorValue.Text);
         LoadTask = ReloadAsync();
     }
 
@@ -76,9 +101,14 @@ public partial class DomainsViewModel : ErrorAwareViewModel
 
     private async Task ReloadAsync()
     {
+        // Скелетон уместен, только пока показывать нечего. ReloadAsync дёргается после каждого
+        // добавления/удаления/импорта, и схлопывать уже показанный список в заглушки нельзя —
+        // экран мигал бы на каждое действие. Признак «первая ли это загрузка» снимаем до await.
+        var first = !_loaded;
         try
         {
             IsBusy = true; ClearError();
+            if (first) { IsLoading = true; _loadErrorValue = UiText.None; LoadError = null; }
             var snap = await _exclusions.GetAsync();
             // Продолжение после await может оказаться на потоке пула (реальный CliRunner ждёт
             // внешний процесс). Items и радио-свойства привязаны к UI, поэтому их правку выполняем
@@ -96,16 +126,32 @@ public partial class DomainsViewModel : ErrorAwareViewModel
                 _all.AddRange(snap.Domains);
                 ApplyFilter();
                 _appState.Set(s => s with { ExclusionsCount = _all.Count, ExclusionsMode = _mode });
+                _loaded = true;
                 _loadFailed = false;
+                _loadErrorValue = UiText.None;
+                LoadError = null;
             });
         }
         catch (Exception ex)
         {
-            await UiThread.RunAsync(() => { SetError(ex); _loadFailed = true; });
+            await UiThread.RunAsync(() =>
+            {
+                var error = UiText.From(ex);
+                _loadFailed = true;
+                // Список уже на экране — это сбой отдельного действия, показываем его в общем
+                // баннере и оставляем данные. Если же показывать нечего, сбой описывает
+                // состояние всей вкладки: вместо пустоты — текст ошибки и «Обновить».
+                if (_loaded) SetError(error);
+                else { _loadErrorValue = error; LoadError = error.Text; }
+            });
         }
         finally
         {
-            await UiThread.RunAsync(() => IsBusy = false);
+            await UiThread.RunAsync(() =>
+            {
+                IsBusy = false;
+                if (first) IsLoading = false;
+            });
         }
     }
 

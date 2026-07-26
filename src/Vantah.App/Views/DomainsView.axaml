@@ -2,59 +2,132 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:Vantah.App.ViewModels"
              xmlns:loc="clr-namespace:Vantah.App.Localization"
+             xmlns:sys="clr-namespace:System;assembly=System.Runtime"
              x:Class="Vantah.App.Views.DomainsView"
              x:DataType="vm:DomainsViewModel">
-  <DockPanel Margin="12">
 
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="24" Margin="0,0,0,8"
-                IsEnabled="{Binding !IsBusy}">
-      <RadioButton GroupName="ExclMode" IsChecked="{Binding IsGeneral, Mode=TwoWay}"
-                   Content="{Binding [Domains_Mode_General], Source={x:Static loc:Localizer.Instance}}"/>
-      <RadioButton GroupName="ExclMode" IsChecked="{Binding IsSelective, Mode=TwoWay}"
-                   Content="{Binding [Domains_Mode_Selective], Source={x:Static loc:Localizer.Instance}}"/>
-    </StackPanel>
+  <UserControl.Styles>
+    <!-- Плитка-заглушка «скелетона»: нейтральный серый, читаемый в обеих темах, с мягкой пульсацией. -->
+    <Style Selector="Border.skeleton">
+      <Setter Property="Background" Value="#26808080"/>
+      <Setter Property="CornerRadius" Value="4"/>
+      <Style.Animations>
+        <Animation Duration="0:0:1.3" IterationCount="INFINITE">
+          <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.35"/></KeyFrame>
+          <KeyFrame Cue="50%"><Setter Property="Opacity" Value="0.85"/></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.35"/></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+  </UserControl.Styles>
 
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-      <TextBox Grid.Column="0" Text="{Binding Query}"
-               PlaceholderText="{Binding [Domains_QueryPlaceholder], Source={x:Static loc:Localizer.Instance}}">
-        <TextBox.KeyBindings>
-          <KeyBinding Gesture="Enter" Command="{Binding AddCommand}"/>
-        </TextBox.KeyBindings>
-      </TextBox>
-      <Button Grid.Column="1" Command="{Binding AddCommand}" Margin="8,0,0,0"
-              Content="{Binding [Common_Add], Source={x:Static loc:Localizer.Instance}}"/>
-    </Grid>
+  <!-- Три состояния вкладки: список (исключения прочитаны), скелетон (грузим) и сбой загрузки.
+       До ответа `site-exclusions show` ни списка, ни кнопок не показываем — пустой список
+       с рабочими кнопками читается как «исключений нет», хотя их просто ещё не спросили. -->
+  <Grid Margin="12">
 
-    <TextBlock DockPanel.Dock="Bottom" Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap"
-               IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="0,8,0,0"/>
+    <DockPanel Name="DomainsContent" IsVisible="{Binding IsLoaded}">
 
-    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
-      <Button Content="{Binding [Common_Import], Source={x:Static loc:Localizer.Instance}}" Click="OnImportClick"/>
-      <Button Content="{Binding [Common_Export], Source={x:Static loc:Localizer.Instance}}" Click="OnExportClick"/>
-      <Button Content="{Binding [Domains_PasteFromClipboard], Source={x:Static loc:Localizer.Instance}}" Click="OnPasteClick"/>
-      <Button Content="{Binding [Common_Clear], Source={x:Static loc:Localizer.Instance}}" Click="OnClearClick"/>
-      <Button Command="{Binding ReloadCommand}" IsEnabled="{Binding !IsBusy}"
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="24" Margin="0,0,0,8"
+                  IsEnabled="{Binding !IsBusy}">
+        <RadioButton GroupName="ExclMode" IsChecked="{Binding IsGeneral, Mode=TwoWay}"
+                     Content="{Binding [Domains_Mode_General], Source={x:Static loc:Localizer.Instance}}"/>
+        <RadioButton GroupName="ExclMode" IsChecked="{Binding IsSelective, Mode=TwoWay}"
+                     Content="{Binding [Domains_Mode_Selective], Source={x:Static loc:Localizer.Instance}}"/>
+      </StackPanel>
+
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+        <TextBox Grid.Column="0" Text="{Binding Query}"
+                 PlaceholderText="{Binding [Domains_QueryPlaceholder], Source={x:Static loc:Localizer.Instance}}">
+          <TextBox.KeyBindings>
+            <KeyBinding Gesture="Enter" Command="{Binding AddCommand}"/>
+          </TextBox.KeyBindings>
+        </TextBox>
+        <Button Grid.Column="1" Command="{Binding AddCommand}" Margin="8,0,0,0"
+                Content="{Binding [Common_Add], Source={x:Static loc:Localizer.Instance}}"/>
+      </Grid>
+
+      <TextBlock DockPanel.Dock="Bottom" Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap"
+                 IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="0,8,0,0"/>
+
+      <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+        <Button Content="{Binding [Common_Import], Source={x:Static loc:Localizer.Instance}}" Click="OnImportClick"/>
+        <Button Content="{Binding [Common_Export], Source={x:Static loc:Localizer.Instance}}" Click="OnExportClick"/>
+        <Button Content="{Binding [Domains_PasteFromClipboard], Source={x:Static loc:Localizer.Instance}}" Click="OnPasteClick"/>
+        <Button Content="{Binding [Common_Clear], Source={x:Static loc:Localizer.Instance}}" Click="OnClearClick"/>
+        <Button Command="{Binding ReloadCommand}" IsEnabled="{Binding !IsBusy}"
+                Content="{Binding [Common_Refresh], Source={x:Static loc:Localizer.Instance}}"/>
+      </StackPanel>
+
+      <ListBox ItemsSource="{Binding Items}">
+        <ListBox.Styles>
+          <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="MinHeight" Value="0"/>
+          </Style>
+        </ListBox.Styles>
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:DomainItemViewModel">
+            <Grid ColumnDefinitions="*,Auto" Height="30">
+              <TextBlock Grid.Column="0" Text="{Binding Domain}" VerticalAlignment="Center"/>
+              <Button Grid.Column="1" Content="✕"
+                      Command="{Binding $parent[ListBox].((vm:DomainsViewModel)DataContext).RemoveCommand}"
+                      CommandParameter="{Binding}" Background="Transparent" BorderThickness="0"
+                      Padding="6,0" MinHeight="0" MinWidth="0" VerticalAlignment="Center"/>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+
+    <!-- Пока грузим — заглушки по силуэту вкладки: и вместо списка, и вместо кнопок. Настоящие
+         кнопки показывать нельзя: «Очистить» или смена режима до прочитанного списка отправят
+         в CLI не то, что видит пользователь. -->
+    <DockPanel Name="DomainsSkeleton" IsVisible="{Binding IsLoading}"
+               ToolTip.Tip="{Binding [Locations_Loading], Source={x:Static loc:Localizer.Instance}}">
+
+      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="24" Margin="0,0,0,8">
+        <Border Classes="skeleton" Height="18" Width="215"/>
+        <Border Classes="skeleton" Height="18" Width="275"/>
+      </StackPanel>
+
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+        <Border Grid.Column="0" Classes="skeleton" Height="32"/>
+        <Border Grid.Column="1" Classes="skeleton" Height="32" Width="96" Margin="8,0,0,0"/>
+      </Grid>
+
+      <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+        <Border Classes="skeleton" Height="32" Width="84"/>
+        <Border Classes="skeleton" Height="32" Width="88"/>
+        <Border Classes="skeleton" Height="32" Width="160"/>
+        <Border Classes="skeleton" Height="32" Width="86"/>
+        <Border Classes="skeleton" Height="32" Width="96"/>
+      </StackPanel>
+
+      <!-- Рамка вместо ListBox: без неё заглушки строк висят в воздухе и границы списка не видно. -->
+      <Border BorderThickness="1" BorderBrush="#22808080" CornerRadius="4" Padding="8">
+        <ItemsControl ItemsSource="{Binding SkeletonRows}" VerticalAlignment="Top">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="sys:Double">
+              <Grid Height="30">
+                <Border Classes="skeleton" Height="12" Width="{Binding}"
+                        HorizontalAlignment="Left" VerticalAlignment="Center"/>
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Border>
+    </DockPanel>
+
+    <!-- Сбой загрузки — текст ошибки и кнопка «Обновить» вместо молчаливо пустого списка. -->
+    <StackPanel Name="DomainsLoadError"
+                IsVisible="{Binding LoadError, Converter={x:Static ObjectConverters.IsNotNull}}"
+                HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10" MaxWidth="380">
+      <TextBlock Text="{Binding LoadError}" Foreground="IndianRed" TextWrapping="Wrap"
+                 HorizontalAlignment="Center" TextAlignment="Center"/>
+      <Button Command="{Binding ReloadCommand}" HorizontalAlignment="Center"
               Content="{Binding [Common_Refresh], Source={x:Static loc:Localizer.Instance}}"/>
     </StackPanel>
 
-    <ListBox ItemsSource="{Binding Items}">
-      <ListBox.Styles>
-        <Style Selector="ListBoxItem">
-          <Setter Property="Padding" Value="8,0"/>
-          <Setter Property="MinHeight" Value="0"/>
-        </Style>
-      </ListBox.Styles>
-      <ListBox.ItemTemplate>
-        <DataTemplate x:DataType="vm:DomainItemViewModel">
-          <Grid ColumnDefinitions="*,Auto" Height="30">
-            <TextBlock Grid.Column="0" Text="{Binding Domain}" VerticalAlignment="Center"/>
-            <Button Grid.Column="1" Content="✕"
-                    Command="{Binding $parent[ListBox].((vm:DomainsViewModel)DataContext).RemoveCommand}"
-                    CommandParameter="{Binding}" Background="Transparent" BorderThickness="0"
-                    Padding="6,0" MinHeight="0" MinWidth="0" VerticalAlignment="Center"/>
-          </Grid>
-        </DataTemplate>
-      </ListBox.ItemTemplate>
-    </ListBox>
-  </DockPanel>
+  </Grid>
 </UserControl>

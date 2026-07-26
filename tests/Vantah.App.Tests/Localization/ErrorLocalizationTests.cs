@@ -46,14 +46,16 @@ public class ErrorLocalizationTests
             await vm.LoadTask;
             Dispatcher.UIThread.RunJobs();
 
-            Assert.Equal("adguardvpn-cli site-exclusions show превысил таймаут", vm.Error);
-            Assert.Equal(vm.Error, ErrorTextOnScreen(window));
+            // Сбой первой загрузки описывает состояние всей вкладки, поэтому текст живёт
+            // в LoadError (вместо списка), а не в общем баннере действий.
+            Assert.Equal("adguardvpn-cli site-exclusions show превысил таймаут", vm.LoadError);
+            Assert.Equal(vm.LoadError, ErrorTextOnScreen(window));
 
             Localizer.Instance.SetLanguage("en");
             Dispatcher.UIThread.RunJobs();
 
-            Assert.Equal("adguardvpn-cli site-exclusions show timed out", vm.Error);
-            Assert.Equal(vm.Error, ErrorTextOnScreen(window));
+            Assert.Equal("adguardvpn-cli site-exclusions show timed out", vm.LoadError);
+            Assert.Equal(vm.LoadError, ErrorTextOnScreen(window));
         }
         finally
         {
