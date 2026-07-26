@@ -29,8 +29,11 @@ public partial class MainWindow : Window
         Open("license", LocKeys.Menu_License, vm => new LicenseView { DataContext = vm.License },
              width: 560, height: 320);
 
+    // «О программе» — две строки версий, ссылка и правовая сноска: окно по умолчанию (560×720)
+    // оставляло под ними полэкрана пустоты. Высоты хватает и на самый длинный перевод сноски.
     private void OnAboutClick(object? sender, RoutedEventArgs e) =>
-        Open("about", LocKeys.Menu_About, vm => new AboutView { DataContext = vm.About });
+        Open("about", LocKeys.Menu_About, vm => new AboutView { DataContext = vm.About },
+             width: 460, height: 280);
 
     /// <summary>
     /// Открытие откладываем на следующий такт диспетчера: Avalonia поднимает Click ДО того, как
