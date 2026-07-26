@@ -61,10 +61,10 @@ public sealed class TrayIconController
 
         var menu = new NativeMenu();
         menu.Add(_statusItem);          // статус вверху
+        menu.Add(_show);                // «Показать окно» — первое действие, до выбора локации
         menu.Add(_fastest);
         menu.Add(_locations);
         menu.Add(_domainsItem);         // кликабельно → окно на вкладке «Домены»
-        menu.Add(_show);
         menu.Add(_toggle);              // Отключить/Подключить — внизу, перед выходом
         menu.Add(new NativeMenuItemSeparator());  // единственная отбивка — у выхода
         menu.Add(_exit);
