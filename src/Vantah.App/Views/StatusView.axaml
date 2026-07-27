@@ -60,7 +60,10 @@
         <Border Classes="skeleton" Width="200"/>
       </Grid>
       <Grid HorizontalAlignment="Center">
-        <Button Classes="ghost" Content="X" Width="180"/>
+        <!-- Образец кнопки держит высоту строки; ширина здесь нужна только чтобы плашка
+             совпала с ним по размеру. MinWidth — как у настоящей кнопки: с Width образец
+             обрезал бы длинную подпись и мерил не то, что окажется на экране. -->
+        <Button Classes="ghost" Content="X" MinWidth="180"/>
         <Border Classes="skeleton" Width="180" CornerRadius="6"/>
       </Grid>
       <StackPanel Spacing="4" HorizontalAlignment="Center">
@@ -91,9 +94,13 @@
         <TextBlock Text="{Binding RxTotalText}"/>
         <TextBlock Text="{Binding TxTotalText}"/>
       </StackPanel>
+      <!-- MinWidth, а не Width: подпись меняется по состоянию и переводится на 12 языков, и
+           «Прервать подключение» (uk «Перервати підключення», de «Verbindung abbrechen») в 180
+           не влезает — при жёсткой ширине текст молча обрезался в «Прервать подключен…».
+           Минимум оставлен прежним, чтобы короткое «Подключить» не сжимало кнопку. -->
       <Button Content="{Binding ToggleText}" Command="{Binding ToggleCommand}"
               Classes.danger="{Binding IsConnected}"
-              IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Center" Width="180"/>
+              IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Center" MinWidth="180"/>
       <TextBlock Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap" MaxWidth="480"
                  IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>
       <StackPanel Spacing="4" HorizontalAlignment="Center">

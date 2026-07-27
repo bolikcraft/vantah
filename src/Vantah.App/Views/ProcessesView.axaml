@@ -18,8 +18,11 @@
   <DockPanel Margin="12">
 
     <!-- Шапка: те же ColumnDefinitions, что и у строки списка; отступ 4 слева/справа
-         компенсирует Padding="4,2" строки шаблона. -->
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="80,*,90,70" Margin="4,0,4,4">
+         компенсирует Padding="4,2" строки шаблона. Колонки не Auto: две сетки (шапка и строка)
+         посчитали бы Auto по своему содержимому и разъехались. Числа подобраны по самому
+         длинному переводу — «Запущен» → pl «Uruchomiono», «Kill» → tr «Sonlandır»; в 90 и 70
+         подписи обрезались. Ширины стережёт TranslatedTextFitsTests. -->
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="80,*,120,100" Margin="4,0,4,4">
       <TextBlock Grid.Column="0" Classes="header"
                  Text="{Binding [Processes_Col_Pid], Source={x:Static loc:Localizer.Instance}}"/>
       <TextBlock Grid.Column="1" Classes="header"
@@ -52,7 +55,7 @@
     <ListBox ItemsSource="{Binding Processes}" Padding="0">
       <ListBox.ItemTemplate>
         <DataTemplate x:DataType="vm:ProcessRowViewModel">
-          <Grid ColumnDefinitions="80,*,90,70" Margin="4,2">
+          <Grid ColumnDefinitions="80,*,120,100" Margin="4,2">
             <TextBlock Grid.Column="0" Text="{Binding Pid}" Margin="6,0" VerticalAlignment="Center"/>
             <TextBlock Grid.Column="1" Text="{Binding CommandLine}" Margin="6,0" VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis" ToolTip.Tip="{Binding CommandLine}"/>

@@ -61,8 +61,10 @@
     <TextBlock Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap"
                IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>
 
+    <!-- MinWidth, а не Width: подпись переводится на 12 языков и длиннее «Обновить» просто
+         обрежется. Минимум держит прежний размер кнопки на коротких переводах. -->
     <Button Content="{Binding [Common_Refresh], Source={x:Static loc:Localizer.Instance}}"
             Command="{Binding RefreshCommand}" IsEnabled="{Binding !IsBusy}"
-            HorizontalAlignment="Left" Width="140"/>
+            HorizontalAlignment="Left" MinWidth="140"/>
   </StackPanel>
 </UserControl>
