@@ -1,6 +1,13 @@
 # Vantah
 
 [![CI](https://github.com/bolikcraft/vantah/actions/workflows/ci.yml/badge.svg)](https://github.com/bolikcraft/vantah/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/bolikcraft/vantah)](https://github.com/bolikcraft/vantah/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/bolikcraft/vantah/total)](https://github.com/bolikcraft/vantah/releases)
+[![License](https://img.shields.io/github/license/bolikcraft/vantah)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Linux%20x86--64-blue)](#download)
+
+**AdGuard VPN GUI for Linux** — an unofficial `adguardvpn-cli` front-end with a
+window and a system tray icon.
 
 Vantah is a desktop GUI client for Linux (a window plus a system-tray icon) that
 acts as a convenient front-end for the official `adguardvpn-cli` command-line
@@ -245,6 +252,42 @@ Windows and macOS, so there is no point duplicating them.
 
 - IP-address and region leak detection — verifying that traffic actually goes
   through the VPN.
+
+## FAQ
+
+**Is there an official AdGuard VPN GUI for Linux?**
+No. AdGuard ships official VPN GUI clients for Windows and macOS, while the
+Linux client is the `adguardvpn-cli` command-line tool. Vantah is an independent,
+unofficial third-party front-end for that CLI and is not an AdGuard product.
+
+**Does Vantah work without an AdGuard VPN account or subscription?**
+No. Vantah only drives `adguardvpn-cli`, so you need the CLI installed and a
+valid AdGuard VPN account/subscription. You can sign in from the Vantah UI via
+the device-code flow — see [Requirements](#requirements).
+
+**Which Linux distributions are supported?**
+The AppImage and the tar.gz archive run on any x86-64 distribution (the .NET
+runtime is bundled); the `.deb` targets Debian, Ubuntu and derivatives, and the
+`.rpm` targets Fedora, RHEL, openSUSE and derivatives. Only x86-64 builds are
+published — see [Download](#download).
+
+**Does Vantah need root?**
+Day-to-day use does not, and `packaging/install.sh` installs into your home
+directory without root. Root is involved only where your system requires it:
+installing the `.deb`/`.rpm` packages, and the optional `kill_cmd = pkexec kill`
+used to force-terminate a CLI process — see
+[Configuration and trust model](#configuration-and-trust-model).
+
+**Do I need to install the .NET runtime?**
+No. The published AppImage, tar.gz, `.deb` and `.rpm` builds are self-contained —
+the runtime is embedded. The .NET 10 SDK is needed only to build from source,
+see [Building and running for development](#building-and-running-for-development).
+
+**Does Vantah send anything over the network on its own?**
+Only an update check against this repository's GitHub releases page, which can be
+switched off in Settings. Vantah has no telemetry of its own; everything else
+(traffic, account, telemetry options) belongs to `adguardvpn-cli`, whose settings
+Vantah merely exposes.
 
 ## License
 
