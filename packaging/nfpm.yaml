@@ -51,6 +51,13 @@ contents:
     file_info:
       mode: 0644
 
+  # AppStream metadata: software centres (GNOME Software, KDE Discover) read it
+  # to list the application with its description, screenshots and release notes.
+  - src: ./packaging/io.github.bolikcraft.vantah.metainfo.xml
+    dst: /usr/share/metainfo/io.github.bolikcraft.vantah.metainfo.xml
+    file_info:
+      mode: 0644
+
   # hicolor icon theme (every size shipped in the repository).
   - src: ./packaging/icons/hicolor/16x16/apps/vantah.png
     dst: /usr/share/icons/hicolor/16x16/apps/vantah.png

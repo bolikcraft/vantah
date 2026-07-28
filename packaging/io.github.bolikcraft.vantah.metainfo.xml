@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright (C) 2026 bolikcraft -->
+<component type="desktop-application">
+  <id>io.github.bolikcraft.vantah</id>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+
+  <name>Vantah</name>
+  <summary>GUI for the AdGuard VPN CLI tool</summary>
+  <summary xml:lang="ru">Графический интерфейс для adguardvpn-cli</summary>
+
+  <description>
+    <p>
+      Vantah is a desktop GUI client for Linux — a window plus a system-tray
+      icon — that acts as a convenient front-end for the official
+      adguardvpn-cli command-line tool. Vantah does not implement a VPN
+      itself: it runs adguardvpn-cli as an external process, parses its
+      output, and shows the state in a graphical interface.
+    </p>
+    <p>What Vantah can do:</p>
+    <ul>
+      <li>Connect and disconnect, pick the fastest location, choose IPv4 or IPv6</li>
+      <li>Browse the location list with ping, search and favorites</li>
+      <li>Watch live speed and traffic counters, connection history and a log tail</li>
+      <li>Manage site exclusions in general or selective mode, with import and export</li>
+      <li>Edit adguardvpn-cli settings: TUN or SOCKS mode, SOCKS port and credentials, DNS upstream, protocol, tunnel routing and more</li>
+      <li>Sign in from the interface through the device-code flow and review the license</li>
+      <li>Enable autostart on login and auto-connect to the fastest or last-used location</li>
+      <li>Use the system tray, switch the interface language among twelve languages, export logs</li>
+    </ul>
+    <p>
+      Vantah is an independent, unofficial project. It is not affiliated with
+      AdGuard, and is not developed, sponsored, or endorsed by them; it is not
+      an AdGuard product. Vantah does not include, bundle, or distribute
+      adguardvpn-cli or any other AdGuard software. You install adguardvpn-cli
+      yourself, its use is governed by AdGuard's own license and terms, and a
+      valid AdGuard VPN account or subscription is required.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">vantah.desktop</launchable>
+
+  <categories>
+    <category>Network</category>
+    <category>Security</category>
+  </categories>
+
+  <keywords>
+    <keyword>vpn</keyword>
+    <keyword>adguard</keyword>
+    <keyword>adguardvpn</keyword>
+    <keyword>proxy</keyword>
+    <keyword>privacy</keyword>
+    <keyword>tray</keyword>
+    <keyword>socks5</keyword>
+    <keyword>tunnel</keyword>
+  </keywords>
+
+  <url type="homepage">https://github.com/bolikcraft/vantah</url>
+  <url type="bugtracker">https://github.com/bolikcraft/vantah/issues</url>
+  <url type="vcs-browser">https://github.com/bolikcraft/vantah</url>
+  <url type="help">https://github.com/bolikcraft/vantah#readme</url>
+
+  <developer id="io.github.bolikcraft">
+    <name>bolikcraft</name>
+  </developer>
+
+  <provides>
+    <binary>vantah</binary>
+  </provides>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Connection status with live traffic counters</caption>
+      <image type="source" width="800" height="560">https://raw.githubusercontent.com/bolikcraft/vantah/main/assets/screenshots/dark/status.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Location list with ping, search and favorites</caption>
+      <image type="source" width="800" height="800">https://raw.githubusercontent.com/bolikcraft/vantah/main/assets/screenshots/dark/locations.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Site exclusions in general and selective modes</caption>
+      <image type="source" width="800" height="800">https://raw.githubusercontent.com/bolikcraft/vantah/main/assets/screenshots/dark/domains.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Settings for the CLI in TUN mode</caption>
+      <image type="source" width="820" height="820">https://raw.githubusercontent.com/bolikcraft/vantah/main/assets/screenshots/dark/settings-tun.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Settings for the CLI in SOCKS5 mode</caption>
+      <image type="source" width="820" height="820">https://raw.githubusercontent.com/bolikcraft/vantah/main/assets/screenshots/dark/settings-socks.png</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="0.3.3" date="2026-07-27">
+      <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.3.3</url>
+    </release>
+    <release version="0.3.2" date="2026-07-26">
+      <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.3.2</url>
+    </release>
+    <release version="0.3.1" date="2026-07-25">
+      <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.3.1</url>
+    </release>
+    <release version="0.3.0" date="2026-07-23">
+      <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.3.0</url>
+    </release>
+  </releases>
+</component>

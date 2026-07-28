@@ -66,7 +66,8 @@ jobs:
 
           APPDIR=AppDir
           rm -rf "$APPDIR"
-          mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/share/applications" "$APPDIR/usr/share/icons/hicolor"
+          mkdir -p "$APPDIR/usr/bin" "$APPDIR/usr/share/applications" \
+                   "$APPDIR/usr/share/icons/hicolor" "$APPDIR/usr/share/metainfo"
 
           # бинарь
           cp publish/Vantah.App "$APPDIR/usr/bin/vantah"
@@ -75,6 +76,10 @@ jobs:
           # .desktop (в корне AppDir + по XDG-пути)
           cp packaging/vantah.desktop "$APPDIR/vantah.desktop"
           cp packaging/vantah.desktop "$APPDIR/usr/share/applications/vantah.desktop"
+
+          # AppStream: по нему AppImage-каталоги и софт-центры читают описание и скриншоты
+          cp packaging/io.github.bolikcraft.vantah.metainfo.xml \
+             "$APPDIR/usr/share/metainfo/io.github.bolikcraft.vantah.metainfo.xml"
 
           # иконки: полный набор hicolor + верхнеуровневая иконка/.DirIcon для appimagetool
           cp -r packaging/icons/hicolor/* "$APPDIR/usr/share/icons/hicolor/"

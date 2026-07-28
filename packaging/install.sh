@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Установка Vantah в пользовательский префикс (по умолчанию ~/.local): бинарь,
-# иконки и .desktop, после чего Vantah появляется в меню приложений и запускается кликом.
+# иконки, .desktop и AppStream-метаданные, после чего Vantah появляется в меню
+# приложений (и в софт-центрах вроде GNOME Software) и запускается кликом.
 #
 #   packaging/install.sh              # собрать и установить
 #   packaging/install.sh --uninstall  # удалить всё установленное
@@ -14,6 +15,9 @@ BIN="$PREFIX/bin/vantah"
 LIBDIR="$PREFIX/lib/vantah"
 APPS="$PREFIX/share/applications"
 ICONS="$PREFIX/share/icons/hicolor"
+METAINFO="$PREFIX/share/metainfo"
+# Имя AppStream-файла обязано совпадать с <id> компонента, иначе валидатор ругается.
+METAINFO_FILE="io.github.bolikcraft.vantah.metainfo.xml"
 
 here=$(cd "$(dirname "$0")" && pwd)
 root=$(cd "$here/.." && pwd)
@@ -25,7 +29,7 @@ refresh_caches() {
 }
 
 if [ "${1:-}" = "--uninstall" ]; then
-  rm -f "$BIN" "$APPS/vantah.desktop"
+  rm -f "$BIN" "$APPS/vantah.desktop" "$METAINFO/$METAINFO_FILE"
   rm -rf "$LIBDIR"
   find "$ICONS" -name 'vantah.png' -delete 2>/dev/null || true
   refresh_caches
@@ -53,9 +57,14 @@ mkdir -p "$APPS"
 sed "s|^Exec=vantah$|Exec=$BIN|" "$here/vantah.desktop" > "$APPS/vantah.desktop"
 chmod 644 "$APPS/vantah.desktop"
 
+# --- AppStream: по нему софт-центры (GNOME Software, KDE Discover) показывают
+# описание, скриншоты и историю версий. Без файла приложение в каталоге не видно.
+install -Dm644 "$here/$METAINFO_FILE" "$METAINFO/$METAINFO_FILE"
+
 refresh_caches
 
 command -v desktop-file-validate >/dev/null && desktop-file-validate "$APPS/vantah.desktop"
+command -v appstreamcli >/dev/null && appstreamcli validate --no-net "$METAINFO/$METAINFO_FILE" >/dev/null || true
 
-echo "OK: $BIN, $APPS/vantah.desktop, иконки в $ICONS"
+echo "OK: $BIN, $APPS/vantah.desktop, $METAINFO/$METAINFO_FILE, иконки в $ICONS"
 echo "Vantah должен появиться в меню приложений (может понадобиться пара секунд)."

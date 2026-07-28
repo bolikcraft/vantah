@@ -9,8 +9,8 @@ Exec=vantah
 Icon=vantah
 Terminal=false
 Categories=Network;Security;
-Keywords=vpn;adguard;proxy;privacy;
-Keywords[ru]=впн;адгуард;прокси;приватность;
+Keywords=vpn;adguard;adguardvpn;tunnel;socks5;tun;proxy;privacy;tray;
+Keywords[ru]=впн;vpn;адгуард;adguard;adguardvpn;туннель;socks5;прокси;приватность;трей;
 StartupNotify=true
 # res_class окна Avalonia берётся из имени сборки, а не файла: переименование бинаря
 # в `vantah` его не меняет. Без этой строки GNOME не связывает окно с пунктом меню.
