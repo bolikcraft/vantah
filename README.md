@@ -37,7 +37,7 @@ Buttons, toggles and other accents follow your desktop's **system accent color**
 your OS settings and Vantah follows. The galleries below use different accents as examples:
 green in dark theme, blue in light theme.
 
-<details>
+<details open>
 <summary>Dark theme (green accent)</summary>
 
 | Status | Locations |
