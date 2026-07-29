@@ -16,7 +16,7 @@ provides=('vantah')
 conflicts=('vantah')
 options=('!strip' '!debug')
 source=("$pkgname-$pkgver.tar.gz::$url/releases/download/v$pkgver/vantah-$pkgver-linux-x64.tar.gz")
-sha256sums=('SKIP')
+sha256sums=('61a56f6bfc12020cc5fa4983cd0ef5f20b0e5b99e4f32f810fe28c472f2bc7e8')
 
 package() {
   cd "vantah-$pkgver-linux-x64"
