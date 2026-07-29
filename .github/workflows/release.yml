@@ -53,6 +53,15 @@ jobs:
           cp publish/Vantah.App "$STAGE/vantah"
           chmod +x "$STAGE/vantah"
           cp README.md LICENSE "$STAGE/"
+
+          # Файлы интеграции с рабочим столом кладём внутрь архива: по ним сторонние
+          # пакеты (AUR и прочие) ставят пункт меню, иконки и AppStream, не выкачивая
+          # репозиторий отдельно. Пути внутри архива повторяют /usr/share.
+          mkdir -p "$STAGE/share/applications" "$STAGE/share/metainfo" "$STAGE/share/icons/hicolor"
+          cp packaging/vantah.desktop "$STAGE/share/applications/"
+          cp packaging/io.github.bolikcraft.vantah.metainfo.xml "$STAGE/share/metainfo/"
+          cp -r packaging/icons/hicolor/* "$STAGE/share/icons/hicolor/"
+
           tar -czf "${STAGE}.tar.gz" "$STAGE"
           sha256sum "${STAGE}.tar.gz" > "${STAGE}.tar.gz.sha256"
 
