@@ -1,0 +1,21 @@
+<services>
+  <!--
+    Воркеры OBS собирают без доступа в сеть, поэтому архив релиза скачивается
+    заранее сервисом на стороне сервера. mode="manual": запускается вручную
+    (`osc service manualrun`) при переходе на новую версию, а не на каждый
+    коммит — иначе OBS ходил бы на GitHub при каждой пересборке.
+  -->
+  <service name="download_url" mode="manual">
+    <param name="protocol">https</param>
+    <param name="host">github.com</param>
+    <param name="path">/bolikcraft/vantah/releases/download/v0.3.4/vantah-0.3.4-linux-x64.tar.gz</param>
+    <param name="filename">vantah-0.3.4-linux-x64.tar.gz</param>
+  </service>
+
+  <!-- Проверяем, что скачали ровно тот файл, чья сумма опубликована в релизе. -->
+  <service name="verify_file" mode="manual">
+    <param name="file">vantah-0.3.4-linux-x64.tar.gz</param>
+    <param name="verifier">sha256</param>
+    <param name="checksum">61a56f6bfc12020cc5fa4983cd0ef5f20b0e5b99e4f32f810fe28c472f2bc7e8</param>
+  </service>
+</services>

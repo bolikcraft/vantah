@@ -1,0 +1,81 @@
+#
+# spec для openSUSE Build Service. Собирает пакет из готового бинаря, который
+# уже собран в CI проекта: воркеры OBS не имеют .NET SDK и доступа в сеть, а
+# self-contained сборка воспроизводима только тем же SDK, что и в релизе.
+#
+
+Name:           vantah
+Version:        0.3.4
+Release:        0
+Summary:        Unofficial GUI and tray front-end for the AdGuard VPN CLI
+License:        GPL-3.0-or-later
+URL:            https://github.com/bolikcraft/vantah
+Source0:        https://github.com/bolikcraft/vantah/releases/download/v%{version}/vantah-%{version}-linux-x64.tar.gz
+
+%if 0%{?suse_version}
+BuildRequires:  update-desktop-files
+%endif
+
+# Бинарь self-contained: рантайм .NET внутри. Библиотеки ниже он и Avalonia
+# грузят динамически, поэтому автоматические зависимости их не видят.
+Requires:       hicolor-icon-theme
+Recommends:     libicu
+Recommends:     fontconfig
+
+# Готовый бинарь x86-64: собирать его тут нечем и незачем.
+BuildArch:      x86_64
+ExclusiveArch:  x86_64
+
+# Бинарь уже собран, отладочные пакеты из него не извлечь.
+%global debug_package %{nil}
+%global __strip /bin/true
+
+%description
+Vantah is a desktop GUI client for Linux - a window plus a system-tray icon -
+that acts as a front-end for the official adguardvpn-cli command-line tool. It
+does not implement a VPN itself: it runs adguardvpn-cli as an external process,
+parses its output and shows the state in a graphical interface.
+
+Vantah is an independent, unofficial project. It is not affiliated with AdGuard,
+and is not developed, sponsored or endorsed by them. It does not include, bundle
+or distribute adguardvpn-cli or any other AdGuard software - install the CLI
+yourself; a valid AdGuard VPN account/subscription is required.
+
+%prep
+%setup -q -n vantah-%{version}-linux-x64
+
+%build
+# Нечего собирать: в архиве уже лежит готовый бинарь.
+
+%install
+install -Dm755 vantah %{buildroot}%{_prefix}/lib/vantah/vantah
+install -d %{buildroot}%{_bindir}
+ln -s %{_prefix}/lib/vantah/vantah %{buildroot}%{_bindir}/vantah
+
+install -Dm644 share/applications/vantah.desktop \
+    %{buildroot}%{_datadir}/applications/vantah.desktop
+install -Dm644 share/metainfo/io.github.bolikcraft.vantah.metainfo.xml \
+    %{buildroot}%{_datadir}/metainfo/io.github.bolikcraft.vantah.metainfo.xml
+
+for icon in share/icons/hicolor/*/apps/vantah.png; do
+    size=$(basename $(dirname $(dirname $icon)))
+    install -Dm644 $icon \
+        %{buildroot}%{_datadir}/icons/hicolor/$size/apps/vantah.png
+done
+
+%if 0%{?suse_version}
+%suse_update_desktop_file vantah
+%endif
+
+%files
+%license LICENSE
+%doc README.md
+%{_bindir}/vantah
+%{_prefix}/lib/vantah
+%{_datadir}/applications/vantah.desktop
+%{_datadir}/metainfo/io.github.bolikcraft.vantah.metainfo.xml
+%{_datadir}/icons/hicolor/*/apps/vantah.png
+
+%changelog
+* Wed Jul 29 2026 bolikcraft <bolikcraft@gmail.com> - 0.3.4-0
+- Initial OBS package, built from the upstream release tarball.

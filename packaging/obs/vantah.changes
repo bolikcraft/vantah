@@ -1,0 +1,6 @@
+-------------------------------------------------------------------
+Wed Jul 29 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
+
+- Initial package for the openSUSE Build Service, built from the
+  upstream release tarball (the binary is self-contained, the .NET
+  runtime is embedded).
