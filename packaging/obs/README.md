@@ -11,8 +11,10 @@
 ## Содержимое
 
 - `vantah.spec` — сборка пакета из релизного `tar.gz`
-- `_service` — скачивание архива с GitHub и проверка sha256 (`mode="manual"`,
-  запускается вручную при смене версии)
+- `_service` — скачивание архива с GitHub и проверка sha256; режим не указан, то
+  есть сервис отрабатывает **на сервере** при каждом коммите в пакет. С
+  `mode="manual"` он запускался бы только локальным `osc`, и заливка через
+  веб-интерфейс не дала бы исходника вовсе
 - `vantah.changes` — журнал изменений в формате openSUSE
 
 ## Первая публикация
@@ -28,9 +30,8 @@
    osc mkpac vantah
    cp /path/to/vantah/packaging/obs/{vantah.spec,_service,vantah.changes} vantah/
    cd vantah
-   osc service manualrun     # скачает архив релиза и проверит сумму
    osc add *
-   osc commit -m "Initial package: vantah 0.3.4"
+   osc commit -m "Initial package: vantah 0.3.4"   # сервис отработает на сервере
    ```
 
 4. В настройках проекта (**Repositories → Add from a distribution**) добавить цели:
@@ -49,7 +50,8 @@
    (берётся из файла `.sha256` рядом с ассетом релиза).
 2. В `vantah.spec` поднять `Version:`.
 3. Добавить запись сверху в `vantah.changes`.
-4. `osc service manualrun && osc commit -m "Update to 0.3.5"`.
+4. `osc commit -m "Update to 0.3.5"` — сервис на сервере скачает новый архив сам.
+   Через веб то же самое: заменить содержимое трёх файлов, сборка перезапустится.
 
 ## Проверено локально
 
