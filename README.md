@@ -178,6 +178,46 @@ symlink) and register the menu entry and icons automatically. They do **not**
 pull in `adguardvpn-cli` (it is not in distro repositories) — install it
 yourself, see [Requirements](#requirements).
 
+## Install from a repository (with automatic updates)
+
+The same packages are built in the [openSUSE Build
+Service](https://build.opensuse.org/project/show/home:bolikcraft), so
+Vantah is updated by your usual `dnf upgrade` / `zypper up` / `apt upgrade`
+instead of downloading a file every time. Available for x86-64.
+
+**Fedora 43 / 44:**
+
+```bash
+sudo dnf config-manager addrepo --from-repofile=https://download.opensuse.org/repositories/home:bolikcraft/Fedora_$(rpm -E %fedora)/home:bolikcraft.repo
+sudo dnf install vantah
+```
+
+**openSUSE Tumbleweed** (for Leap 16.0 replace `openSUSE_Tumbleweed` with `openSUSE_Leap_16.0`):
+
+```bash
+sudo zypper addrepo https://download.opensuse.org/repositories/home:bolikcraft/openSUSE_Tumbleweed/home:bolikcraft.repo
+sudo zypper --gpg-auto-import-keys refresh
+sudo zypper install vantah
+```
+
+**Debian 13** (for Ubuntu use `xUbuntu_24.04` or `xUbuntu_26.04` instead of `Debian_13`):
+
+```bash
+echo 'deb http://download.opensuse.org/repositories/home:/bolikcraft/Debian_13/ /' \
+  | sudo tee /etc/apt/sources.list.d/home:bolikcraft.list
+curl -fsSL https://download.opensuse.org/repositories/home:bolikcraft/Debian_13/Release.key \
+  | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/home_bolikcraft.gpg > /dev/null
+sudo apt update
+sudo apt install vantah
+```
+
+**Arch Linux** — the package lives in the AUR as
+[`vantah-bin`](https://aur.archlinux.org/packages/vantah-bin):
+
+```bash
+yay -S vantah-bin
+```
+
 Every asset ships with a `.sha256` file next to it; verify the download with:
 
 ```bash
