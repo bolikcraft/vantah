@@ -12,6 +12,10 @@ License:        GPL-3.0-or-later
 URL:            https://github.com/bolikcraft/vantah
 Source0:        https://github.com/bolikcraft/vantah/releases/download/v%{version}/vantah-%{version}-linux-x64.tar.gz
 
+# Каталоги /usr/share/icons/hicolor/* принадлежат этому пакету; без него проверка
+# openSUSE «directories not owned by a package» роняет сборку.
+BuildRequires:  hicolor-icon-theme
+
 %if 0%{?suse_version}
 BuildRequires:  update-desktop-files
 %endif

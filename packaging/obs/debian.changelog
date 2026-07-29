@@ -1,0 +1,5 @@
+vantah (0.3.4-1) unstable; urgency=low
+
+  * Initial package, built from the upstream release tarball.
+
+ -- bolikcraft <bolikcraft@gmail.com>  Wed, 29 Jul 2026 00:00:00 +0000

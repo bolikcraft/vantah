@@ -1,0 +1,28 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+# Собирать нечего: в архиве уже лежит готовый self-contained бинарь.
+override_dh_auto_build:
+
+override_dh_auto_install:
+	install -Dm755 vantah debian/vantah/usr/lib/vantah/vantah
+	install -d debian/vantah/usr/bin
+	ln -sf /usr/lib/vantah/vantah debian/vantah/usr/bin/vantah
+	install -Dm644 share/applications/vantah.desktop \
+		debian/vantah/usr/share/applications/vantah.desktop
+	install -Dm644 share/metainfo/io.github.bolikcraft.vantah.metainfo.xml \
+		debian/vantah/usr/share/metainfo/io.github.bolikcraft.vantah.metainfo.xml
+	for icon in share/icons/hicolor/*/apps/vantah.png; do \
+		size=$$(basename $$(dirname $$(dirname $$icon))); \
+		install -Dm644 $$icon \
+			debian/vantah/usr/share/icons/hicolor/$$size/apps/vantah.png; \
+	done
+
+# Бинарь чужой сборки: strip его ломает, отладочных символов в нём нет, а
+# shlibdeps ничего осмысленного не выведет — рантайм .NET внутри файла.
+override_dh_strip:
+override_dh_strip_nondeterminism:
+override_dh_dwz:
+override_dh_shlibdeps:
