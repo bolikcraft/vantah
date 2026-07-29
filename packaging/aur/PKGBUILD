@@ -8,8 +8,11 @@ arch=('x86_64')
 url="https://github.com/bolikcraft/vantah"
 license=('GPL-3.0-or-later')
 # Сборка self-contained: рантайм .NET внутри бинаря, системными остаются только
-# библиотеки, которые он и Avalonia грузят динамически.
-depends=('glibc' 'gcc-libs' 'zlib' 'icu' 'openssl' 'fontconfig' 'libx11' 'libice' 'libsm')
+# библиотеки, которые он и Avalonia грузят динамически. namcap считает часть из них
+# лишними — он видит только NEEDED в ELF, а ICU, OpenSSL и иксовые библиотеки .NET и
+# Avalonia открывают через dlopen, поэтому список оставлен полным.
+depends=('glibc' 'gcc-libs' 'zlib' 'icu' 'openssl' 'fontconfig' 'libx11' 'libice' 'libsm'
+         'hicolor-icon-theme')
 # CLI намеренно не в depends: её ставят и официальным установщиком AdGuard, минуя pacman.
 optdepends=('adguardvpn-cli-bin: the AdGuard VPN CLI itself — Vantah is useless without it')
 provides=('vantah')
