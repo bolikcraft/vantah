@@ -16,7 +16,7 @@ using Vantah.Core.Vpn;
 
 namespace Vantah.App.ViewModels;
 
-public partial class LocationsViewModel : ObservableObject
+public partial class LocationsViewModel : ObservableObject, IReloadableSection
 {
     private readonly IVpnService _vpn;
     private readonly VpnCoordinator _coordinator;
@@ -38,6 +38,15 @@ public partial class LocationsViewModel : ObservableObject
 
     /// <summary>Текущая (пере)загрузка списка — чтобы её можно было дождаться в тестах.</summary>
     public Task LoadTask { get; private set; } = Task.CompletedTask;
+
+    /// <inheritdoc/>
+    public string Id => "locations";
+
+    /// <inheritdoc/>
+    public bool LoadFailed => LoadError is not null;
+
+    /// <inheritdoc/>
+    public Task ReloadIfFailedAsync() => LoadFailed ? LoadTask = LoadAsync() : Task.CompletedTask;
 
     // Дефолты повторяют прежнее жёсткое поведение: избранные сверху, дальше по возрастанию пинга.
     [ObservableProperty] private LocationSortKey _sortKey = LocationSortKey.Ping;
