@@ -10,11 +10,37 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # нужно action-gh-release для создания релиза и загрузки ассетов
+  contents: read    # сборке хватает чтения; право на запись выдано только job'у release
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Матрица по архитектурам, а не кросс-сборка в одном job: appimagetool для aarch64
+    # на x86-раннере просто не запустится, поэтому каждая нога собирается на своём
+    # НАТИВНОМ раннере (ubuntu-24.04-arm — arm64-раннер GitHub).
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: linux-x64
+            runner: ubuntu-latest
+            pkg_arch: amd64          # значение arch для nfpm
+            rpm_arch: x86_64         # как nfpm называет ту же архитектуру в имени .rpm
+            appimage_arch: x86_64    # переменная ARCH для appimagetool и суффикс имени
+            nfpm_tarball: nfpm_2.47.0_Linux_x86_64.tar.gz
+            appimagetool_asset: appimagetool-x86_64.AppImage
+          - rid: linux-arm64
+            runner: ubuntu-24.04-arm
+            pkg_arch: arm64
+            rpm_arch: aarch64
+            appimage_arch: aarch64
+            nfpm_tarball: nfpm_2.47.0_Linux_arm64.tar.gz
+            appimagetool_asset: appimagetool-aarch64.AppImage
+    outputs:
+      # Версию считают обе ноги матрицы и пишут в один и тот же output. Значение у них
+      # одинаковое (берётся из тега либо из csproj), так что «кто последний, тот и прав»
+      # здесь безопасно и избавляет job release от повторного checkout ради версии.
+      version: ${{ steps.ver.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,12 +61,12 @@ jobs:
           echo "version=$VER" >> "$GITHUB_OUTPUT"
           echo "Версия сборки: $VER"
 
-      - name: Publish self-contained (linux-x64)
+      - name: Publish self-contained (${{ matrix.rid }})
         run: |
           VER="${{ steps.ver.outputs.version }}"
           # Версию передаём явно: иначе бинарь из тега v0.2.0 считает себя 0.1.0 (значение
           # <Version> в csproj), и проверка обновлений вечно показывает плашку сама на себя.
-          dotnet publish src/Vantah.App -c Release -r linux-x64 -o publish --nologo \
+          dotnet publish src/Vantah.App -c Release -r ${{ matrix.rid }} -o publish --nologo \
             -p:Version="$VER" -p:InformationalVersion="$VER"
           # sanity-check: бинарь на месте и исполняемый
           test -x publish/Vantah.App
@@ -48,7 +74,7 @@ jobs:
       - name: Package tar.gz
         run: |
           VER="${{ steps.ver.outputs.version }}"
-          STAGE="vantah-${VER}-linux-x64"
+          STAGE="vantah-${VER}-${{ matrix.rid }}"
           mkdir -p "$STAGE"
           cp publish/Vantah.App "$STAGE/vantah"
           chmod +x "$STAGE/vantah"
@@ -70,7 +96,7 @@ jobs:
           VER="${{ steps.ver.outputs.version }}"
           # appimagetool из репозитория AppImage/appimagetool, pinned релиз 1.9.1
           curl -fsSL -o appimagetool \
-            https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage
+            https://github.com/AppImage/appimagetool/releases/download/1.9.1/${{ matrix.appimagetool_asset }}
           chmod +x appimagetool
 
           APPDIR=AppDir
@@ -103,9 +129,9 @@ jobs:
           EOF
           chmod +x "$APPDIR/AppRun"
 
-          OUT="Vantah-${VER}-x86_64.AppImage"
+          OUT="Vantah-${VER}-${{ matrix.appimage_arch }}.AppImage"
           # --appimage-extract-and-run: на GitHub-раннере нет FUSE, иначе appimagetool не стартует
-          ARCH=x86_64 ./appimagetool --appimage-extract-and-run "$APPDIR" "$OUT"
+          ARCH=${{ matrix.appimage_arch }} ./appimagetool --appimage-extract-and-run "$APPDIR" "$OUT"
           sha256sum "$OUT" > "${OUT}.sha256"
 
       - name: Package deb/rpm (nfpm)
@@ -113,18 +139,20 @@ jobs:
           VER="${{ steps.ver.outputs.version }}"
           # nfpm из goreleaser/nfpm, pinned релиз 2.47.0
           curl -fsSL -o nfpm.tar.gz \
-            https://github.com/goreleaser/nfpm/releases/download/v2.47.0/nfpm_2.47.0_Linux_x86_64.tar.gz
+            https://github.com/goreleaser/nfpm/releases/download/v2.47.0/${{ matrix.nfpm_tarball }}
           tar -xzf nfpm.tar.gz nfpm
           chmod +x nfpm
 
-          # Версию nfpm подставляет из ${VERSION} при чтении конфига (см. packaging/nfpm.yaml),
-          # поэтому версия пакета всегда совпадает с тегом релиза.
+          # Версию и архитектуру nfpm подставляет из ${VERSION} и ${ARCH} при чтении конфига
+          # (см. packaging/nfpm.yaml): версия пакета всегда совпадает с тегом релиза,
+          # а архитектура — с ногой матрицы.
           export VERSION="$VER"
+          export ARCH="${{ matrix.pkg_arch }}"
           ./nfpm pkg --config packaging/nfpm.yaml --packager deb --target .
           ./nfpm pkg --config packaging/nfpm.yaml --packager rpm --target .
 
-          # .sha256 рядом с каждым пакетом (имена nfpm задаёт сам: vantah_<ver>_amd64.deb,
-          # vantah-<ver>-1.x86_64.rpm) — маски ниже от точного имени не зависят.
+          # .sha256 рядом с каждым пакетом (имена nfpm задаёт сам: vantah_<ver>_<arch>.deb,
+          # vantah-<ver>-1.<rpm-arch>.rpm) — маски ниже от точного имени не зависят.
           for f in vantah_*.deb vantah-*.rpm; do
             sha256sum "$f" > "${f}.sha256"
           done
@@ -133,28 +161,43 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: vantah-${{ steps.ver.outputs.version }}-linux-x64
+          # Имя обязано быть уникальным между ногами матрицы, поэтому включает rid.
+          name: vantah-${{ steps.ver.outputs.version }}-${{ matrix.rid }}
+          # Маски привязаны к архитектуре ноги: tar.gz — по rid, deb — по arch в имени
+          # nfpm, rpm — по rpm-арке. Так ничего лишнего не подхватывается и имена
+          # не пересекаются при слиянии артефактов в job'е release.
           path: |
-            vantah-*-linux-x64.tar.gz
-            vantah-*-linux-x64.tar.gz.sha256
-            Vantah-*-x86_64.AppImage
-            Vantah-*-x86_64.AppImage.sha256
-            vantah_*.deb
-            vantah_*.deb.sha256
-            vantah-*.rpm
-            vantah-*.rpm.sha256
+            vantah-*-${{ matrix.rid }}.tar.gz
+            vantah-*-${{ matrix.rid }}.tar.gz.sha256
+            Vantah-*-${{ matrix.appimage_arch }}.AppImage
+            Vantah-*-${{ matrix.appimage_arch }}.AppImage.sha256
+            vantah_*_${{ matrix.pkg_arch }}.deb
+            vantah_*_${{ matrix.pkg_arch }}.deb.sha256
+            vantah-*.${{ matrix.rpm_arch }}.rpm
+            vantah-*.${{ matrix.rpm_arch }}.rpm.sha256
+
+  # Релиз публикует ОТДЕЛЬНЫЙ job: иначе обе ноги матрицы одновременно создавали бы
+  # один и тот же тег-релиз и гонялись за него. Здесь ассеты обеих архитектур
+  # выкладываются одним вызовом action-gh-release.
+  release:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # нужно action-gh-release для создания релиза и загрузки ассетов
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: vantah-*
+          merge-multiple: true   # все ноги матрицы в один каталог dist
+          path: dist
+
+      - name: List release assets
+        run: ls -la dist
 
       - name: Publish GitHub Release
-        if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
-          name: Vantah v${{ steps.ver.outputs.version }}
-          files: |
-            vantah-*-linux-x64.tar.gz
-            vantah-*-linux-x64.tar.gz.sha256
-            Vantah-*-x86_64.AppImage
-            Vantah-*-x86_64.AppImage.sha256
-            vantah_*.deb
-            vantah_*.deb.sha256
-            vantah-*.rpm
-            vantah-*.rpm.sha256
+          name: Vantah v${{ needs.build.outputs.version }}
+          files: dist/*

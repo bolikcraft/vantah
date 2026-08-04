@@ -5,14 +5,20 @@
 # self-contained binary already published to ./publish/Vantah.App:
 #
 #   dotnet publish src/Vantah.App -c Release -r linux-x64 -o publish
-#   VERSION=1.2.3 nfpm pkg --config packaging/nfpm.yaml --packager deb
-#   VERSION=1.2.3 nfpm pkg --config packaging/nfpm.yaml --packager rpm
+#   VERSION=1.2.3 ARCH=amd64 nfpm pkg --config packaging/nfpm.yaml --packager deb
+#   VERSION=1.2.3 ARCH=amd64 nfpm pkg --config packaging/nfpm.yaml --packager rpm
 #
-# nfpm expands ${VERSION} from the environment when it reads this file, so the
-# package version always matches the release tag passed by CI.
+# For an arm64 build publish with -r linux-arm64 and pass ARCH=arm64 instead:
+#
+#   dotnet publish src/Vantah.App -c Release -r linux-arm64 -o publish
+#   VERSION=1.2.3 ARCH=arm64 nfpm pkg --config packaging/nfpm.yaml --packager deb
+#
+# nfpm expands ${VERSION} and ${ARCH} from the environment when it reads this
+# file, so the package version always matches the release tag passed by CI and
+# the package architecture matches the published runtime identifier.
 
 name: vantah
-arch: amd64            # nfpm maps this to x86_64 for rpm automatically
+arch: ${ARCH}          # amd64 / arm64; nfpm maps these to x86_64 / aarch64 for rpm automatically
 platform: linux
 version: ${VERSION}
 section: net
