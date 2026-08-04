@@ -132,6 +132,66 @@ public class SectionReloadOnConnectTests
         Assert.Single(vm.Items);
     }
 
+    /// <summary>Исключения, у которых можно задержать ответ (Hold/Release) и один раз уронить
+    /// первый вызов — тот же приём, что GatedExclusions в DomainsViewSkeletonTests.</summary>
+    private sealed class GatedFlakyExclusions : IExclusionsService
+    {
+        private TaskCompletionSource? _gate;
+
+        public int GetCalls { get; private set; }
+        public bool FailNextCall { get; set; }
+
+        public void Hold() => _gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public void Release()
+        {
+            var gate = _gate;
+            _gate = null;
+            gate?.TrySetResult();
+        }
+
+        public async Task<ExclusionsSnapshot> GetAsync(CancellationToken ct = default)
+        {
+            if (_gate is { } gate) await gate.Task;
+            GetCalls++;
+            if (FailNextCall) { FailNextCall = false; throw new InvalidOperationException("cli is down"); }
+            return new ExclusionsSnapshot(SiteExclusionMode.General, ["example.com"]);
+        }
+
+        public Task AddAsync(string domain, CancellationToken ct = default) => Task.CompletedTask;
+        public Task RemoveAsync(string domain, CancellationToken ct = default) => Task.CompletedTask;
+        public Task SetModeAsync(SiteExclusionMode from, SiteExclusionMode to,
+            IReadOnlyList<string> currentDomains, CancellationToken ct = default) => Task.CompletedTask;
+    }
+
+    /// <summary>SectionReloader (при подключении VPN) и возврат пользователя на вкладку
+    /// «Домены» могут дёрнуть ReloadIfFailedAsync почти одновременно. Пока первая перезагрузка
+    /// ещё не отвечала, второй вызов не должен запускать своё собственное чтение CLI —
+    /// иначе оба пишут в _all/Items/_appState разом.</summary>
+    [AvaloniaFact]
+    public async Task Domains_second_reload_call_does_not_duplicate_an_in_flight_one()
+    {
+        var exclusions = new GatedFlakyExclusions { FailNextCall = true };
+        var vm = NewDomains(exclusions, new AppStateStore());
+        await vm.LoadTask;   // первая загрузка (в конструкторе) упала
+
+        IReloadableSection section = vm;
+        Assert.True(section.LoadFailed);
+        Assert.Equal(1, exclusions.GetCalls);
+
+        exclusions.Hold();   // следующий GetAsync зависнет, пока не отпустим гейт
+        var first = section.ReloadIfFailedAsync();
+        var second = section.ReloadIfFailedAsync();   // перезагрузка уже идёт
+
+        exclusions.Release();
+        await first;
+        await second;
+
+        Assert.Equal(2, exclusions.GetCalls);   // 1 неудачный старт + 1 перезагрузка, не 3
+        Assert.False(section.LoadFailed);
+        Assert.Same(first, second);   // второй вызов вернул ту же задачу, а не запустил новую
+    }
+
     private static ConfigViewModel NewConfig(FakeConfigService config, AppStateStore store) =>
         new(config, store,
             new LanguageStore(Path.Combine(TempDir(), "language")),

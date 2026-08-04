@@ -104,7 +104,15 @@ public partial class DomainsViewModel : ErrorAwareViewModel, IReloadableSection
     public void ReloadIfFailed() => _ = ReloadIfFailedAsync();
 
     /// <inheritdoc/>
-    public Task ReloadIfFailedAsync() => _loadFailed ? LoadTask = ReloadAsync() : Task.CompletedTask;
+    /// <remarks>Перезагрузка уже идёт (IsBusy — тот же флаг, что ReloadAsync синхронно
+    /// взводит в начале) — вторую поверх неё не запускаем, а отдаём текущую LoadTask.
+    /// Без этой проверки SectionReloader (по факту подключения VPN) и ручной возврат
+    /// пользователя на вкладку «Домены» могли дёрнуть перезагрузку почти одновременно:
+    /// _loadFailed сбрасывается только в успешном продолжении ReloadAsync, поэтому второй
+    /// вызов застал бы его всё ещё true и запустил бы второе параллельное чтение CLI —
+    /// оба потом писали бы в _all/Items/_appState разом.</remarks>
+    public Task ReloadIfFailedAsync() =>
+        IsBusy ? LoadTask : _loadFailed ? LoadTask = ReloadAsync() : Task.CompletedTask;
 
     private async Task ReloadAsync()
     {
