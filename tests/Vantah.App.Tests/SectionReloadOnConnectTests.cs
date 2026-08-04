@@ -5,9 +5,11 @@ using Vantah.App.ViewModels;
 using Vantah.Core.Exclusions;
 using Vantah.Core.Favorites;
 using Vantah.Core.History;
+using Vantah.Core.Localization;
 using Vantah.Core.Models;
 using Vantah.Core.State;
 using Vantah.Core.Traffic;
+using Vantah.Core.Update;
 using Vantah.Core.Vpn;
 using Location = Vantah.Core.Models.Location;
 
@@ -128,5 +130,29 @@ public class SectionReloadOnConnectTests
         Assert.False(section.LoadFailed);
         Assert.True(vm.IsLoaded);
         Assert.Single(vm.Items);
+    }
+
+    private static ConfigViewModel NewConfig(FakeConfigService config, AppStateStore store) =>
+        new(config, store,
+            new LanguageStore(Path.Combine(TempDir(), "language")),
+            new FakeUpdateChecker(new UpdateStatus(true, "1.8.0")),
+            new FakeLogExporter(), () => Task.FromResult<string?>(null));
+
+    [AvaloniaFact]
+    public async Task Settings_report_failure_and_reload_on_demand()
+    {
+        var config = new FakeConfigService { GetError = new InvalidOperationException("cli is down") };
+        var vm = NewConfig(config, new AppStateStore());
+        await vm.LoadTask;
+
+        IReloadableSection section = vm;
+        Assert.Equal("settings", section.Id);
+        Assert.True(section.LoadFailed);
+
+        config.GetError = null;
+        await section.ReloadIfFailedAsync();
+
+        Assert.False(section.LoadFailed);
+        Assert.True(vm.IsLoaded);
     }
 }

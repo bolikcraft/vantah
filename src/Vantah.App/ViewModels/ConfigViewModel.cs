@@ -7,6 +7,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Localization;
+using Vantah.App.Services;
 using Vantah.Core.Autostart;
 using Vantah.Core.Errors;
 using Vantah.Core.Localization;
@@ -26,7 +27,7 @@ public sealed record LanguageOption(string Code, string Display);
 /// Вкладка «Настройки». Тумблеры и выпадающие списки применяются сразу, текстовые поля — по кнопке.
 /// Форма всегда перерисовывается из ответа CLI, а не из введённого: показываем применённое, а не желаемое.
 /// </summary>
-public partial class ConfigViewModel : ErrorAwareViewModel
+public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
 {
     private readonly IConfigService _config;
     private readonly LanguageStore _languageStore;
@@ -244,6 +245,15 @@ public partial class ConfigViewModel : ErrorAwareViewModel
 
     /// <summary>Текущая (пере)загрузка конфигурации — чтобы её можно было дождаться в тестах.</summary>
     public Task LoadTask { get; private set; } = Task.CompletedTask;
+
+    /// <inheritdoc/>
+    public string Id => "settings";
+
+    /// <inheritdoc/>
+    public bool LoadFailed => LoadError is not null;
+
+    /// <inheritdoc/>
+    public Task ReloadIfFailedAsync() => LoadFailed ? LoadTask = LoadAsync() : Task.CompletedTask;
 
     private async Task LoadAsync()
     {
