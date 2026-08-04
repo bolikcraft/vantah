@@ -154,8 +154,14 @@ public partial class App : Application
             // панели, поэтому подстройка под тему трею не нужна.
             _ = new TrayIconController(coordinator, store, favorites, window, new TrayIconSet());
 
+            // Прячем окно только когда его закрывает пользователь (крестик / Alt+F4). При
+            // завершении сеанса причина другая (ApplicationShutdown/OSShutdown), и вето здесь
+            // означало бы «отменить выключение»: Avalonia участвует в X11-сессии (XSMP), и отказ
+            // закрыть окно уходит менеджеру сеанса как отмена — GNOME тогда не показывает даже
+            // диалог подтверждения и машина не выключается.
             window.Closing += (_, e) =>
             {
+                if (e.CloseReason != WindowCloseReason.WindowClosing) return;
                 e.Cancel = true;
                 window.Hide();
             };

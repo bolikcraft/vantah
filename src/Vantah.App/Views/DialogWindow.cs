@@ -27,8 +27,12 @@ public sealed class DialogWindow : Window
         // разрушает, и живут они ровно столько же, сколько синглтон Localizer, — течь нечему.
         Localizer.Instance.LanguageChanged += (_, _) => Title = title();
 
+        // Только закрытие пользователем прячет окно. Завершение сеанса
+        // (ApplicationShutdown/OSShutdown) обязано закрыть его по-настоящему: Avalonia участвует
+        // в X11-сессии (XSMP), и вето на закрытие менеджер сеанса понимает как отмену выключения.
         Closing += (_, e) =>
         {
+            if (e.CloseReason != WindowCloseReason.WindowClosing) return;
             e.Cancel = true;
             Hide();
         };
