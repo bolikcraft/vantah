@@ -15,6 +15,9 @@ public class SectionReloaderTests
     {
         public string Id => id;
         public bool LoadFailed { get; set; }
+        // Стартовая загрузка стаба уже "завершена" к моменту создания — LoadFailed выставляют
+        // напрямую в тесте, реальную гонку с ещё идущей загрузкой моделирует GatedSection.
+        public Task LoadTask => Task.CompletedTask;
         public int Reloads { get; private set; }
 
         public Task ReloadIfFailedAsync()
@@ -30,6 +33,7 @@ public class SectionReloaderTests
     {
         public string Id => "throwing";
         public bool LoadFailed => true;
+        public Task LoadTask => Task.CompletedTask;
         public Task ReloadIfFailedAsync() => throw new InvalidOperationException("boom");
     }
 
@@ -38,6 +42,7 @@ public class SectionReloaderTests
     {
         public string Id => "thread-recording";
         public bool LoadFailed => true;
+        public Task LoadTask => Task.CompletedTask;
         public bool? CalledOnUiThread { get; private set; }
 
         public Task ReloadIfFailedAsync()
@@ -59,6 +64,9 @@ public class SectionReloaderTests
 
         public string Id => id;
         public bool LoadFailed { get; set; }
+        // Гейт здесь моделирует долгий ПОВТОР (ReloadIfFailedAsync), не стартовую загрузку —
+        // она в этих тестах считается уже завершённой (LoadFailed взводят напрямую).
+        public Task LoadTask => Task.CompletedTask;
         public int StartedCalls { get; private set; }
         public int Reloads { get; private set; }
 

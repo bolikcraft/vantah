@@ -219,6 +219,39 @@ public class SectionReloadOnConnectTests
         Assert.True(vm.IsLoaded);
     }
 
+    /// <summary>
+    /// Главный регресс-сценарий: автоподключение на старте обычно поднимает туннель за
+    /// 2–6 секунд, а стартовое чтение конфига висит до таймаута CLI (~15 с). Переход в
+    /// Connected случается ДО того, как первое чтение провалилось — LoadFailed в этот момент
+    /// ещё false, и старая реализация SectionReloader тихо пропускала раздел навсегда: следующего
+    /// перехода в Connected уже не будет. Раздел обязан быть перечитан ПОСЛЕ того, как первая
+    /// загрузка (уже шедшая на момент подключения) закончится провалом.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task Settings_reload_after_connect_retries_a_load_that_was_still_in_flight()
+    {
+        var config = new FakeConfigService
+        {
+            GetError = new InvalidOperationException("cli is down"),
+            FailOnlyOnce = true,   // первое чтение падает, повтор (после провала) — успешен
+        };
+        config.HoldGet();          // первое чтение задержано — как реальный CLI-таймаут
+        var store = new AppStateStore();
+        var vm = NewConfig(config, store);           // LoadTask стартовал в конструкторе и висит
+        var reloader = new SectionReloader(store, [vm]);
+
+        // Переход в Connected — ДО того, как первое чтение провалилось.
+        store.Set(s => s with { Connection = ConnectionState.Connected });
+        Assert.False(vm.LoadTask.IsCompleted);
+
+        config.ReleaseGet();                          // первое чтение отвечает и падает
+        await reloader.LastRunTask;
+        await vm.LoadTask;   // дождаться итога того, что реально сделала загрузка (1-й или 2-й попытки)
+
+        Assert.False(((IReloadableSection)vm).LoadFailed);
+        Assert.True(vm.IsLoaded);
+    }
+
     private static Control? Named(Window window, string name) =>
         window.GetVisualDescendants().OfType<Control>().FirstOrDefault(c => c.Name == name);
 
@@ -250,5 +283,36 @@ public class SectionReloadOnConnectTests
 
         Assert.False(Named(window, "ConfigSkeleton")!.IsVisible);  // данные пришли — форма
         Assert.True(Named(window, "ConfigForm")!.IsVisible);
+    }
+
+    // Тот же приём, что Settings_window_shows_the_skeleton_while_retrying_after_connect,
+    // для вкладки «Домены»: пока идёт повторное чтение после подключения, окно обязано
+    // показывать скелетон, а не пустой список — иначе пустой DomainsContent на мгновение
+    // читается как «исключений нет», хотя список ещё не пришёл.
+    [AvaloniaFact]
+    public async Task Domains_window_shows_the_skeleton_while_retrying_after_connect()
+    {
+        var exclusions = new GatedFlakyExclusions { FailNextCall = true };
+        var store = new AppStateStore();
+        var vm = NewDomains(exclusions, store);
+        await vm.LoadTask;   // первая загрузка (в конструкторе) упала
+
+        var window = new Window { Content = new DomainsView { DataContext = vm }, Width = 700, Height = 600 };
+        window.Show();
+        Assert.False(Named(window, "DomainsSkeleton")!.IsVisible);
+        Assert.False(Named(window, "DomainsContent")!.IsVisible);
+
+        exclusions.Hold();                                  // задерживаем ответ CLI
+        var reloader = new SectionReloader(store, [vm]);
+        store.Set(s => s with { Connection = ConnectionState.Connected });
+
+        Assert.True(Named(window, "DomainsSkeleton")!.IsVisible);   // идёт загрузка — скелетон
+        Assert.False(Named(window, "DomainsContent")!.IsVisible);
+
+        exclusions.Release();
+        await reloader.LastRunTask;
+
+        Assert.False(Named(window, "DomainsSkeleton")!.IsVisible);  // данные пришли — список
+        Assert.True(Named(window, "DomainsContent")!.IsVisible);
     }
 }

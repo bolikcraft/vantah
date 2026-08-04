@@ -18,6 +18,11 @@ public sealed class FakeConfigService(VpnConfig? current = null) : IConfigServic
     /// <summary>Чем падает чтение конфига; null — читается успешно.</summary>
     public Exception? GetError { get; set; }
 
+    /// <summary>Если true, <see cref="GetError"/> срабатывает только один раз и сама себя
+    /// гасит: следующий вызов GetAsync уже успешен. Моделирует «первое чтение задержано и в
+    /// итоге падает, повтор — успешен» без гонки за тем, кто и когда обнулит GetError вручную.</summary>
+    public bool FailOnlyOnce { get; set; }
+
     /// <summary>Задержать ответ на чтение конфига до <see cref="ReleaseGet"/>.</summary>
     public void HoldGet() =>
         _getGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -40,7 +45,12 @@ public sealed class FakeConfigService(VpnConfig? current = null) : IConfigServic
     {
         if (_getGate is { } gate) await gate.Task;
         Calls.Add("get");
-        if (GetError is not null) throw GetError;
+        if (GetError is not null)
+        {
+            var error = GetError;
+            if (FailOnlyOnce) GetError = null;
+            throw error;
+        }
         return _current;
     }
 

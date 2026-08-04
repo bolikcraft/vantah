@@ -69,17 +69,34 @@ public sealed class SectionReloader
     // повтор просто выполняется в рамках уже идущего.
     private async Task RunAndDrainAsync()
     {
-        try
+        while (true)
         {
-            do
+            try
             {
-                _rerunRequested = false;
-                await ReloadFailedAsync();
-            } while (_rerunRequested);
-        }
-        finally
-        {
-            Interlocked.Exchange(ref _inFlight, 0);
+                do
+                {
+                    _rerunRequested = false;
+                    await ReloadFailedAsync();
+                } while (_rerunRequested);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _inFlight, 0);
+            }
+
+            // Окно между «do-while решил завершиться» (проверил _rerunRequested == false) и
+            // строкой выше (обнулением _inFlight): заявка, пришедшая именно сюда, застаёт
+            // _inFlight ещё равным 1, выставляет _rerunRequested = true и уходит, рассчитывая,
+            // что её подхватит уже идущий прогон. Но do-while этот _rerunRequested больше не
+            // смотрит — он уже вышел. Без перепроверки заявка терялась бы насовсем, а
+            // следующего перехода в Connected может не быть ещё долго (это не тестируется
+            // детерминированно: окно — считаные инструкции между двумя строками кода).
+            // Поэтому после обнуления _inFlight смотрим на _rerunRequested ещё раз и, если
+            // заявка успела прийти, пытаемся забрать работу обратно через тот же CAS, каким
+            // обычно её забирает "новый" прогон. Если _inFlight к этому моменту уже перехвачен
+            // настоящим конкурентным прогоном — Exchange вернёт 1, и мы просто уступаем: тот
+            // прогон и так увидит ту же самую заявку в начале своего do-while.
+            if (!_rerunRequested || Interlocked.Exchange(ref _inFlight, 1) == 1) return;
         }
     }
 
@@ -89,6 +106,11 @@ public sealed class SectionReloader
         // три сразу дают всплеск и ничего заметно не ускоряют.
         foreach (var section in _sections)
         {
+            // Загрузка может ещё идти (старт приложения и автоподключение стартуют вместе): её
+            // исход и решает, нужен ли повтор. Не дождавшись, увидели бы LoadFailed == false
+            // (провал ещё не случился) и пропустили бы раздел — навсегда, следующего перехода
+            // в Connected уже не будет.
+            try { await section.LoadTask; } catch { /* исход обработан самим разделом */ }
             if (!section.LoadFailed) continue;
             try { await section.ReloadIfFailedAsync(); }
             catch { /* сбой показывает сам раздел: LoadError + «Обновить» */ }
