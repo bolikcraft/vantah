@@ -32,6 +32,9 @@ namespace Vantah.App;
 
 public partial class App : Application
 {
+    // Сервис подписан на AppStateStore и обязан пережить метод инициализации.
+    private SectionReloader? _sectionReloader;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -110,18 +113,27 @@ public partial class App : Application
 
             var login = new LoginViewModel(auth, coordinator);
 
+            var locations = new LocationsViewModel(vpn, coordinator, favorites, store);
+            var domains = new DomainsViewModel(exclusions, exclusionsStore, store);
+            var configVm = new ConfigViewModel(
+                vpnConfig, store, languageStore, updateChecker, logExporter,
+                () => PickLogFolderAsync(mainWindowRef),
+                autoConnectStore, autostart, appUpdates, killSwitchStore, cliUpdater);
+
+            // Без активного VPN чтения CLI нередко не проходят: раздел, который не прочитался,
+            // перечитает себя сам, когда туннель поднимется. Ссылку держим в поле — сервис
+            // подписан на стор и должен жить всю сессию.
+            _sectionReloader = new SectionReloader(store, [locations, domains, configVm]);
+
             var mainVm = new MainWindowViewModel(
                 new StatusViewModel(coordinator, store, logReader,
                     new HistoryViewModel(coordinator, store), ipVersionStore),
-                new LocationsViewModel(vpn, coordinator, favorites, store),
-                new DomainsViewModel(exclusions, exclusionsStore, store),
+                locations,
+                domains,
                 new LicenseViewModel(vpn, auth, coordinator),
                 new AboutViewModel(vpn),
                 new ProcessesViewModel(processes),
-                new ConfigViewModel(
-                    vpnConfig, store, languageStore, updateChecker, logExporter,
-                    () => PickLogFolderAsync(mainWindowRef),
-                    autoConnectStore, autostart, appUpdates, killSwitchStore, cliUpdater),
+                configVm,
                 login,
                 store, updateBanner);
 
