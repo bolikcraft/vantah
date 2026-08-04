@@ -25,7 +25,9 @@ public partial class LicenseViewModel : ErrorAwareViewModel
     // те же сообщения пересобираются, не дёргая CLI заново.
     private string? _statusKey = LocKeys.License_Loading;
 
-    [ObservableProperty] private string _email = Empty;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanLogout))]
+    private string _email = Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasPlan))]
@@ -36,7 +38,16 @@ public partial class LicenseViewModel : ErrorAwareViewModel
     [ObservableProperty] private string _devices = Empty;
     [ObservableProperty] private string _renewal = Empty;
     [ObservableProperty] private string _status = Localizer.Instance[LocKeys.License_Loading];
-    [ObservableProperty] private bool _isBusy;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanLogout))]
+    private bool _isBusy;
+
+    /// <summary>
+    /// Выход необратим, поэтому кнопку даём только когда аккаунт реально загружен: пока идёт
+    /// запрос и при пустой карточке (ошибка CLI или неразобранный вывод) выходить не из чего.
+    /// </summary>
+    public bool CanLogout => !IsBusy && Email is not (Empty or "");
 
     /// <summary>Текущая (пере)загрузка лицензии — чтобы её можно было дождаться в тестах.</summary>
     public Task LoadTask { get; private set; } = Task.CompletedTask;

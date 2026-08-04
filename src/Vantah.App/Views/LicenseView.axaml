@@ -34,7 +34,7 @@
           </StackPanel>
 
           <Button Grid.Column="2" Classes="danger" VerticalAlignment="Center"
-                  Click="OnLogoutClick"
+                  Click="OnLogoutClick" IsEnabled="{Binding CanLogout}"
                   Content="{Binding [Login_Logout], Source={x:Static loc:Localizer.Instance}}"/>
         </Grid>
 
