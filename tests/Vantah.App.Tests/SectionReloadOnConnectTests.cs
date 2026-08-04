@@ -1,7 +1,10 @@
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.VisualTree;
 using Vantah.App.Services;
 using Vantah.App.Tests.Fakes;
 using Vantah.App.ViewModels;
+using Vantah.App.Views;
 using Vantah.Core.Exclusions;
 using Vantah.Core.Favorites;
 using Vantah.Core.History;
@@ -214,5 +217,38 @@ public class SectionReloadOnConnectTests
 
         Assert.False(section.LoadFailed);
         Assert.True(vm.IsLoaded);
+    }
+
+    private static Control? Named(Window window, string name) =>
+        window.GetVisualDescendants().OfType<Control>().FirstOrDefault(c => c.Name == name);
+
+    // Пока идёт повторное чтение, окно «Настройки» показывает скелетон, а не форму с дефолтами
+    // вьюмодели: иначе пользователь примет чужие значения за свои настройки.
+    [AvaloniaFact]
+    public async Task Settings_window_shows_the_skeleton_while_retrying_after_connect()
+    {
+        var config = new FakeConfigService { GetError = new InvalidOperationException("cli is down") };
+        var store = new AppStateStore();
+        var vm = NewConfig(config, store);
+        await vm.LoadTask;
+
+        var window = new Window { Content = new ConfigView { DataContext = vm }, Width = 820, Height = 820 };
+        window.Show();
+        Assert.False(Named(window, "ConfigSkeleton")!.IsVisible);
+        Assert.False(Named(window, "ConfigForm")!.IsVisible);
+
+        config.GetError = null;
+        config.HoldGet();                                   // задерживаем ответ CLI
+        var reloader = new SectionReloader(store, [vm]);
+        store.Set(s => s with { Connection = ConnectionState.Connected });
+
+        Assert.True(Named(window, "ConfigSkeleton")!.IsVisible);   // идёт загрузка — скелетон
+        Assert.False(Named(window, "ConfigForm")!.IsVisible);
+
+        config.ReleaseGet();
+        await reloader.LastRunTask;
+
+        Assert.False(Named(window, "ConfigSkeleton")!.IsVisible);  // данные пришли — форма
+        Assert.True(Named(window, "ConfigForm")!.IsVisible);
     }
 }
