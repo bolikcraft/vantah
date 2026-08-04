@@ -1,4 +1,4 @@
-# Vantah
+# Vantah — Unofficial AdGuard VPN GUI for Linux
 
 [![CI](https://github.com/bolikcraft/vantah/actions/workflows/ci.yml/badge.svg)](https://github.com/bolikcraft/vantah/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/bolikcraft/vantah)](https://github.com/bolikcraft/vantah/releases/latest)
@@ -6,8 +6,7 @@
 [![License](https://img.shields.io/github/license/bolikcraft/vantah)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Linux%20x86--64-blue)](#download)
 
-**AdGuard VPN GUI for Linux** — an unofficial `adguardvpn-cli` front-end with a
-window and a system tray icon.
+An unofficial **`adguardvpn-cli` front-end** with a window and a system tray icon.
 
 Vantah is a desktop GUI client for Linux (a window plus a system-tray icon) that
 acts as a convenient front-end for the official `adguardvpn-cli` command-line
