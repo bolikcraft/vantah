@@ -15,6 +15,11 @@ public interface IReloadableSection
     /// <summary>Последняя загрузка не удалась.</summary>
     bool LoadFailed { get; }
 
-    /// <summary>Перечитать раздел, если прошлая загрузка провалилась; иначе — ничего не делать.</summary>
+    /// <summary>
+    /// Перечитать раздел, если прошлая загрузка провалилась; иначе — ничего не делать.
+    /// Правит привязанные к UI свойства (Items/IsLoaded/LoadFailed и т. п.), поэтому обязана
+    /// вызываться с UI-потока — за маршалинг отвечает вызывающий (SectionReloader маршалит сам,
+    /// т.к. AppStateStore.Changed приходит с потока фонового опроса).
+    /// </summary>
     Task ReloadIfFailedAsync();
 }
