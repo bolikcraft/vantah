@@ -19,6 +19,12 @@ public sealed class SectionReloader
     private volatile ConnectionState _previous;
     private int _inFlight;
 
+    // Настоящий переход в Connected, случившийся, пока уже идёт прогон. Перезагрузка разделов
+    // может занять секунды (несколько вызовов CLI подряд), и такой переход — не редкость.
+    // Одного отложенного повтора достаточно: копить очередь незачем, к моменту повтора
+    // достаточно перечитать то, что на текущий момент всё ещё LoadFailed.
+    private volatile bool _rerunRequested;
+
     public SectionReloader(AppStateStore store, IReadOnlyList<IReloadableSection> sections)
     {
         _sections = sections;
@@ -38,32 +44,54 @@ public sealed class SectionReloader
         // и реакция на само значение перезапускала бы загрузку бесконечно.
         if (snapshot.Connection != ConnectionState.Connected || previous == ConnectionState.Connected) return;
 
-        // Single-flight: пока прошлый прогон не закончился, новый не начинаем.
-        if (Interlocked.Exchange(ref _inFlight, 1) == 1) return;
+        // Single-flight: пока прошлый прогон не закончился, новый параллельно не начинаем — но
+        // и не отбрасываем переход молча. Раньше именно так и было: если реальный переход
+        // Disconnected→Connected случался, пока уже шёл прогон, попытка терялась насовсем, и
+        // раздел с LoadFailed мог провисеть до следующего полного цикла отключения-подключения.
+        // Теперь запоминаем, что переход был, — уже запущенный прогон повторит себя сам.
+        if (Interlocked.Exchange(ref _inFlight, 1) == 1)
+        {
+            _rerunRequested = true;
+            return;
+        }
 
         // Присваивание — синхронно, внутри обработчика Changed (т.е. ДО того как store.Set(...)
         // вернёт управление вызвавшему его коду), даже если сам обработчик выполняется на потоке
         // пула. Так тест, дождавшийся своего Task.Run(() => store.Set(...)), гарантированно видит
-        // актуальную LastRunTask, а не устаревшую Task.CompletedTask из конструктора.
-        LastRunTask = RunOnUiThread(ReloadFailedAsync);
+        // актуальную LastRunTask, а не устаревшую Task.CompletedTask из конструктора. Ожидание
+        // LastRunTask покрывает и отложенный повтор — он часть того же Task, см. RunAndDrainAsync.
+        LastRunTask = RunOnUiThread(RunAndDrainAsync);
     }
 
-    private async Task ReloadFailedAsync()
+    // Прогоняет перезагрузку и, если во время неё подоспел ещё один настоящий переход в
+    // Connected, сразу повторяет её — не выходя из-под LastRunTask. _inFlight остаётся
+    // выставленным на всё время цикла: конкурентный прогон по-прежнему невозможен, отложенный
+    // повтор просто выполняется в рамках уже идущего.
+    private async Task RunAndDrainAsync()
     {
         try
         {
-            // Последовательно, а не параллельно: каждый вызов — отдельный процесс CLI,
-            // три сразу дают всплеск и ничего заметно не ускоряют.
-            foreach (var section in _sections)
+            do
             {
-                if (!section.LoadFailed) continue;
-                try { await section.ReloadIfFailedAsync(); }
-                catch { /* сбой показывает сам раздел: LoadError + «Обновить» */ }
-            }
+                _rerunRequested = false;
+                await ReloadFailedAsync();
+            } while (_rerunRequested);
         }
         finally
         {
             Interlocked.Exchange(ref _inFlight, 0);
+        }
+    }
+
+    private async Task ReloadFailedAsync()
+    {
+        // Последовательно, а не параллельно: каждый вызов — отдельный процесс CLI,
+        // три сразу дают всплеск и ничего заметно не ускоряют.
+        foreach (var section in _sections)
+        {
+            if (!section.LoadFailed) continue;
+            try { await section.ReloadIfFailedAsync(); }
+            catch { /* сбой показывает сам раздел: LoadError + «Обновить» */ }
         }
     }
 
