@@ -10,7 +10,12 @@ Release:        0
 Summary:        Unofficial GUI and tray front-end for the AdGuard VPN CLI
 License:        GPL-3.0-or-later
 URL:            https://github.com/bolikcraft/vantah
+# Два ассета: сборки под разные архитектуры лежат в разных архивах, каталог внутри
+# назван по .NET RID (linux-x64 / linux-arm64), а не по %%{_arch}. download_files
+# тянет оба Source вне зависимости от архитектуры сборки — это нормально, лишний
+# архив просто не распаковывается.
 Source0:        https://github.com/bolikcraft/vantah/releases/download/v%{version}/vantah-%{version}-linux-x64.tar.gz
+Source1:        https://github.com/bolikcraft/vantah/releases/download/v%{version}/vantah-%{version}-linux-arm64.tar.gz
 
 # Каталоги /usr/share/icons/hicolor/* принадлежат этому пакету; без него проверка
 # openSUSE «directories not owned by a package» роняет сборку.
@@ -26,9 +31,11 @@ Requires:       hicolor-icon-theme
 Recommends:     libicu
 Recommends:     fontconfig
 
-# Готовый бинарь x86-64: собирать его тут нечем и незачем.
-BuildArch:      x86_64
-ExclusiveArch:  x86_64
+# BuildArch здесь не указывается намеренно: он жёстко задаёт архитектуру готового
+# пакета и одинаков для всех целей сборки, из-за чего на aarch64-воркере получился бы
+# пакет с меткой x86_64. Архитектура берётся от цели сборки, а список допустимых —
+# из ExclusiveArch: под остальные архитектуры ассетов релиза просто нет.
+ExclusiveArch:  x86_64 aarch64
 
 # Бинарь уже собран, отладочные пакеты из него не извлечь.
 %global debug_package %{nil}
@@ -46,7 +53,13 @@ or distribute adguardvpn-cli or any other AdGuard software - install the CLI
 yourself; a valid AdGuard VPN account/subscription is required.
 
 %prep
+# -T гасит автораспаковку Source0, -b 1 распаковывает Source1 вместо него.
+%ifarch x86_64
 %setup -q -n vantah-%{version}-linux-x64
+%endif
+%ifarch aarch64
+%setup -q -T -b 1 -n vantah-%{version}-linux-arm64
+%endif
 
 %build
 # Нечего собирать: в архиве уже лежит готовый бинарь.

@@ -1,0 +1,23 @@
+Source: vantah-arm64
+Section: net
+Priority: optional
+Maintainer: bolikcraft <bolikcraft@gmail.com>
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+Homepage: https://github.com/bolikcraft/vantah
+
+Package: vantah
+Architecture: arm64
+Depends: ${misc:Depends}, hicolor-icon-theme
+Recommends: fontconfig
+Description: Unofficial GUI and tray front-end for the AdGuard VPN CLI
+ Vantah is a desktop GUI client for Linux - a window plus a system-tray icon -
+ that acts as a front-end for the official adguardvpn-cli command-line tool.
+ It does not implement a VPN itself: it runs adguardvpn-cli as an external
+ process, parses its output and shows the state in a graphical interface.
+ .
+ Vantah is an independent, unofficial project. It is not affiliated with
+ AdGuard, and is not developed, sponsored or endorsed by them. It does not
+ include, bundle or distribute adguardvpn-cli or any other AdGuard software -
+ install the CLI yourself; a valid AdGuard VPN account/subscription is
+ required.

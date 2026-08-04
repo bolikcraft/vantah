@@ -1,0 +1,5 @@
+vantah-arm64 (0.3.4-1) unstable; urgency=low
+
+  * Initial arm64 package, built from the upstream release tarball.
+
+ -- bolikcraft <bolikcraft@gmail.com>  Tue, 04 Aug 2026 00:00:00 +0000
