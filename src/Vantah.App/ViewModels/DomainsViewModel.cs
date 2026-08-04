@@ -7,13 +7,14 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Localization;
+using Vantah.App.Services;
 using Vantah.Core.Exclusions;
 using Vantah.Core.Models;
 using Vantah.Core.State;
 
 namespace Vantah.App.ViewModels;
 
-public partial class DomainsViewModel : ErrorAwareViewModel
+public partial class DomainsViewModel : ErrorAwareViewModel, IReloadableSection
 {
     private readonly IExclusionsService _exclusions;
     private readonly ExclusionsStore _store;
@@ -92,12 +93,18 @@ public partial class DomainsViewModel : ErrorAwareViewModel
     [RelayCommand]
     private Task Reload() => LoadTask = ReloadAsync();
 
+    /// <inheritdoc/>
+    public string Id => "domains";
+
+    /// <summary>Последняя загрузка списка упала (таймаут/ошибка CLI) — данные неактуальны.</summary>
+    public bool LoadFailed => _loadFailed;
+
     /// <summary>Возврат на вкладку «Домены» после неудачной загрузки — пробуем ещё раз.
     /// Успешно загруженный (пусть и пустой) список не перечитываем: CLI дёргать зря незачем.</summary>
-    public void ReloadIfFailed()
-    {
-        if (_loadFailed) LoadTask = ReloadAsync();
-    }
+    public void ReloadIfFailed() => _ = ReloadIfFailedAsync();
+
+    /// <inheritdoc/>
+    public Task ReloadIfFailedAsync() => _loadFailed ? LoadTask = ReloadAsync() : Task.CompletedTask;
 
     private async Task ReloadAsync()
     {

@@ -2,6 +2,7 @@ using Avalonia.Headless.XUnit;
 using Vantah.App.Services;
 using Vantah.App.Tests.Fakes;
 using Vantah.App.ViewModels;
+using Vantah.Core.Exclusions;
 using Vantah.Core.Favorites;
 using Vantah.Core.History;
 using Vantah.Core.Models;
@@ -88,5 +89,44 @@ public class SectionReloadOnConnectTests
         await ((IReloadableSection)vm).ReloadIfFailedAsync();
 
         Assert.Equal(callsAfterLoad, vpn.Calls);
+    }
+
+    /// <summary>Исключения: первый вызов падает, следующие отдают снапшот.</summary>
+    private sealed class FlakyExclusions : IExclusionsService
+    {
+        public int Calls { get; private set; }
+
+        public Task<ExclusionsSnapshot> GetAsync(CancellationToken ct = default)
+        {
+            Calls++;
+            if (Calls == 1) throw new InvalidOperationException("cli is down");
+            return Task.FromResult(new ExclusionsSnapshot(SiteExclusionMode.General, ["example.com"]));
+        }
+
+        public Task AddAsync(string domain, CancellationToken ct = default) => Task.CompletedTask;
+        public Task RemoveAsync(string domain, CancellationToken ct = default) => Task.CompletedTask;
+        public Task SetModeAsync(SiteExclusionMode from, SiteExclusionMode to,
+            IReadOnlyList<string> currentDomains, CancellationToken ct = default) => Task.CompletedTask;
+    }
+
+    private static DomainsViewModel NewDomains(IExclusionsService exclusions, AppStateStore store) =>
+        new(exclusions, new ExclusionsStore(Path.Combine(TempDir(), "site-exclusions")), store);
+
+    [AvaloniaFact]
+    public async Task Domains_report_failure_and_reload_on_demand()
+    {
+        var exclusions = new FlakyExclusions();
+        var vm = NewDomains(exclusions, new AppStateStore());
+        await vm.LoadTask;
+
+        IReloadableSection section = vm;
+        Assert.Equal("domains", section.Id);
+        Assert.True(section.LoadFailed);
+
+        await section.ReloadIfFailedAsync();
+
+        Assert.False(section.LoadFailed);
+        Assert.True(vm.IsLoaded);
+        Assert.Single(vm.Items);
     }
 }
