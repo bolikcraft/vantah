@@ -5,7 +5,7 @@
 #
 
 Name:           vantah
-Version:        0.3.4
+Version:        0.3.5
 Release:        0
 Summary:        Unofficial GUI and tray front-end for the AdGuard VPN CLI
 License:        GPL-3.0-or-later
@@ -94,5 +94,7 @@ done
 %{_datadir}/icons/hicolor/*/apps/vantah.png
 
 %changelog
+* Tue Aug 04 2026 bolikcraft <bolikcraft@gmail.com> - 0.3.5-0
+- Update to 0.3.5; aarch64 builds are now available upstream.
 * Wed Jul 29 2026 bolikcraft <bolikcraft@gmail.com> - 0.3.4-0
 - Initial OBS package, built from the upstream release tarball.

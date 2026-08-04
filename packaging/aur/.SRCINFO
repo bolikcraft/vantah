@@ -1,6 +1,6 @@
 pkgbase = vantah-bin
 	pkgdesc = Unofficial GUI and tray front-end for the AdGuard VPN CLI (adguardvpn-cli)
-	pkgver = 0.3.4
+	pkgver = 0.3.5
 	pkgrel = 1
 	url = https://github.com/bolikcraft/vantah
 	arch = x86_64
@@ -21,9 +21,9 @@ pkgbase = vantah-bin
 	conflicts = vantah
 	options = !strip
 	options = !debug
-	source_x86_64 = vantah-bin-0.3.4-x86_64.tar.gz::https://github.com/bolikcraft/vantah/releases/download/v0.3.4/vantah-0.3.4-linux-x64.tar.gz
-	sha256sums_x86_64 = 61a56f6bfc12020cc5fa4983cd0ef5f20b0e5b99e4f32f810fe28c472f2bc7e8
-	source_aarch64 = vantah-bin-0.3.4-aarch64.tar.gz::https://github.com/bolikcraft/vantah/releases/download/v0.3.4/vantah-0.3.4-linux-arm64.tar.gz
-	sha256sums_aarch64 = SKIP
+	source_x86_64 = vantah-bin-0.3.5-x86_64.tar.gz::https://github.com/bolikcraft/vantah/releases/download/v0.3.5/vantah-0.3.5-linux-x64.tar.gz
+	sha256sums_x86_64 = a8054c7328ba00243f39f513716972c29824f1b7d15275f96ced12552d2e090f
+	source_aarch64 = vantah-bin-0.3.5-aarch64.tar.gz::https://github.com/bolikcraft/vantah/releases/download/v0.3.5/vantah-0.3.5-linux-arm64.tar.gz
+	sha256sums_aarch64 = 92e5faef4172dadcc5c92d3852d94acceca8b4ac3b7623d9e5cb3d924657af81
 
 pkgname = vantah-bin
