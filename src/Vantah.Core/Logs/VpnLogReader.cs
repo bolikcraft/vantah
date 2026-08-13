@@ -1,4 +1,5 @@
 using System.Text;
+using Vantah.Core.Config;
 
 namespace Vantah.Core.Logs;
 
@@ -13,15 +14,8 @@ public sealed class VpnLogReader
 
     public VpnLogReader(string? path = null) => _path = path ?? DefaultPath();
 
-    public static string DefaultPath()
-    {
-        var dataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
-        if (string.IsNullOrEmpty(dataHome))
-            dataHome = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                ".local", "share");
-        return Path.Combine(dataHome, "adguardvpn-cli", "app.log");
-    }
+    public static string DefaultPath() =>
+        Path.Combine(VantahPaths.DataHome, "adguardvpn-cli", "app.log");
 
     /// <summary>Последние значимые строки лога, новые первыми (шумные строки опроса выброшены).</summary>
     public IReadOnlyList<string> ReadTail(int maxLines = 300)

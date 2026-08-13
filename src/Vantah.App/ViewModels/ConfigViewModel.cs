@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Localization;
 using Vantah.App.Services;
 using Vantah.Core.Autostart;
+using Vantah.Core.Config;
 using Vantah.Core.Errors;
 using Vantah.Core.Localization;
 using Vantah.Core.Logs;
@@ -68,7 +69,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
         // как в App.axaml.cs. Тем, кому поведение важно (наш тест), передают свои — на temp.
         _autoConnect = autoConnect ?? new AutoConnectStore();
         _autostart = autostart ?? new AutostartService(
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "autostart"),
+            VantahPaths.AutostartDir,
             Environment.ProcessPath ?? "vantah", "vantah");
         // Проверка обновлений самого Vantah тоже опциональна: без неё тумблер просто
         // показывает значение по умолчанию и никуда не пишет.

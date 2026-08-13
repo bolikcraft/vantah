@@ -91,7 +91,7 @@ public partial class App : Application
             var logExporter = new LogExporter(runner);
             var autoConnectStore = new AutoConnectStore();
             var autostart = new AutostartService(
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "autostart"),
+                VantahPaths.AutostartDir,
                 Environment.ProcessPath ?? "vantah", "vantah");
 
             // Проверка обновлений самого Vantah (не путать с updateChecker выше — тот про CLI).
