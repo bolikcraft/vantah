@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Thu Aug 13 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
+
+- Update to 0.3.6: the interface now defaults to English, and settings are
+  no longer written to the working directory when ~/.config does not exist
+  yet.
+
+-------------------------------------------------------------------
 Tue Aug 04 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
 
 - Update to 0.3.5: screens reload themselves once the VPN connects,
