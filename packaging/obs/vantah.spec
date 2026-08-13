@@ -5,7 +5,7 @@
 #
 
 Name:           vantah
-Version:        0.3.5
+Version:        0.3.6
 Release:        0
 Summary:        Unofficial GUI and tray front-end for the AdGuard VPN CLI
 License:        GPL-3.0-or-later
@@ -94,6 +94,9 @@ done
 %{_datadir}/icons/hicolor/*/apps/vantah.png
 
 %changelog
+* Thu Aug 13 2026 bolikcraft <bolikcraft@gmail.com> - 0.3.6-0
+- Update to 0.3.6; the interface now defaults to English and settings are no
+  longer written to the working directory when ~/.config does not exist yet.
 * Tue Aug 04 2026 bolikcraft <bolikcraft@gmail.com> - 0.3.5-0
 - Update to 0.3.5; aarch64 builds are now available upstream.
 * Wed Jul 29 2026 bolikcraft <bolikcraft@gmail.com> - 0.3.4-0

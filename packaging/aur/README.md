@@ -53,10 +53,10 @@ git push
 
 ```bash
 cd vantah-bin
-sed -i "s/^pkgver=.*/pkgver=0.3.5/; s/^pkgrel=.*/pkgrel=1/" PKGBUILD
+sed -i "s/^pkgver=.*/pkgver=0.3.6/; s/^pkgrel=.*/pkgrel=1/" PKGBUILD
 updpkgsums
 makepkg --printsrcinfo > .SRCINFO
-git commit -am "Update to 0.3.5"
+git commit -am "Update to 0.3.6"
 git push
 ```
 
