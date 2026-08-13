@@ -58,7 +58,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <!-- Brazilian Portuguese strings. Neutral culture (Strings.resx) is Russian. -->
+  <!-- Brazilian Portuguese strings. Neutral culture (Strings.resx) is English. -->
 
   <!-- Вкладки главного окна -->
   <data name="Tab_Status" xml:space="preserve">

@@ -249,15 +249,18 @@ public class ConfigViewTests
 
         try
         {
-            combo.SelectedItem = vm.Languages.Single(l => l.Code == "en");
+            // Берём язык, отличный от дефолтного: выбор уже выбранного пункта комбобокс
+            // проглотил бы молча, и тест остался бы зелёным при отвязанном SelectedItem.
+            combo.SelectedItem = vm.Languages.Single(l => l.Code == "ru");
 
-            Assert.Equal("en", Localizer.Instance.Language);
-            Assert.Equal("en", vm.SelectedLanguage.Code);
+            Assert.Equal("ru", Localizer.Instance.Language);
+            Assert.Equal("ru", vm.SelectedLanguage.Code);
         }
         finally
         {
-            // Localizer.Instance — синглтон на весь тест-хост: не вернём «ru» — протечёт в другие тесты.
-            Localizer.Instance.SetLanguage("ru");
+            // Localizer.Instance — синглтон на весь тест-хост: не вернём язык по умолчанию —
+            // протечёт в другие тесты.
+            Localizer.Instance.SetLanguage(CultureSelector.Default);
         }
     }
 
@@ -280,15 +283,15 @@ public class ConfigViewTests
 
         try
         {
-            combo.SelectedItem = vm.Languages.Single(l => l.Code == "en");
+            combo.SelectedItem = vm.Languages.Single(l => l.Code == "ru");
 
             Assert.True(File.Exists(path));
-            Assert.Equal("en", File.ReadAllText(path).Trim());
-            Assert.Equal("en", new LanguageStore(path).Load());
+            Assert.Equal("ru", File.ReadAllText(path).Trim());
+            Assert.Equal("ru", new LanguageStore(path).Load());
         }
         finally
         {
-            Localizer.Instance.SetLanguage("ru");
+            Localizer.Instance.SetLanguage(CultureSelector.Default);
             File.Delete(path);
         }
     }

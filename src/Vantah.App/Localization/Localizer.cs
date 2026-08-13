@@ -7,7 +7,7 @@ using Vantah.Core.Localization;
 namespace Vantah.App.Localization;
 
 /// <summary>
-/// Провайдер локализованных строк поверх <c>Strings.resx</c> (нейтральная культура — русская).
+/// Провайдер локализованных строк поверх <c>Strings.resx</c> (нейтральная культура — английская).
 /// </summary>
 /// <remarks>
 /// XAML тянет строки через индексатор:

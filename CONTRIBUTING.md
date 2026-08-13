@@ -48,12 +48,12 @@ they touch resource files only, no C# knowledge required.
 ### Where the strings live
 
 - All UI strings are in `src/Vantah.App/Localization/Strings.<code>.resx`.
-- `Strings.resx` is the **neutral** resource and its values are **Russian**
-  (`<NeutralLanguage>ru</NeutralLanguage>` in `Vantah.App.csproj`), which is why
-  there is no `Strings.ru.resx` — the `ru` culture reads the neutral resource
-  directly.
-- `Strings.en.resx` is the **reference for translators**. Unless you read
-  Russian, translate from the English file.
+- `Strings.resx` is the **neutral** resource and its values are **English**
+  (`<NeutralLanguage>en</NeutralLanguage>` in `Vantah.App.csproj`), which is why
+  there is no `Strings.en.resx` — the `en` culture reads the neutral resource
+  directly, and so does any locale Vantah does not translate.
+- `Strings.resx` is therefore also the **reference for translators**: translate
+  from it.
 - The key set is declared as constants in
   `src/Vantah.App/Localization/LocKeys.cs`. Every language file must contain
   **exactly the same keys** as the neutral one — no missing keys, no extra keys.
@@ -82,7 +82,7 @@ they touch resource files only, no C# knowledge required.
 Three places, all of which are checked by tests:
 
 1. Add `src/Vantah.App/Localization/Strings.<code>.resx` — copy
-   `Strings.en.resx` and translate the values. `<code>` is a .NET culture name
+   `Strings.resx` and translate the values. `<code>` is a .NET culture name
    and is not necessarily two letters: where the region matters, use the full
    name (`pt-BR`, `zh-Hans`). The file name must match the code exactly.
 2. Add the same code to `CultureSelector.Supported` in
@@ -94,7 +94,7 @@ Three places, all of which are checked by tests:
 
 ### Fixing an existing translation
 
-Only the Russian and English strings were written by the authors. **Every other
+Only the English and Russian strings were written by the authors. **Every other
 language is a draft produced by a machine translation model and has not been
 reviewed by a native speaker.** If a string reads unnatural, wrong or too long —
 a correction is very welcome, even a one-line one. There is no need to review a
@@ -113,7 +113,7 @@ mistakes:
   keys);
 - a lost or added `{0}`-style placeholder;
 - a missing satellite assembly — a language that silently falls back to the
-  Russian strings instead of its own;
+  neutral English strings instead of its own;
 - a key present in `LocKeys.cs` but not in `Strings.resx`, and vice versa.
 
 ## Commits and pull requests

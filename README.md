@@ -130,11 +130,13 @@ when it writes its own files there.
 
 ## Interface languages
 
-Vantah speaks Russian, English, German, Spanish, French, Indonesian, Italian,
-Polish, Brazilian Portuguese, Turkish, Ukrainian and Simplified Chinese; the
-language is picked in Settings and applies immediately.
+Vantah speaks English, Russian, German, Spanish, French, Indonesian, Italian,
+Polish, Brazilian Portuguese, Turkish, Ukrainian and Simplified Chinese. On
+first launch it follows the system locale and falls back to English when that
+locale is not among the supported ones; the language is also picked in Settings
+and applies immediately.
 
-Only the Russian and English strings are written by the authors. **Every other
+Only the English and Russian strings are written by the authors. **Every other
 language is a draft that has not been reviewed by a native speaker** — if
 something reads wrong, an issue or a pull request against
 `src/Vantah.App/Localization/Strings.<code>.resx` is very welcome.

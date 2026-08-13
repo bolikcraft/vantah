@@ -6,10 +6,11 @@
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!--
-      Нейтральные значения в Strings.resx уже русские, поэтому Strings.ru.resx не нужен:
-      ResourceManager для культуры ru берёт строки прямо из главного (нейтрального) ресурса.
+      Нейтральные значения в Strings.resx уже английские, поэтому Strings.en.resx не нужен:
+      ResourceManager для культуры en берёт строки прямо из главного (нейтрального) ресурса.
+      Английский же остаётся запасным вариантом для любой неподдержанной локали.
     -->
-    <NeutralLanguage>ru</NeutralLanguage>
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <ItemGroup>

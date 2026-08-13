@@ -8,7 +8,7 @@ assignees: ''
 
 Русский язык приветствуется — писать по-английски необязательно.
 
-Only the Russian and English strings were written by the authors; every other
+Only the English and Russian strings were written by the authors; every other
 language is an unreviewed draft. Corrections are welcome, however small.
 
 ## Language

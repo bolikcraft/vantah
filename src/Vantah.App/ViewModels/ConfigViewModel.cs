@@ -118,8 +118,8 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     /// </summary>
     public static IReadOnlyList<LanguageOption> AllLanguages { get; } = new[]
     {
-        new LanguageOption("ru", "Русский"),
         new LanguageOption("en", "English"),
+        new LanguageOption("ru", "Русский"),
         new LanguageOption("de", "Deutsch"),
         new LanguageOption("es", "Español"),
         new LanguageOption("fr", "Français"),

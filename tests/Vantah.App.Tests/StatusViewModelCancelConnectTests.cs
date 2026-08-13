@@ -8,6 +8,7 @@ using Vantah.App.Tests.Fakes;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
 using Vantah.Core.History;
+using Vantah.Core.Localization;
 using Vantah.Core.Logs;
 using Vantah.Core.Models;
 using Vantah.Core.State;
@@ -143,7 +144,7 @@ public class StatusViewModelCancelConnectTests
 
         var button = ToggleButton(window);
         Assert.True(button.IsEnabled);
-        Assert.Equal("Прервать подключение", button.Content);
+        Assert.Equal(Localizer.Instance[LocKeys.Common_StopConnecting], button.Content);
 
         store.Set(s => s with { Connection = ConnectionState.Disconnecting });
         Dispatcher.UIThread.RunJobs();
@@ -165,17 +166,18 @@ public class StatusViewModelCancelConnectTests
             store.Set(s => s with { Connection = ConnectionState.Connecting });
             Dispatcher.UIThread.RunJobs();
 
-            Assert.Equal("Прервать подключение", ToggleButton(window).Content);
+            Assert.Equal("Stop connecting", ToggleButton(window).Content);
 
-            Localizer.Instance.SetLanguage("en");
+            Localizer.Instance.SetLanguage("ru");
             Dispatcher.UIThread.RunJobs();
 
-            Assert.Equal("Stop connecting", ToggleButton(window).Content);
+            Assert.Equal("Прервать подключение", ToggleButton(window).Content);
         }
         finally
         {
-            // Localizer.Instance — синглтон на весь тест-хост: не вернём «ru» — протечёт в соседей.
-            Localizer.Instance.SetLanguage("ru");
+            // Localizer.Instance — синглтон на весь тест-хост: не вернём язык по умолчанию —
+            // протечёт в соседей.
+            Localizer.Instance.SetLanguage(CultureSelector.Default);
         }
     }
 

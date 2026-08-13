@@ -8,6 +8,7 @@ using Vantah.App.Views;
 using Vantah.Core.Cli;
 using Vantah.Core.Errors;
 using Vantah.Core.Exclusions;
+using Vantah.Core.Localization;
 using Vantah.Core.Models;
 using Vantah.Core.State;
 
@@ -16,7 +17,7 @@ namespace Vantah.App.Tests.Localization;
 /// <summary>
 /// Сообщение об ошибке висело на экране на том языке, который был в момент сбоя: переключение
 /// языка его не трогало (текст ошибки хранился готовой строкой, да ещё и приходил из ядра
-/// по-русски). Проверяем на отрисованной вкладке «Домены», что текст пересобирается.
+/// уже собранным). Проверяем на отрисованной вкладке «Домены», что текст пересобирается.
 /// </summary>
 public class ErrorLocalizationTests
 {
@@ -48,19 +49,20 @@ public class ErrorLocalizationTests
 
             // Сбой первой загрузки описывает состояние всей вкладки, поэтому текст живёт
             // в LoadError (вместо списка), а не в общем баннере действий.
-            Assert.Equal("adguardvpn-cli site-exclusions show превысил таймаут", vm.LoadError);
+            Assert.Equal("adguardvpn-cli site-exclusions show timed out", vm.LoadError);
             Assert.Equal(vm.LoadError, ErrorTextOnScreen(window));
 
-            Localizer.Instance.SetLanguage("en");
+            Localizer.Instance.SetLanguage("ru");
             Dispatcher.UIThread.RunJobs();
 
-            Assert.Equal("adguardvpn-cli site-exclusions show timed out", vm.LoadError);
+            Assert.Equal("adguardvpn-cli site-exclusions show превысил таймаут", vm.LoadError);
             Assert.Equal(vm.LoadError, ErrorTextOnScreen(window));
         }
         finally
         {
-            // Localizer.Instance — синглтон на весь тест-хост: не вернём «ru» — протечёт в соседей.
-            Localizer.Instance.SetLanguage("ru");
+            // Localizer.Instance — синглтон на весь тест-хост: не вернём язык по умолчанию —
+            // протечёт в соседей.
+            Localizer.Instance.SetLanguage(CultureSelector.Default);
         }
     }
 

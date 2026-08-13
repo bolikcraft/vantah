@@ -42,14 +42,25 @@ public class CultureSelectorTests
     [InlineData("zh-TW", "zh-Hans")]
     public void System_culture_falls_back_to_a_supported_variant_of_the_same_language(string system, string expected)
     {
-        // Чужой вариант родного языка ближе пользователю, чем русский по умолчанию.
+        // Чужой вариант родного языка ближе пользователю, чем английский по умолчанию.
         Assert.Equal(expected, CultureSelector.Resolve(null, new CultureInfo(system)));
     }
 
     [Fact]
     public void Unsupported_system_culture_falls_back_to_default()
     {
-        Assert.Equal("ru", CultureSelector.Resolve(null, new CultureInfo("ja-JP")));
-        Assert.Equal("ru", CultureSelector.Default);
+        Assert.Equal("en", CultureSelector.Resolve(null, new CultureInfo("ja-JP")));
+        Assert.Equal("en", CultureSelector.Default);
+    }
+
+    /// <summary>
+    /// Дефолт английский, но системная локаль его перебивает: русская система по-прежнему
+    /// получает русский интерфейс без единой настройки.
+    /// </summary>
+    [Fact]
+    public void Russian_system_culture_still_wins_over_the_english_default()
+    {
+        Assert.Equal("ru", CultureSelector.Resolve(null, new CultureInfo("ru-RU")));
+        Assert.Equal("ru", CultureSelector.Resolve(null, new CultureInfo("ru")));
     }
 }

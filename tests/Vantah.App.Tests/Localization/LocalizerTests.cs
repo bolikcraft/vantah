@@ -29,48 +29,39 @@ public class LocalizerTests
     }
 
     [Fact]
-    public void Default_language_is_russian()
+    public void Default_language_is_english()
     {
         var loc = new Localizer();
-
-        Assert.Equal("ru", loc.Language);
-        Assert.Equal("Подключено", loc[LocKeys.Status_Connected]);
-        Assert.Equal("Локации", loc[LocKeys.Tab_Locations]);
-        Assert.Equal("Отмена", loc["Common_Cancel"]);
-    }
-
-    [Fact]
-    public void SetLanguage_en_switches_values_to_english()
-    {
-        var loc = new Localizer();
-
-        loc.SetLanguage("en");
 
         Assert.Equal("en", loc.Language);
         Assert.Equal("Connected", loc[LocKeys.Status_Connected]);
         Assert.Equal("Locations", loc[LocKeys.Tab_Locations]);
-        Assert.Equal("Cancel", loc[LocKeys.Common_Cancel]);
+        Assert.Equal("Cancel", loc["Common_Cancel"]);
     }
 
     [Fact]
-    public void SetLanguage_back_to_ru_restores_russian()
+    public void SetLanguage_ru_switches_values_to_russian()
     {
         var loc = new Localizer();
 
-        loc.SetLanguage("en");
         loc.SetLanguage("ru");
 
         Assert.Equal("ru", loc.Language);
         Assert.Equal("Подключено", loc[LocKeys.Status_Connected]);
+        Assert.Equal("Локации", loc[LocKeys.Tab_Locations]);
+        Assert.Equal("Отмена", loc[LocKeys.Common_Cancel]);
     }
 
     [Fact]
-    public void Format_substitutes_arguments_in_russian()
+    public void SetLanguage_back_to_en_restores_english()
     {
         var loc = new Localizer();
 
-        Assert.Equal("Домены (7)", loc.Format(LocKeys.Tray_DomainsFormat, 7));
-        Assert.Equal("Завершить процесс PID 1234?", loc.Format(LocKeys.Processes_KillConfirm, 1234));
+        loc.SetLanguage("ru");
+        loc.SetLanguage("en");
+
+        Assert.Equal("en", loc.Language);
+        Assert.Equal("Connected", loc[LocKeys.Status_Connected]);
     }
 
     [Fact]
@@ -78,10 +69,19 @@ public class LocalizerTests
     {
         var loc = new Localizer();
 
-        loc.SetLanguage("en");
-
         Assert.Equal("Domains (7)", loc.Format(LocKeys.Tray_DomainsFormat, 7));
         Assert.Equal("Terminate process PID 1234?", loc.Format(LocKeys.Processes_KillConfirm, 1234));
+    }
+
+    [Fact]
+    public void Format_substitutes_arguments_in_russian()
+    {
+        var loc = new Localizer();
+
+        loc.SetLanguage("ru");
+
+        Assert.Equal("Домены (7)", loc.Format(LocKeys.Tray_DomainsFormat, 7));
+        Assert.Equal("Завершить процесс PID 1234?", loc.Format(LocKeys.Processes_KillConfirm, 1234));
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class LocalizerTests
         var names = new List<string?>();
         ((INotifyPropertyChanged)loc).PropertyChanged += (_, e) => names.Add(e.PropertyName);
 
-        loc.SetLanguage("en");
+        loc.SetLanguage("ru");
 
         // "Item[]" перечитывает XAML-привязки-индексаторы, "" (string.Empty) — все остальные.
         Assert.Contains("Item[]", names);
@@ -114,9 +114,9 @@ public class LocalizerTests
         string? changed = null;
         loc.LanguageChanged += (_, _) => changed = loc.Language;
 
-        loc.SetLanguage("en");
+        loc.SetLanguage("ru");
 
-        Assert.Equal("en", changed);
+        Assert.Equal("ru", changed);
     }
 
     /// <summary>Забытый перевод: ключ есть в LocKeys, но значения в .resx нет — индексатор вернёт сам ключ.</summary>
@@ -129,7 +129,7 @@ public class LocalizerTests
         Assert.NotEqual(key, loc[key]);
         Assert.False(string.IsNullOrWhiteSpace(loc[key]));
 
-        loc.SetLanguage("en");
+        loc.SetLanguage("ru");
 
         Assert.NotEqual(key, loc[key]);
         Assert.False(string.IsNullOrWhiteSpace(loc[key]));
@@ -143,7 +143,11 @@ public class LocalizerTests
         Assert.True(AllKeys().Count >= 78);
     }
 
-    /// <summary>Языки интерфейса, кроме русского: у него значения лежат в нейтральном Strings.resx.</summary>
+    /// <summary>
+    /// Языки интерфейса, кроме английского: у него значения лежат в нейтральном Strings.resx,
+    /// отдельного Strings.en.resx и сателлитной сборки en нет. Русский — такой же сателлит,
+    /// как остальные, и проверяется наравне с ними.
+    /// </summary>
     public static TheoryData<string> TranslatedLanguages()
     {
         var data = new TheoryData<string>();
@@ -183,7 +187,7 @@ public class LocalizerTests
 
     /// <summary>
     /// Главная страховка этого файла. Забытый (или не попавший в сборку) сателлитный ресурс
-    /// <c>ResourceManager</c> не считает ошибкой: он молча отдаёт нейтральные — русские —
+    /// <c>ResourceManager</c> не считает ошибкой: он молча отдаёт нейтральные — английские —
     /// строки, и все проверки «строка непустая и не равна ключу» остаются зелёными на
     /// полностью непереведённом языке. Поэтому спрашиваем именно сателлит:
     /// <c>tryParents: false</c> — никакого отката на нейтральный ресурс.

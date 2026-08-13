@@ -15,7 +15,7 @@ public static class CultureSelector
         { "ru", "en", "de", "fr", "es", "it", "pl", "uk", "tr", "pt-BR", "zh-Hans", "id" };
 
     /// <summary>Язык по умолчанию, когда ни сохранённый выбор, ни системная локаль не подошли.</summary>
-    public const string Default = "ru";
+    public const string Default = "en";
 
     /// <summary>
     /// Возвращает код языка интерфейса. Сохранённый пользователем выбор побеждает, если он
@@ -23,7 +23,7 @@ public static class CultureSelector
     /// <see cref="Default"/>. Системная культура матчится тремя шагами: точное имя
     /// (<c>pt-BR</c>), затем язык без региона (<c>de-AT</c> → <c>de</c>), затем поддерживаемый
     /// вариант того же языка (<c>pt-PT</c> → <c>pt-BR</c>, <c>zh-CN</c> → <c>zh-Hans</c>):
-    /// вариант родного языка всегда ближе пользователю, чем русский по умолчанию.
+    /// чужой вариант родного языка всегда ближе пользователю, чем английский по умолчанию.
     /// </summary>
     public static string Resolve(string? persisted, CultureInfo? systemUi = null)
     {

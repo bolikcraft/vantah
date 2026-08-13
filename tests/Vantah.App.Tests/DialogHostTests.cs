@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Vantah.App.Localization;
 using Vantah.App.Views;
+using Vantah.Core.Localization;
 using Xunit;
 
 /// <summary>
@@ -140,7 +141,7 @@ public class DialogHostTests
     /// Язык интерфейса переключают в окне «Настройки» — то есть в одном из этих самых окон.
     /// Заголовок открытого окна обязан переехать на новый язык сразу: контент перерисовывается
     /// по привязкам, а Title — обычное свойство, и без подписки на смену языка он так и остался
-    /// бы русским посреди английского интерфейса.
+    /// бы английским посреди русского интерфейса.
     /// </summary>
     [AvaloniaFact]
     public void The_title_of_an_open_window_follows_the_ui_language()
@@ -156,15 +157,16 @@ public class DialogHostTests
         {
             Assert.Equal(Localizer.Instance[LocKeys.Menu_Settings].TrimEnd('…'), window.Title);
 
-            Localizer.Instance.SetLanguage("en");
+            Localizer.Instance.SetLanguage("ru");
 
             Assert.Equal(Localizer.Instance[LocKeys.Menu_Settings].TrimEnd('…'), window.Title);
-            Assert.Equal("Settings", window.Title);
+            Assert.Equal("Настройки", window.Title);
         }
         finally
         {
-            // Localizer.Instance — синглтон на весь тест-хост: не вернём «ru» — протечёт в соседей.
-            Localizer.Instance.SetLanguage("ru");
+            // Localizer.Instance — синглтон на весь тест-хост: не вернём язык по умолчанию —
+            // протечёт в соседей.
+            Localizer.Instance.SetLanguage(CultureSelector.Default);
         }
     }
 }
