@@ -18,4 +18,15 @@ public static class UiThread
         if (Dispatcher.UIThread.CheckAccess()) { action(); return Task.CompletedTask; }
         return Dispatcher.UIThread.InvokeAsync(action).GetTask();
     }
+
+    /// <summary>
+    /// То же для асинхронной работы, которую надо начать (и продолжать) на UI-потоке:
+    /// перегрузка InvokeAsync(Func&lt;Task&gt;) уже разворачивает внутреннюю задачу, поэтому
+    /// ожидание результата — это ожидание всей работы, а не только её запуска.
+    /// </summary>
+    public static Task RunAsync(Func<Task> action)
+    {
+        if (Dispatcher.UIThread.CheckAccess()) return action();
+        return Dispatcher.UIThread.InvokeAsync(action);
+    }
 }

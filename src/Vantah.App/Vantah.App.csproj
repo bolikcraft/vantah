@@ -46,6 +46,13 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="FluentAvaloniaUI" Version="3.0.1" />
+    <!--
+      Уже приезжает транзитивно через Avalonia.FreeDesktop; ссылка явная, потому что мы сами
+      слушаем на сессионной шине NameOwnerChanged для org.kde.StatusNotifierWatcher
+      (StatusNotifierWatcherMonitor). Версию держать ровно ту, что тянет Avalonia, — иначе
+      наше соединение и соединение трея разъедутся по разным сборкам Tmds.DBus.Protocol.
+    -->
+    <PackageReference Include="Tmds.DBus.Protocol" Version="0.94.1" />
   </ItemGroup>
 
   <ItemGroup>
