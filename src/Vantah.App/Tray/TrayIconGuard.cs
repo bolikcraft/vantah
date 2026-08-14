@@ -41,7 +41,12 @@ namespace Vantah.App.Tray;
 /// </summary>
 internal static class TrayIconGuard
 {
-    private static int s_installed;
+    /// <summary>
+    /// Диспетчер, на который уже поставлена сеть. В приложении он один на весь процесс, а вот
+    /// headless-тесты поднимают свой на каждый тест, и флаг «поставлено» без привязки к диспетчеру
+    /// оставлял бы сеть висеть на первом из них.
+    /// </summary>
+    private static Dispatcher? s_installedOn;
 
     /// <summary>Открытое окно снятия иконки: пока > 0, отмена из трея считается ожидаемой.</summary>
     private static int s_teardown;
@@ -63,9 +68,10 @@ internal static class TrayIconGuard
     /// </summary>
     internal static void Install()
     {
-        if (Interlocked.Exchange(ref s_installed, 1) != 0) return;
+        var dispatcher = Dispatcher.UIThread;
+        if (ReferenceEquals(Interlocked.Exchange(ref s_installedOn, dispatcher), dispatcher)) return;
 
-        Dispatcher.UIThread.UnhandledException += (_, e) =>
+        dispatcher.UnhandledException += (_, e) =>
         {
             if (!IsExpectedTrayTeardownCancel(e.Exception)) return;
 

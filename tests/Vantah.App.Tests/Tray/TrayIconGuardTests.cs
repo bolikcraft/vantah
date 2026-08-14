@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
@@ -26,6 +27,9 @@ public class TrayIconGuardTests
     /// </summary>
     private static class DBusTrayIconImpl
     {
+        // Без NoInlining в Release кадр заглушки исчезает из стека, и тест ловит не поведение
+        // фильтра, а решение оптимизатора. Настоящий WatchAsync — async void, он в стеке остаётся.
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public static void WatchAsync() => throw new TaskCanceledException("watch loop");
     }
 
