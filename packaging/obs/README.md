@@ -122,7 +122,7 @@ arm64-deb вынесен в **отдельный пакет OBS** `vantah-arm64`
    в `DEBTRANSFORM-TAR`.
 3. Добавить записи сверху в `vantah.changes`, `debian.changelog` и
    `arm64/debian.changelog`.
-4. `osc commit -m "Update to 0.3.6"` в обоих пакетах. Через веб то же самое:
+4. `osc commit -m "Update to 0.3.7"` в обоих пакетах. Через веб то же самое:
    заменить содержимое файлов, сборка перезапустится.
 
 ## Проверено локально

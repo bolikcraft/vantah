@@ -5,7 +5,7 @@
 #
 
 Name:           vantah
-Version:        0.3.6
+Version:        0.3.7
 Release:        0
 Summary:        Unofficial GUI and tray front-end for the AdGuard VPN CLI
 License:        GPL-3.0-or-later
@@ -94,6 +94,9 @@ done
 %{_datadir}/icons/hicolor/*/apps/vantah.png
 
 %changelog
+* Thu Aug 14 2026 bolikcraft <bolikcraft@gmail.com> - 0.3.7-0
+- Update to 0.3.7; a second tray icon no longer stays behind after the screen
+  is unlocked, and quitting from the tray menu no longer crashes.
 * Thu Aug 13 2026 bolikcraft <bolikcraft@gmail.com> - 0.3.6-0
 - Update to 0.3.6; the interface now defaults to English and settings are no
   longer written to the working directory when ~/.config does not exist yet.
