@@ -14,7 +14,7 @@
       Avalonia.Headless.XUnit 12.x тянет xunit.v3, поэтому этот проект (в отличие от
       Vantah.Core.Tests) сидит на xunit v3: xunit v2 и v3 рядом дают CS0433 на [Fact].
     -->
-    <PackageReference Include="Avalonia.Headless.XUnit" Version="12.1.0" />
+    <PackageReference Include="Avalonia.Headless.XUnit" Version="12.1.1" />
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit.v3" Version="3.2.2" />
