@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Fri Aug 14 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
+
+- Update to 0.3.7: a second tray icon no longer stays behind after the
+  screen is unlocked or the machine wakes from sleep, quitting from the
+  tray menu no longer crashes, and Avalonia is updated to 12.1.1.
+
+-------------------------------------------------------------------
 Thu Aug 13 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
 
 - Update to 0.3.6: the interface now defaults to English, and settings are
