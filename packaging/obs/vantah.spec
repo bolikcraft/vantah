@@ -94,7 +94,7 @@ done
 %{_datadir}/icons/hicolor/*/apps/vantah.png
 
 %changelog
-* Thu Aug 14 2026 bolikcraft <bolikcraft@gmail.com> - 0.3.7-0
+* Fri Aug 14 2026 bolikcraft <bolikcraft@gmail.com> - 0.3.7-0
 - Update to 0.3.7; a second tray icon no longer stays behind after the screen
   is unlocked, and quitting from the tray menu no longer crashes.
 * Thu Aug 13 2026 bolikcraft <bolikcraft@gmail.com> - 0.3.6-0
