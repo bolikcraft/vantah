@@ -4,7 +4,7 @@
 [![Latest release](https://img.shields.io/github/v/release/bolikcraft/vantah)](https://github.com/bolikcraft/vantah/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/bolikcraft/vantah/total)](https://github.com/bolikcraft/vantah/releases)
 [![License](https://img.shields.io/github/license/bolikcraft/vantah)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Linux%20x86--64-blue)](#download)
+[![Platform](https://img.shields.io/badge/platform-Linux%20x86--64%20%7C%20arm64-blue)](#download)
 
 An unofficial **`adguardvpn-cli` front-end** with a window and a system tray icon.
 
@@ -143,7 +143,7 @@ something reads wrong, an issue or a pull request against
 
 ## Download
 
-Ready-made builds for Linux x86-64 are published on the
+Ready-made builds for Linux x86-64 and arm64 are published on the
 [releases page](https://github.com/bolikcraft/vantah/releases/latest). No .NET
 runtime is required — everything is bundled inside.
 
@@ -184,7 +184,7 @@ yourself, see [Requirements](#requirements).
 The same packages are built in the [openSUSE Build
 Service](https://build.opensuse.org/project/show/home:bolikcraft), so
 Vantah is updated by your usual `dnf upgrade` / `zypper up` / `apt upgrade`
-instead of downloading a file every time. Available for x86-64.
+instead of downloading a file every time. Available for x86-64 and arm64.
 
 **Fedora 43 / 44:**
 
@@ -307,10 +307,10 @@ valid AdGuard VPN account/subscription. You can sign in from the Vantah UI via
 the device-code flow — see [Requirements](#requirements).
 
 **Which Linux distributions are supported?**
-The AppImage and the tar.gz archive run on any x86-64 distribution (the .NET
-runtime is bundled); the `.deb` targets Debian, Ubuntu and derivatives, and the
-`.rpm` targets Fedora, RHEL, openSUSE and derivatives. Only x86-64 builds are
-published — see [Download](#download).
+The AppImage and the tar.gz archive run on any x86-64 or arm64 distribution (the
+.NET runtime is bundled); the `.deb` targets Debian, Ubuntu and derivatives, and
+the `.rpm` targets Fedora, RHEL, openSUSE and derivatives. Both x86-64 and arm64
+builds are published — see [Download](#download).
 
 **Does Vantah need root?**
 Day-to-day use does not, and `packaging/install.sh` installs into your home
