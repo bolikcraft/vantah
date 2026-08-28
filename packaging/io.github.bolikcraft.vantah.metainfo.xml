@@ -20,14 +20,15 @@
     </p>
     <p>What Vantah can do:</p>
     <ul>
-      <li>Connect and disconnect, pick the fastest location, choose IPv4 or IPv6</li>
-      <li>Browse the location list with ping, search and favorites</li>
+      <li>Connect and disconnect, pick the fastest location, choose IPv4 or IPv6, turn on the kill switch</li>
+      <li>Browse the location list with ping, search, favorites and sorting</li>
       <li>Watch live speed and traffic counters, connection history and a log tail</li>
       <li>Manage site exclusions in general or selective mode, with import and export</li>
-      <li>Edit adguardvpn-cli settings: TUN or SOCKS mode, SOCKS port and credentials, DNS upstream, protocol, tunnel routing and more</li>
+      <li>Edit adguardvpn-cli settings: TUN or SOCKS mode, SOCKS port and credentials, DNS upstream, protocol, tunnel routing, outbound interface and more</li>
       <li>Sign in from the interface through the device-code flow and review the license</li>
       <li>Enable autostart on login and auto-connect to the fastest or last-used location</li>
-      <li>Use the system tray, switch the interface language among twelve languages, export logs</li>
+      <li>Control the connection from the tray menu, switch the interface language among twelve languages, export logs</li>
+      <li>Check for updates of Vantah and of adguardvpn-cli, and see the running CLI processes</li>
     </ul>
     <p>
       Vantah is an independent, unofficial project. It is not affiliated with

@@ -111,22 +111,28 @@ when it writes its own files there.
 ## Features
 
 - **Connection.** Connect / disconnect, "fastest location", IP protocol choice
-  (IPv4 / IPv6). Clear progress (`Connecting…` → `Connected`).
-- **Locations.** List with ping, search, and favorites.
+  (IPv4 / IPv6), and an optional kill switch that keeps you protected if the
+  connection drops. Clear progress (`Connecting…` → `Connected`).
+- **Locations.** List with ping, search, favorites, and sorting by ping, city,
+  country, or country code.
 - **Status and traffic.** Live speed and volume counters, connection history, and
   a live log tail right in the UI.
 - **Site exclusions.** General / selective modes; add, remove, import, and export
   the domain list.
 - **`adguardvpn-cli` settings.** TUN/SOCKS mode, SOCKS port/host/username/password,
   DNS upstream, protocol, tunnel routing mode, system DNS, post-quantum
-  cryptography, notifications, telemetry and crash reporting, and more.
+  cryptography, outbound network interface, update channel, notifications,
+  telemetry and crash reporting, and more.
 - **Account.** Sign in directly from the UI (device-code flow via the browser),
   license details, sign out.
 - **Automation.** Autostart on login and auto-connect (fastest or last-used
   location).
-- **Convenience.** System tray (window and tray share one state), UI language
-  switching, CLI update checks, log export, and viewing/terminating CLI
-  processes.
+- **System tray.** Menu with connect / disconnect, the fastest location, your
+  favorite locations, and the number of excluded domains; the tooltip shows the
+  location and the live speed. The window and the tray always show one state.
+- **Convenience.** UI language switching, update checks for Vantah itself and
+  for `adguardvpn-cli`, log export, an About page with the Vantah and CLI
+  versions, and viewing/terminating CLI processes.
 
 ## Interface languages
 
