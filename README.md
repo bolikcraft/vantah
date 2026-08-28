@@ -73,7 +73,8 @@ green in dark theme, blue in light theme.
 
 ## Requirements
 
-- The `adguardvpn-cli` tool installed and available on your `PATH`.
+- The [`adguardvpn-cli`](https://github.com/AdguardTeam/AdGuardVPNCLI) tool
+  installed and available on your `PATH`.
 - A valid AdGuard VPN account/subscription. You can sign in directly from the
   Vantah interface (device-code flow via your browser) or beforehand in a
   terminal:
