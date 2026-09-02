@@ -55,6 +55,33 @@ public class StatusParserTests
         Assert.False(s.IsStarting);
     }
 
+    /// <summary>
+    /// В режиме SOCKS туннеля нет, и хвост строки другой: не «running on tun0», а
+    /// «listening on 127.0.0.1:1080». Раньше регулярка знала только про туннель, и
+    /// подключение в этом режиме читалось как «отключено».
+    /// </summary>
+    [Fact]
+    public void Parses_connected_line_in_socks_mode()
+    {
+        var raw = "Connected to [1mSINGAPORE[0m in [1mSOCKS[0m mode, " +
+                  "listening on [1m127.0.0.1:1080[0m";
+
+        var s = StatusParser.Parse(raw);
+
+        Assert.True(s.IsConnected);
+        Assert.Equal("SINGAPORE", s.Location);
+        Assert.Equal("SOCKS", s.Mode);
+        // Сетевого интерфейса у SOCKS нет — считать по нему трафик нечего.
+        Assert.Null(s.Interface);
+    }
+
+    [Fact]
+    public void Connected_socks_fixture_is_recognized()
+    {
+        var raw = File.ReadAllText("fixtures/status-connected-socks.txt");
+        Assert.True(StatusParser.Parse(raw).IsConnected);
+    }
+
     [Fact]
     public void Unrecognized_output_is_disconnected_and_not_starting()
     {

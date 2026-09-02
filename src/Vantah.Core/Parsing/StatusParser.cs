@@ -6,7 +6,10 @@ namespace Vantah.Core.Parsing;
 
 public static partial class StatusParser
 {
-    [GeneratedRegex(@"Connected to (?<loc>.+?) in (?<mode>\S+) mode, running on (?<iface>\S+)",
+    // Хвост строки зависит от режима: у туннеля это «running on tun0», у SOCKS —
+    // «listening on 127.0.0.1:1080». Поэтому подключение опознаём по началу строки, а хвост
+    // с интерфейсом читаем как необязательный: интерфейс есть только у туннеля.
+    [GeneratedRegex(@"Connected to (?<loc>.+?) in (?<mode>\S+) mode(?:, running on (?<iface>\S+))?",
         RegexOptions.IgnoreCase)]
     private static partial Regex ConnectedRegex();
 
@@ -21,9 +24,10 @@ public static partial class StatusParser
         var m = ConnectedRegex().Match(text);
         if (!m.Success)
             return StartingRegex().IsMatch(text) ? VpnStatus.Starting : VpnStatus.Disconnected;
+        var iface = m.Groups["iface"];
         return new VpnStatus(true,
             m.Groups["loc"].Value.Trim(),
             m.Groups["mode"].Value.Trim(),
-            m.Groups["iface"].Value.Trim());
+            iface.Success ? iface.Value.Trim() : null);
     }
 }

@@ -1,0 +1,2 @@
+Connected to [1mSINGAPORE[0m in [1mSOCKS[0m mode, listening on [1m127.0.0.1:1080[0m
+You can disconnect by running `adguardvpn-cli disconnect`
