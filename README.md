@@ -289,7 +289,7 @@ packaging/install.sh` (as root); to uninstall, run `packaging/install.sh
 ## Tech stack
 
 - C# / .NET 10 (`net10.0`).
-- Avalonia 12 + FluentAvalonia (theme).
+- Avalonia 12 with the built-in Fluent theme.
 - CommunityToolkit.Mvvm (MVVM).
 - xUnit — tests for the core (`Vantah.Core`) and for the UI (`Vantah.App`,
   headless Avalonia).

@@ -45,7 +45,6 @@
       <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageReference Include="FluentAvaloniaUI" Version="3.0.1" />
     <!--
       Уже приезжает транзитивно через Avalonia.FreeDesktop; ссылка явная, потому что мы сами
       слушаем на сессионной шине NameOwnerChanged для org.kde.StatusNotifierWatcher
