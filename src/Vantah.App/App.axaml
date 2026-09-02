@@ -48,6 +48,16 @@
             <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}"/>
         </Style>
 
+        <!-- Служебные окна открываются поверх главного, фон у них один и тот же, и на тёмной теме
+             край окна пропадает — окно «слипается» с главным. Обводим контент тонкой рамкой.
+             Серый с прозрачностью не привязан к теме: на тёмном фоне он светлее, на светлом темнее,
+             поэтому виден в обеих. Рамку рисует ContentPresenter шаблона окна: своей рамки у Window
+             нет, а оборачивать контент лишним Border незачем. -->
+        <Style Selector="Window.dialog /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="BorderBrush" Value="#55808080"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
         <!-- «Опасные» кнопки (выход из аккаунта, отключение VPN) — тот же полый вид, но красный.
              Класс danger переопределяет только цвета поверх базовой кнопки; форму и паддинг
              задаёт вызывающая разметка. -->
