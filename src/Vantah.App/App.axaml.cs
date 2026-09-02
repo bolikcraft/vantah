@@ -69,7 +69,7 @@ public partial class App : Application
                 new ProcFsProcessSource(cliOptions.Executable),
                 new PosixProcessKiller(cliOptions.KillCommand));
             processes.StartPolling(TimeSpan.FromSeconds(2));
-            var traffic = new TrafficMonitor(new SysfsTrafficReader());
+            var traffic = new TrafficMonitor(new SysfsTrafficReader(), new SocksTrafficReader());
             // Активная сессия живёт в отдельном файле и переживает перезапуск: закрытие Vantah
             // не рвёт VPN, поэтому на выходе сессию НЕ финализируем — на следующем старте её
             // подхватит трекер (тот же город — продолжаем, другой/нет — закрываем по heartbeat).

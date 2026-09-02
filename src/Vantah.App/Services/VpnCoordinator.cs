@@ -72,6 +72,10 @@ public sealed class VpnCoordinator(
                 TrafficSample? sample = null;
                 if (status.IsConnected && status.Interface is { } iface)
                     sample = traffic.Poll(iface, elapsed);
+                // В режиме SOCKS интерфейса нет: считаем по соединениям демона, а найти его
+                // помогает порт прокси из той же строки статуса.
+                else if (status.IsConnected && status.SocksPort is { } socksPort)
+                    sample = traffic.PollSocks(socksPort, elapsed);
                 else
                     traffic.Reset();
 

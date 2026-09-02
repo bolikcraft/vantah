@@ -8,8 +8,9 @@ public static partial class StatusParser
 {
     // Хвост строки зависит от режима: у туннеля это «running on tun0», у SOCKS —
     // «listening on 127.0.0.1:1080». Поэтому подключение опознаём по началу строки, а хвост
-    // с интерфейсом читаем как необязательный: интерфейс есть только у туннеля.
-    [GeneratedRegex(@"Connected to (?<loc>.+?) in (?<mode>\S+) mode(?:, running on (?<iface>\S+))?",
+    // читаем как необязательный: интерфейс есть только у туннеля, адрес прокси — только у SOCKS.
+    [GeneratedRegex(
+        @"Connected to (?<loc>.+?) in (?<mode>\S+) mode(?:, (?:running on (?<iface>\S+)|listening on (?<endpoint>\S+)))?",
         RegexOptions.IgnoreCase)]
     private static partial Regex ConnectedRegex();
 
@@ -25,9 +26,13 @@ public static partial class StatusParser
         if (!m.Success)
             return StartingRegex().IsMatch(text) ? VpnStatus.Starting : VpnStatus.Disconnected;
         var iface = m.Groups["iface"];
+        var endpoint = m.Groups["endpoint"];
         return new VpnStatus(true,
             m.Groups["loc"].Value.Trim(),
             m.Groups["mode"].Value.Trim(),
-            iface.Success ? iface.Value.Trim() : null);
+            iface.Success ? iface.Value.Trim() : null)
+        {
+            Endpoint = endpoint.Success ? endpoint.Value.Trim() : null,
+        };
     }
 }

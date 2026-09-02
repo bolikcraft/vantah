@@ -12,6 +12,8 @@ public class StatusParserTests
         Assert.Equal("AMSTERDAM", s.Location);
         Assert.Equal("TUN", s.Mode);
         Assert.Equal("tun0", s.Interface);
+        Assert.Null(s.Endpoint);
+        Assert.Null(s.SocksPort);
     }
 
     [Fact]
@@ -71,6 +73,9 @@ public class StatusParserTests
         Assert.True(s.IsConnected);
         Assert.Equal("SINGAPORE", s.Location);
         Assert.Equal("SOCKS", s.Mode);
+        // Адрес прокси нужен, чтобы найти демона и посчитать по его сокетам трафик.
+        Assert.Equal("127.0.0.1:1080", s.Endpoint);
+        Assert.Equal(1080, s.SocksPort);
         // Сетевого интерфейса у SOCKS нет — считать по нему трафик нечего.
         Assert.Null(s.Interface);
     }
