@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Tue Sep  2 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
+
+- Update to 0.4.0: traffic is now counted in SOCKS mode, window
+  transparency can be set in the settings, service windows have a frame,
+  and SOCKS mode is no longer reported as disconnected.
+
+-------------------------------------------------------------------
 Fri Aug 14 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
 
 - Update to 0.3.7: a second tray icon no longer stays behind after the

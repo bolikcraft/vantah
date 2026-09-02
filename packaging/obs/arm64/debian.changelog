@@ -1,3 +1,9 @@
+vantah-arm64 (0.4.0-1) unstable; urgency=low
+
+  * Update to 0.4.0.
+
+ -- bolikcraft <bolikcraft@gmail.com>  Tue, 02 Sep 2026 00:00:00 +0000
+
 vantah-arm64 (0.3.7-1) unstable; urgency=low
 
   * Update to 0.3.7.
