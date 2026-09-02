@@ -256,6 +256,13 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     /// <inheritdoc/>
     public Task ReloadIfFailedAsync() => LoadFailed ? LoadTask = LoadAsync() : Task.CompletedTask;
 
+    /// <summary>
+    /// Перечитать конфиг заново, чем бы ни кончилась прошлая загрузка. Настройки CLI меняются и
+    /// снаружи приложения (`adguardvpn-cli config set-...`), а окно настроек живёт до конца
+    /// сессии — без этого форма показывает значения, прочитанные один раз при старте.
+    /// </summary>
+    public Task RefreshAsync() => LoadTask = LoadAsync();
+
     private async Task LoadAsync()
     {
         IsLoading = true;
@@ -441,7 +448,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     // Именно LoadAsync, а не RunAsync(GetAsync): только он снимает LoadError и возвращает
     // вкладку из состояния сбоя обратно к форме.
     [RelayCommand]
-    private Task Reload() => LoadTask = LoadAsync();
+    private Task Reload() => RefreshAsync();
 
     [RelayCommand]
     private async Task ExportLogs()

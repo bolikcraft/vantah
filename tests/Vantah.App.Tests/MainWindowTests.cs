@@ -29,7 +29,7 @@ using Xunit;
 public class MainWindowTests
 {
     // Пути хранилищ уводим в temp: тест не должен читать и портить настоящий ~/.config пользователя.
-    private static MainWindowViewModel NewVm()
+    private static MainWindowViewModel NewVm(FakeConfigService? config = null)
     {
         var temp = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
         var store = new AppStateStore();
@@ -62,15 +62,15 @@ public class MainWindowTests
             new AboutViewModel(vpn),
             new ProcessesViewModel(new StubMonitor()),
             new ConfigViewModel(
-                new FakeConfigService(), store, new LanguageStore(Path.Combine(temp, "language")),
+                config ?? new FakeConfigService(), store, new LanguageStore(Path.Combine(temp, "language")),
                 new FakeUpdateChecker(), new FakeLogExporter(), () => Task.FromResult<string?>(null)),
             new LoginViewModel(auth, coordinator),
             store);
     }
 
-    private static MainWindow Show()
+    private static MainWindow Show(FakeConfigService? config = null)
     {
-        var window = new MainWindow { DataContext = NewVm() };
+        var window = new MainWindow { DataContext = NewVm(config) };
         window.Show();
         return window;
     }
@@ -224,5 +224,29 @@ public class MainWindowTests
 
         Assert.Same(first, Dialog<ProcessesView>(window));
         Assert.Same(vm.Processes, ((ProcessesView)first.Content!).DataContext);
+    }
+
+    /// <summary>
+    /// Окно настроек живёт до конца сессии и данные помнит с прошлого открытия, а конфиг CLI
+    /// меняют и снаружи (`adguardvpn-cli config set-mode socks`). Поэтому каждое открытие —
+    /// это новое чтение `config show`, иначе форма показывает давно неверные значения.
+    /// </summary>
+    [AvaloniaFact]
+    public void Opening_settings_rereads_the_config()
+    {
+        var config = new FakeConfigService();
+        var window = Show(config);
+        var atStartup = config.Calls.Count(c => c == "get");
+
+        Click(window, LocKeys.Menu_Settings);
+        Dispatcher.UIThread.RunJobs();
+        var afterFirst = config.Calls.Count(c => c == "get");
+
+        Dialog<ConfigView>(window).Close();
+        Click(window, LocKeys.Menu_Settings);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(atStartup + 1, afterFirst);
+        Assert.Equal(atStartup + 2, config.Calls.Count(c => c == "get"));
     }
 }

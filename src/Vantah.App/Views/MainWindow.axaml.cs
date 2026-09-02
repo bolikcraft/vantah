@@ -20,9 +20,14 @@ public partial class MainWindow : Window
 
     // Настройки шире и выше прочих служебных окон: карточки секций раскладываются в две колонки,
     // а это требует ~800px по ширине — при узком окне они схлопнулись бы в одну колонку со скроллом.
-    private void OnSettingsClick(object? sender, RoutedEventArgs e) =>
+    private void OnSettingsClick(object? sender, RoutedEventArgs e)
+    {
+        // Окно закрывается прятанием и данные помнит с прошлого открытия, а конфиг CLI меняют и
+        // снаружи приложения. Открытие — естественный момент перечитать его.
+        _ = Vm?.Config.RefreshAsync();
         Open("settings", LocKeys.Menu_Settings, vm => new ConfigView { DataContext = vm.Config },
              width: 820, height: 820);
+    }
 
     // Экран аккаунта — одна карточка и кнопка обновления: высоким окном ему быть незачем.
     private void OnLicenseClick(object? sender, RoutedEventArgs e) =>
