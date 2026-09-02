@@ -121,6 +121,8 @@ public static class LocKeys
 
     // Вкладка «Настройки»
     public const string Settings_ConnectedWarning = "Settings_ConnectedWarning";
+    public const string Settings_AppearanceSection = "Settings_AppearanceSection";
+    public const string Settings_WindowOpacity = "Settings_WindowOpacity";
     public const string Settings_Mode = "Settings_Mode";
     public const string Settings_SocksSection = "Settings_SocksSection";
     public const string Settings_SocksPort = "Settings_SocksPort";

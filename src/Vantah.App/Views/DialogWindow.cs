@@ -1,6 +1,7 @@
 using System;
 using Avalonia.Controls;
 using Vantah.App.Localization;
+using Vantah.App.Services;
 
 namespace Vantah.App.Views;
 
@@ -22,6 +23,7 @@ public sealed class DialogWindow : Window
         // Тонкая рамка по краю контента (стиль Window.dialog в App.axaml): без неё служебное окно
         // сливается с главным — фон у них общий, а рамку окна тёмная тема почти не показывает.
         Classes.Add("dialog");
+        WindowTransparency.Enable(this);
         Width = width;
         Height = height;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;

@@ -348,6 +348,12 @@
   <data name="Settings_ConnectedWarning" xml:space="preserve">
     <value>Das VPN ist verbunden. Geänderte Einstellungen werden unter Umständen erst nach erneutem Verbinden wirksam.</value>
   </data>
+  <data name="Settings_AppearanceSection" xml:space="preserve">
+    <value>Darstellung</value>
+  </data>
+  <data name="Settings_WindowOpacity" xml:space="preserve">
+    <value>Fensterdeckkraft</value>
+  </data>
   <data name="Settings_Mode" xml:space="preserve">
     <value>Betriebsmodus</value>
   </data>

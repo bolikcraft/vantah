@@ -348,6 +348,12 @@
   <data name="Settings_ConnectedWarning" xml:space="preserve">
     <value>VPN sedang tersambung. Perubahan pengaturan mungkin baru berlaku setelah menyambung ulang.</value>
   </data>
+  <data name="Settings_AppearanceSection" xml:space="preserve">
+    <value>Tampilan</value>
+  </data>
+  <data name="Settings_WindowOpacity" xml:space="preserve">
+    <value>Opasitas jendela</value>
+  </data>
   <data name="Settings_Mode" xml:space="preserve">
     <value>Mode kerja</value>
   </data>

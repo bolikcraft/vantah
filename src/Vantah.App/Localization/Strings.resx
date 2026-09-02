@@ -348,6 +348,12 @@
   <data name="Settings_ConnectedWarning" xml:space="preserve">
     <value>The VPN is connected. Changing settings may require reconnecting to take effect.</value>
   </data>
+  <data name="Settings_AppearanceSection" xml:space="preserve">
+    <value>Appearance</value>
+  </data>
+  <data name="Settings_WindowOpacity" xml:space="preserve">
+    <value>Window opacity</value>
+  </data>
   <data name="Settings_Mode" xml:space="preserve">
     <value>Operating mode</value>
   </data>

@@ -13,6 +13,7 @@ using Vantah.App.Services;
 using Vantah.App.Tray;
 using Vantah.App.ViewModels;
 using Vantah.App.Views;
+using Vantah.Core.Appearance;
 using Vantah.Core.Auth;
 using Vantah.Core.Autostart;
 using Vantah.Core.Cli;
@@ -77,6 +78,10 @@ public partial class App : Application
             var history = new ConnectionHistoryTracker(historyStore, activeStore);
             var ipVersionStore = new IpVersionStore();
             var killSwitchStore = new KillSwitchStore();
+            // Прозрачность применяем до создания окон: иначе первый кадр будет с дефолтной кистью,
+            // и окно на мгновение мигнёт другой прозрачностью.
+            var transparency = new WindowTransparency(new WindowOpacityStore());
+            transparency.Apply();
             // CliRunner реализует и ICliRunner, и IInteractiveCliRunner: обычные команды и
             // интерактивный login идут через один и тот же процесс-раннер.
             var auth = new AuthService(runner, runner);
@@ -121,7 +126,7 @@ public partial class App : Application
             var configVm = new ConfigViewModel(
                 vpnConfig, store, languageStore, updateChecker, logExporter,
                 () => PickLogFolderAsync(mainWindowRef),
-                autoConnectStore, autostart, appUpdates, killSwitchStore, cliUpdater);
+                autoConnectStore, autostart, appUpdates, killSwitchStore, cliUpdater, transparency);
 
             // Без активного VPN чтения CLI нередко не проходят: раздел, который не прочитался,
             // перечитает себя сам, когда туннель поднимется. Ссылку держим в поле — сервис

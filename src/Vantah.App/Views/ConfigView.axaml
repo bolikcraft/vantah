@@ -85,6 +85,23 @@
           </StackPanel>
         </Border>
 
+        <!-- Внешний вид стоит рядом с языком: обе карточки про интерфейс, а не про VPN. -->
+        <Border Classes="card">
+          <StackPanel>
+            <TextBlock Classes="header"
+                       Text="{Binding [Settings_AppearanceSection], Source={x:Static loc:Localizer.Instance}}"/>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                         Text="{Binding [Settings_WindowOpacity], Source={x:Static loc:Localizer.Instance}}"/>
+              <!-- Значение цифрами: у ползунка без подписи не видно, где именно он стоит. -->
+              <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding WindowOpacityText}"/>
+            </Grid>
+            <Slider Name="WindowOpacitySlider" Minimum="0" Maximum="100"
+                    TickFrequency="5" IsSnapToTickEnabled="True"
+                    Value="{Binding WindowOpacity, Mode=TwoWay}"/>
+          </StackPanel>
+        </Border>
+
         <Border Classes="card">
           <StackPanel>
             <TextBlock Classes="header"

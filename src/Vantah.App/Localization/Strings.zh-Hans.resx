@@ -348,6 +348,12 @@
   <data name="Settings_ConnectedWarning" xml:space="preserve">
     <value>VPN 已连接。更改设置可能需要重新连接才能生效。</value>
   </data>
+  <data name="Settings_AppearanceSection" xml:space="preserve">
+    <value>外观</value>
+  </data>
+  <data name="Settings_WindowOpacity" xml:space="preserve">
+    <value>窗口不透明度</value>
+  </data>
   <data name="Settings_Mode" xml:space="preserve">
     <value>工作模式</value>
   </data>

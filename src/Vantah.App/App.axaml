@@ -16,6 +16,11 @@
         <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource SystemAccentColor}"/>
         <SolidColorBrush x:Key="AccentHoverBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.1"/>
         <SolidColorBrush x:Key="AccentPressedBrush" Color="{DynamicResource SystemAccentColor}" Opacity="0.2"/>
+
+        <!-- Фон всех окон: цвет темы с прозрачностью. Кисть одна на приложение, поэтому ползунок
+             в настройках меняет только её Opacity — окна перекрашиваются сами (см. WindowTransparency).
+             Цвет берём динамически: при смене системной темы фон обязан переехать вместе с ней. -->
+        <SolidColorBrush x:Key="VantahWindowBackground" Color="{DynamicResource SystemAltHighColor}" Opacity="0.92"/>
     </Application.Resources>
 
     <Application.Styles>
@@ -46,6 +51,14 @@
             <Setter Property="Background" Value="{DynamicResource AccentPressedBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
             <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}"/>
+        </Style>
+
+        <!-- Полупрозрачен только фон окна: текст, кнопки и карточки остаются плотными.
+             Fallback рисуется, когда прозрачности нет (нет композитора) — без него окно
+             в такой системе получило бы белую подложку и на тёмной теме. -->
+        <Style Selector="Window">
+            <Setter Property="Background" Value="{DynamicResource VantahWindowBackground}"/>
+            <Setter Property="TransparencyBackgroundFallback" Value="{DynamicResource SystemControlBackgroundAltHighBrush}"/>
         </Style>
 
         <!-- Служебные окна открываются поверх главного, фон у них один и тот же, и на тёмной теме

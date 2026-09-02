@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Vantah.App.Localization;
+using Vantah.App.Services;
 using Vantah.App.ViewModels;
 
 namespace Vantah.App.Views;
@@ -11,7 +12,11 @@ public partial class MainWindow : Window
 {
     private readonly DialogHost _dialogs = new();
 
-    public MainWindow() => InitializeComponent();
+    public MainWindow()
+    {
+        InitializeComponent();
+        WindowTransparency.Enable(this);
+    }
 
     private MainWindowViewModel? Vm => DataContext as MainWindowViewModel;
 

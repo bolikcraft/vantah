@@ -348,6 +348,12 @@
   <data name="Settings_ConnectedWarning" xml:space="preserve">
     <value>A VPN está conectada. Alterar as configurações pode exigir reconexão para ter efeito.</value>
   </data>
+  <data name="Settings_AppearanceSection" xml:space="preserve">
+    <value>Aparência</value>
+  </data>
+  <data name="Settings_WindowOpacity" xml:space="preserve">
+    <value>Opacidade das janelas</value>
+  </data>
   <data name="Settings_Mode" xml:space="preserve">
     <value>Modo de operação</value>
   </data>

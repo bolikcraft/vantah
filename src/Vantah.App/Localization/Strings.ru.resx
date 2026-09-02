@@ -348,6 +348,12 @@
   <data name="Settings_ConnectedWarning" xml:space="preserve">
     <value>VPN сейчас подключён. Изменение настроек может потребовать переподключения, чтобы вступить в силу.</value>
   </data>
+  <data name="Settings_AppearanceSection" xml:space="preserve">
+    <value>Внешний вид</value>
+  </data>
+  <data name="Settings_WindowOpacity" xml:space="preserve">
+    <value>Непрозрачность окон</value>
+  </data>
   <data name="Settings_Mode" xml:space="preserve">
     <value>Режим работы</value>
   </data>

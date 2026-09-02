@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Localization;
 using Vantah.App.Services;
+using Vantah.Core.Appearance;
 using Vantah.Core.Autostart;
 using Vantah.Core.Config;
 using Vantah.Core.Errors;
@@ -40,6 +41,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     private readonly AppUpdateService? _appUpdates;
     private readonly KillSwitchStore _killSwitch;
     private readonly ICliUpdater? _updater;
+    private readonly WindowTransparency _transparency;
     private bool _lastRadioWasFastest;
 
     // Подавляет авто-применение, пока форму заполняем программно: иначе загрузка конфига
@@ -57,7 +59,8 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
         AutostartService? autostart = null,
         AppUpdateService? appUpdates = null,
         KillSwitchStore? killSwitch = null,
-        ICliUpdater? updater = null)
+        ICliUpdater? updater = null,
+        WindowTransparency? transparency = null)
     {
         _config = config;
         _languageStore = languageStore;
@@ -79,6 +82,8 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
         // Установка обновления CLI тоже опциональна: без неё команда «Обновить сейчас»
         // ничего не делает (кнопка живёт только в баннере обновления).
         _updater = updater;
+        // Прозрачность окон — своё локальное хранилище, опционально как автозапуск.
+        _transparency = transparency ?? new WindowTransparency(new WindowOpacityStore());
 
         // Пишем в backing-поле, а не в свойство: стартовый язык — не выбор пользователя,
         // сохранять его в ~/.config/vantah/language незачем.
@@ -105,6 +110,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
             AutostartEnabled = _autostart.IsEnabled();
             CheckAppUpdates = _appUpdates?.Enabled ?? true;
             KillSwitchEnabled = _killSwitch.Load();
+            WindowOpacity = _transparency.Percent;
         }
         finally { _loading = false; }
 
@@ -227,6 +233,20 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     {
         if (_loading) return;
         _killSwitch.Save(value);
+    }
+
+    /// <summary>Непрозрачность окон в процентах: 100 — обычное окно, 0 — фона не видно совсем.</summary>
+    [ObservableProperty] private double _windowOpacity = WindowOpacityStore.Default;
+
+    /// <summary>Текущее значение ползунка подписью — «92%».</summary>
+    public string WindowOpacityText => $"{(int)Math.Round(WindowOpacity)}%";
+
+    partial void OnWindowOpacityChanged(double value)
+    {
+        OnPropertyChanged(nameof(WindowOpacityText));
+        if (_loading) return;
+        // Применяется сразу, пока тянут ползунок: иначе выбирать прозрачность вслепую.
+        _transparency.Set((int)Math.Round(value));
     }
 
     // Единственный источник истины — AutoConnectStore: чекбокс и радиокнопка «сжимаются»
