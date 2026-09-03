@@ -25,6 +25,7 @@ public class VpnCoordinatorHistoryTests
         var dir = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
         var cli = new FakeCliRunner()
             .Enqueue(new CliResult(0, "Connected to AMSTERDAM in TUN mode, running on tun0", ""))
+            .Enqueue(new CliResult(1, "", "daemon hiccup"))
             .Enqueue(new CliResult(1, "", "daemon hiccup"));
         var vpn = new VpnService(cli);
 
@@ -41,8 +42,10 @@ public class VpnCoordinatorHistoryTests
         Assert.NotNull(history.Active);
         Assert.Equal("AMSTERDAM", history.Active!.City);
 
-        // Второй опрос: `status` транзиентно падает (ненулевой код возврата CLI).
-        // Раньше это молча парсилось бы как «отключено» и рвало бы активную сессию.
+        // Дальше `status` транзиентно падает (ненулевой код возврата CLI). Раньше это молча
+        // парсилось бы как «отключено» и рвало бы активную сессию. В Error уходим со второго
+        // сбоя подряд — см. VpnCoordinatorPollFailureTests.
+        await coord.PollOnceAsync();
         await coord.PollOnceAsync();
 
         Assert.NotNull(history.Active);

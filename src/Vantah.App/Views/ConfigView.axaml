@@ -242,6 +242,30 @@
                 </ToolTip.Tip>
               </Border>
             </StackPanel>
+            <!-- Свой лог приложения: тумблер + «?» со справкой, как у kill switch выше. -->
+            <StackPanel Orientation="Horizontal" Spacing="6">
+              <ToggleSwitch IsChecked="{Binding LoggingEnabled}">
+                <ToggleSwitch.OnContent>
+                  <TextBlock TextWrapping="Wrap" MaxWidth="200"
+                             Text="{Binding [Settings_Logging], Source={x:Static loc:Localizer.Instance}}"/>
+                </ToggleSwitch.OnContent>
+                <ToggleSwitch.OffContent>
+                  <TextBlock TextWrapping="Wrap" MaxWidth="200"
+                             Text="{Binding [Settings_Logging], Source={x:Static loc:Localizer.Instance}}"/>
+                </ToggleSwitch.OffContent>
+              </ToggleSwitch>
+              <Border Width="17" Height="17" CornerRadius="9" BorderThickness="1"
+                      BorderBrush="{DynamicResource SystemAccentColor}"
+                      VerticalAlignment="Center" Cursor="Help">
+                <TextBlock Text="?" FontSize="11" FontWeight="SemiBold"
+                           Foreground="{DynamicResource SystemAccentColor}"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <ToolTip.Tip>
+                  <TextBlock TextWrapping="Wrap" MaxWidth="300"
+                             Text="{Binding [Settings_LoggingHelp], Source={x:Static loc:Localizer.Instance}}"/>
+                </ToolTip.Tip>
+              </Border>
+            </StackPanel>
           </StackPanel>
         </Border>
 

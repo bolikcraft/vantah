@@ -162,6 +162,8 @@ public static class LocKeys
     public const string Settings_CheckAppUpdates = "Settings_CheckAppUpdates";
     public const string Settings_KillSwitch = "Settings_KillSwitch";
     public const string Settings_KillSwitchHelp = "Settings_KillSwitchHelp";
+    public const string Settings_Logging = "Settings_Logging";
+    public const string Settings_LoggingHelp = "Settings_LoggingHelp";
 
     // Плашка «доступна новая версия Vantah» в главном окне
     public const string Update_Available = "Update_Available";

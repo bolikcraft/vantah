@@ -41,9 +41,16 @@ public partial class StatusViewModel : ErrorAwareViewModel
     [ObservableProperty] private bool _isStatusUnknown = true;
     [ObservableProperty] private string _log = "";
 
+    // Отключение без сети идёт до 10 c: кнопка на это время заблокирована, поэтому подписываем
+    // её процессом. Иначе висит неактивная «Подключить» — как будто окно замерло.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ToggleText))]
+    private bool _isDisconnecting;
+
     // Подпись кнопки = действие, которое она выполнит (не статус).
     public string ToggleText => Localizer.Instance[
-        IsConnecting ? LocKeys.Common_StopConnecting
+        IsDisconnecting ? LocKeys.Status_Disconnecting
+        : IsConnecting ? LocKeys.Common_StopConnecting
         : IsConnected ? LocKeys.Common_Disconnect
         : LocKeys.Common_Connect];
 
@@ -126,6 +133,7 @@ public partial class StatusViewModel : ErrorAwareViewModel
         SetError(s.Error is { } e ? UiText.Of(e) : UiText.None);
         IsConnected = s.Connection == ConnectionState.Connected;
         IsConnecting = s.Connection == ConnectionState.Connecting;
+        IsDisconnecting = s.Connection == ConnectionState.Disconnecting;
         IsStatusUnknown = s.Connection == ConnectionState.Unknown;
         // Connecting сюда НЕ входит: кнопка в этом состоянии активна и прерывает подключение.
         IsBusy = s.Connection is ConnectionState.Disconnecting or ConnectionState.Unknown;

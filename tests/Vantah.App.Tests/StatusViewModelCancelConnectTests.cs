@@ -127,6 +127,21 @@ public class StatusViewModelCancelConnectTests
         Assert.True(vm.IsBusy);
     }
 
+    /// <summary>Без сети `disconnect` отвечает до 10 c, и всё это время кнопка неактивна.
+    /// Подпись «Подключить» на ней читалась как зависшее окно, поэтому подписываем процессом.</summary>
+    [AvaloniaFact]
+    public void Disconnecting_labels_the_blocked_button_with_the_process()
+    {
+        var (vm, store, _) = MakeStatusVm();
+
+        store.Set(s => s with { Connection = ConnectionState.Disconnecting });
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.True(vm.IsBusy);
+        Assert.Equal(Localizer.Instance[LocKeys.Status_Disconnecting], vm.ToggleText);
+        Assert.NotEqual(Localizer.Instance[LocKeys.Common_Connect], vm.ToggleText);
+    }
+
     /// <summary>
     /// Зелёная сборка Avalonia не доказывает, что кнопка на экране разблокировалась: биндинги
     /// IsEnabled/Content рвутся молча. Гоняем настоящий StatusView в headless-окне.

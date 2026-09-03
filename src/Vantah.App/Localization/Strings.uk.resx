@@ -468,6 +468,12 @@
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (не втрачати захист при обриві)</value>
   </data>
+  <data name="Settings_Logging" xml:space="preserve">
+    <value>Писати журнал</value>
+  </data>
+  <data name="Settings_LoggingHelp" xml:space="preserve">
+    <value>Застосунок записує свої дії у файл ~/.local/share/vantah/app.log. Це потрібно, щоб розібрати проблему. Типово журнал вимкнено.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Доступна нова версія Vantah — {0}</value>
   </data>

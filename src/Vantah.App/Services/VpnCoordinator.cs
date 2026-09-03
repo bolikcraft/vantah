@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Vantah.Core.Auth;
 using Vantah.Core.History;
+using Vantah.Core.Logs;
 using Vantah.Core.Models;
 using Vantah.Core.Errors;
 using Vantah.Core.State;
@@ -20,14 +21,25 @@ public sealed class VpnCoordinator(
     IpVersionStore ipVersionStore,
     IAuthService auth,
     LastLocationStore? lastLocation = null,
-    KillSwitchStore? killSwitch = null)
+    KillSwitchStore? killSwitch = null,
+    IAppLog? log = null,
+    TimeSpan? loginProbePeriod = null)
 {
+    private readonly IAppLog _log = log ?? NullAppLog.Instance;
+
     private DateTime _lastPollUtc = DateTime.UtcNow;
     // _opGate сериализует операции; _operationInFlight гейтит опрос — самодостаточен,
     // не завязан на счётчик семафора.
     private readonly SemaphoreSlim _opGate = new(1, 1);
     private volatile bool _operationInFlight;
     private int _pollInFlight;
+    // Пока демон восстанавливает связь, `status` подвисает и упирается в таймаут CLI:
+    // одиночный промах не должен показывать «Ошибка» вместо живого туннеля.
+    private const int PollFailuresBeforeError = 2;
+    private int _pollFailures;
+    private readonly TimeSpan _loginProbePeriod = loginProbePeriod ?? TimeSpan.FromSeconds(30);
+    private DateTime _lastLoginProbeUtc = DateTime.UtcNow;
+    private int _loginProbeInFlight;
     private volatile IReadOnlyList<Location> _knownLocations = Array.Empty<Location>();
 
     /// <summary>Список известных локаций для обогащения истории Country/Ping (город → страна/пинг).</summary>
@@ -48,6 +60,23 @@ public sealed class VpnCoordinator(
         catch { /* оставляем прежнее состояние */ }
     }
 
+    /// <summary>Последний фоновый зонд логина — чтобы его можно было дождаться в тестах.</summary>
+    public Task LoginProbeTask { get; private set; } = Task.CompletedTask;
+
+    // Зонд логина в фоне: он не должен задерживать опрос статуса. Раз в полминуты — вход
+    // меняется редко, а команда каждый раз ходит в сеть.
+    private void ProbeLoginInBackground(CancellationToken ct)
+    {
+        if (DateTime.UtcNow - _lastLoginProbeUtc < _loginProbePeriod) return;
+        if (Interlocked.Exchange(ref _loginProbeInFlight, 1) == 1) return;
+        _lastLoginProbeUtc = DateTime.UtcNow;
+        LoginProbeTask = Task.Run(async () =>
+        {
+            try { await RefreshLoginStateAsync(ct); }
+            finally { Interlocked.Exchange(ref _loginProbeInFlight, 0); }
+        }, ct);
+    }
+
     public async Task PollOnceAsync(CancellationToken ct = default)
     {
         // Во время connect/disconnect (CLI может работать долго) опрос
@@ -59,12 +88,18 @@ public sealed class VpnCoordinator(
         if (Interlocked.Exchange(ref _pollInFlight, 1) == 1) return;
         try
         {
-            // Держим состояние логина в актуальном виде: форма входа появляется/исчезает сама.
-            await RefreshLoginStateAsync(ct);
+            // Пока состояние логина неизвестно, ждём его: от него зависят гейт формы входа и план
+            // автоподключения на старте. Дальше только поддерживаем — `license` ходит в сеть и при
+            // обрыве висит до таймаута 15 c, а статус за это время успевает смениться дважды.
+            if (store.Current.LoginState == LoginState.Unknown)
+                await RefreshLoginStateAsync(ct);
+            else
+                ProbeLoginInBackground(ct);
 
             try
             {
                 var status = await vpn.GetStatusAsync(ct);
+                _pollFailures = 0;
                 var now = DateTime.UtcNow;
                 var elapsed = (now - _lastPollUtc).TotalSeconds;
                 _lastPollUtc = now;
@@ -79,23 +114,29 @@ public sealed class VpnCoordinator(
                 else
                     traffic.Reset();
 
-                if (status.IsStarting)
+                if (status.Phase is VpnPhase.Starting or VpnPhase.Reconnecting)
                 {
-                    // Туннель поднимается: показываем «Подключение», но не трогаем историю
-                    // (бесконечные ретраи kill switch иначе плодили бы ложные разрывы сессий)
-                    // и не стираем известную локацию — её допишет следующий тик.
-                    store.Set(s => s with
+                    // Туннель поднимается либо kill switch его восстанавливает: показываем
+                    // «Подключение», но не трогаем историю — бесконечные ретраи иначе плодили бы
+                    // ложные разрывы сессий. У Starting локация и режим пусты, поэтому известные
+                    // значения сохраняем; у Reconnecting они есть — их и пишем.
+                    var known = status.Phase == VpnPhase.Reconnecting;
+                    SetState(s => s with
                     {
                         Connection = ConnectionState.Connecting,
+                        Location = known ? status.Location : s.Location,
+                        LocationDisplay = known ? ResolveLocationDisplay(status) : s.LocationDisplay,
+                        Mode = known ? status.Mode : s.Mode,
+                        Interface = known ? status.Interface : s.Interface,
                         Traffic = null,
                         Error = null,
-                    });
+                    }, "опрос");
                     return;
                 }
 
                 TrackHistory(status);
 
-                store.Set(s => s with
+                SetState(s => s with
                 {
                     Connection = status.IsConnected ? ConnectionState.Connected : ConnectionState.Disconnected,
                     Location = status.Location,
@@ -104,11 +145,23 @@ public sealed class VpnCoordinator(
                     Interface = status.Interface,
                     Traffic = sample,
                     Error = null,
-                });
+                }, "опрос");
             }
             catch (Exception ex)
             {
-                store.Set(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) });
+                // Первый сбой подряд глотаем: снапшот остаётся прежним, решение принимаем
+                // по второму промаху.
+                var reason = OneLine(ex.Message);
+                if (++_pollFailures >= PollFailuresBeforeError)
+                {
+                    _log.Write($"опрос не удался ({_pollFailures}/{PollFailuresBeforeError}): {reason}");
+                    SetState(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) }, "опрос");
+                }
+                else
+                {
+                    _log.Write($"опрос не удался ({_pollFailures}/{PollFailuresBeforeError}),"
+                        + $" состояние оставлено прежним: {reason}");
+                }
             }
         }
         finally
@@ -125,20 +178,31 @@ public sealed class VpnCoordinator(
         try
         {
             _operationInFlight = true;
-            store.Set(s => s with { Connection = ConnectionState.Connecting, Error = null });
+            SetState(s => s with { Connection = ConnectionState.Connecting, Error = null }, "connect");
             try
             {
                 var status = await vpn.ConnectAsync(
                     location, fastest, ipVersionStore.Load(), killSwitch?.Load() ?? false, ct);
 
-                if (status.IsStarting)
+                if (status.Phase is VpnPhase.Starting or VpnPhase.Reconnecting)
                 {
-                    // С kill switch (--boot) CLI возвращается раньше, чем поднят туннель:
-                    // писать Disconnected нельзя — на «Статусе» мигало бы «Отключено», а история
-                    // закрывала бы только что открытую сессию. Реальное состояние допишет опрос.
+                    // С kill switch (--boot) CLI возвращается раньше, чем поднят туннель, а после
+                    // обрыва отвечает «Reconnecting»: писать Disconnected нельзя — на «Статусе»
+                    // мигало бы «Отключено», а история закрывала бы только что открытую сессию.
+                    // Реальное состояние допишет опрос.
                     try { if (!string.IsNullOrWhiteSpace(location)) lastLocation?.Save(location); }
                     catch { /* best-effort persist, не роняем состояние подключения */ }
-                    store.Set(s => s with { Connection = ConnectionState.Connecting, Error = null });
+                    var known = status.Phase == VpnPhase.Reconnecting;
+                    SetState(s => s with
+                    {
+                        Connection = ConnectionState.Connecting,
+                        Location = known ? status.Location : s.Location,
+                        LocationDisplay = known ? ResolveLocationDisplay(status) : s.LocationDisplay,
+                        Mode = known ? status.Mode : s.Mode,
+                        Interface = known ? status.Interface : s.Interface,
+                        Traffic = known ? null : s.Traffic,
+                        Error = null,
+                    }, "connect");
                     return;
                 }
 
@@ -148,12 +212,12 @@ public sealed class VpnCoordinator(
                     try { lastLocation?.Save(location ?? status.Location); }
                     catch { /* best-effort persist, не роняем состояние подключения */ }
                 }
-                store.Set(s => s with
+                SetState(s => s with
                 {
                     Connection = status.IsConnected ? ConnectionState.Connected : ConnectionState.Disconnected,
                     Location = status.Location, LocationDisplay = ResolveLocationDisplay(status),
                     Mode = status.Mode, Interface = status.Interface, Error = null,
-                });
+                }, "connect");
             }
             catch (OperationCanceledException)
             {
@@ -163,7 +227,8 @@ public sealed class VpnCoordinator(
             }
             catch (Exception ex)
             {
-                store.Set(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) });
+                _log.Write($"connect не удался: {OneLine(ex.Message)}");
+                SetState(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) }, "connect");
             }
         }
         finally
@@ -180,13 +245,15 @@ public sealed class VpnCoordinator(
         try
         {
             _operationInFlight = true;
-            store.Set(s => s with { Connection = ConnectionState.Disconnecting, Error = null });
+            SetState(s => s with { Connection = ConnectionState.Disconnecting, Error = null }, "disconnect");
             try
             {
                 await vpn.DisconnectAsync(ct);
                 traffic.Reset();
+                var session = history.Active;
                 history.OnDisconnected(DateTimeOffset.UtcNow);
-                store.Set(s => s with { Connection = ConnectionState.Disconnected, Location = null, LocationDisplay = null, Interface = null, Traffic = null });
+                LogHistory(session, history.Active);
+                SetState(s => s with { Connection = ConnectionState.Disconnected, Location = null, LocationDisplay = null, Interface = null, Traffic = null }, "disconnect");
             }
             catch (OperationCanceledException)
             {
@@ -196,7 +263,8 @@ public sealed class VpnCoordinator(
             }
             catch (Exception ex)
             {
-                store.Set(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) });
+                _log.Write($"disconnect не удался: {OneLine(ex.Message)}");
+                SetState(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) }, "disconnect");
             }
         }
         finally
@@ -209,6 +277,7 @@ public sealed class VpnCoordinator(
     private void TrackHistory(VpnStatus status)
     {
         var now = DateTimeOffset.UtcNow;
+        var before = history.Active;
         if (status.IsConnected && !string.IsNullOrWhiteSpace(status.Location))
         {
             var (city, country, ping) = ResolveLocation(status.Location);
@@ -218,12 +287,46 @@ public sealed class VpnCoordinator(
         {
             history.OnDisconnected(now);
         }
+        LogHistory(before, history.Active);
     }
+
+    // Меняем снапшот и пишем в лог только фактическую смену состояния — с источником,
+    // чтобы по логу было видно, кто её вызвал.
+    private void SetState(Func<AppSnapshot, AppSnapshot> mutate, string source)
+    {
+        var before = store.Current.Connection;
+        store.Set(mutate);
+        var after = store.Current.Connection;
+        if (after != before) _log.Write($"state: {before} → {after} ({source})");
+    }
+
+    // Трекер сам решает, продолжается сессия или начинается новая, поэтому смотрим на активную
+    // запись до и после: иначе строка появлялась бы на каждом опросе.
+    private void LogHistory(ConnectionHistoryEntry? before, ConnectionHistoryEntry? after)
+    {
+        if (SameSession(before, after)) return;
+        if (before is not null) _log.Write($"история: закрыта сессия {before.City}");
+        if (after is not null) _log.Write($"история: открыта сессия {after.City}");
+    }
+
+    // Город в записи могут дозаполнить из списка локаций («AMSTERDAM» → «Amsterdam»), поэтому
+    // сравниваем без учёта регистра.
+    private static bool SameSession(ConnectionHistoryEntry? a, ConnectionHistoryEntry? b) =>
+        a is null ? b is null
+        : b is not null
+            && a.StartedAt == b.StartedAt
+            && string.Equals(a.City, b.City, StringComparison.OrdinalIgnoreCase);
+
+    // Текст ошибки приходит из stderr CLI и бывает многострочным: в логе одна запись — одна строка.
+    private static string OneLine(string text) =>
+        string.Join(' ', text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
 
     // Человекочитаемая локация «Город, Страна» из известного списка (или просто город).
     private string? ResolveLocationDisplay(VpnStatus status)
     {
-        if (!status.IsConnected || string.IsNullOrWhiteSpace(status.Location)) return null;
+        // В фазе Reconnecting туннеля нет, но локация известна — подпись сохраняем.
+        if ((!status.IsConnected && status.Phase != VpnPhase.Reconnecting)
+            || string.IsNullOrWhiteSpace(status.Location)) return null;
         var (city, country, _) = ResolveLocation(status.Location);
         return string.IsNullOrEmpty(country) ? city : $"{city}, {country}";
     }

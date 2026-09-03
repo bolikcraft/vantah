@@ -468,6 +468,12 @@
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (mantener la protección si se cae la conexión)</value>
   </data>
+  <data name="Settings_Logging" xml:space="preserve">
+    <value>Escribir registro</value>
+  </data>
+  <data name="Settings_LoggingHelp" xml:space="preserve">
+    <value>La aplicación escribe sus acciones en el archivo ~/.local/share/vantah/app.log. Esto sirve para analizar un problema. El registro está desactivado de forma predeterminada.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Hay una nueva versión de Vantah — {0}</value>
   </data>

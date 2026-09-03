@@ -468,6 +468,12 @@
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (zachowaj ochronę przy zerwaniu połączenia)</value>
   </data>
+  <data name="Settings_Logging" xml:space="preserve">
+    <value>Zapisuj dziennik</value>
+  </data>
+  <data name="Settings_LoggingHelp" xml:space="preserve">
+    <value>Aplikacja zapisuje swoje działania w pliku ~/.local/share/vantah/app.log. Służy to do analizy problemu. Dziennik jest domyślnie wyłączony.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Dostępna jest nowa wersja Vantah — {0}</value>
   </data>

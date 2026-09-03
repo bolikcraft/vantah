@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.Channels;
 using Vantah.Core.Config;
 using Vantah.Core.Errors;
+using Vantah.Core.Logs;
 
 namespace Vantah.Core.Cli;
 
@@ -16,8 +17,27 @@ public sealed class CliTimeoutException(AppError error) : TimeoutException(error
     public AppError Error { get; } = error;
 }
 
-public sealed class CliRunner(string executable = CliOptionsResolver.DefaultExecutable) : ICliRunner, IInteractiveCliRunner
+public sealed class CliRunner(
+    string executable = CliOptionsResolver.DefaultExecutable,
+    IAppLog? log = null) : ICliRunner, IInteractiveCliRunner
 {
+    /// <summary>Дольше этого вызов интересен в логе, даже если он успешный.</summary>
+    private const long SlowCallMs = 2000;
+
+    private readonly IAppLog _log = log ?? NullAppLog.Instance;
+
+    /// <summary>Команды опроса: их дёргает таймер каждые 4 с (`status` — состояние туннеля,
+    /// `license` — состояние логина).</summary>
+    private static readonly string[] PollCommands = ["status", "license"];
+
+    /// <summary>
+    /// Стоит ли писать вызов в лог. Успешные быстрые команды опроса пропускаем — ими бы лог и
+    /// заплыл; всё остальное (сбой, задержка, любая другая команда) редко и важно.
+    /// </summary>
+    internal static bool ShouldLogCall(string[] args, int exitCode, long elapsedMs) =>
+        exitCode != 0 || elapsedMs > SlowCallMs
+        || args is not [var command] || !PollCommands.Contains(command);
+
     public async Task<CliResult> RunAsync(string[] args, TimeSpan? timeout = null, CancellationToken ct = default)
     {
         var psi = new ProcessStartInfo
@@ -38,6 +58,7 @@ public sealed class CliRunner(string executable = CliOptionsResolver.DefaultExec
         proc.OutputDataReceived += (_, e) => { if (e.Data is not null) stdout.AppendLine(e.Data); };
         proc.ErrorDataReceived  += (_, e) => { if (e.Data is not null) stderr.AppendLine(e.Data); };
 
+        var started = Stopwatch.StartNew();
         proc.Start();
 
         try
@@ -59,9 +80,15 @@ public sealed class CliRunner(string executable = CliOptionsResolver.DefaultExec
                 // Если отмену запросил вызывающий — показываем настоящую OperationCanceledException,
                 // а не маскируем её таймаутом (linked cts срабатывает и на ct, и на timeout).
                 ct.ThrowIfCancellationRequested();
+                _log.Write($"cli: {string.Join(' ', args)} → таймаут через {started.ElapsedMilliseconds} ms");
                 throw new CliTimeoutException(
                     new AppError(AppErrorCode.Timeout, $"{executable} {string.Join(' ', args)}"));
             }
+
+            var elapsed = started.ElapsedMilliseconds;
+            // Вывод команд в лог не идёт: у `license` в нём почта пользователя.
+            if (ShouldLogCall(args, proc.ExitCode, elapsed))
+                _log.Write($"cli: {string.Join(' ', args)} → rc={proc.ExitCode}, {elapsed} ms");
 
             return new CliResult(proc.ExitCode, stdout.ToString(), stderr.ToString());
         }

@@ -468,6 +468,12 @@
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (tetap terlindungi jika koneksi terputus)</value>
   </data>
+  <data name="Settings_Logging" xml:space="preserve">
+    <value>Tulis log</value>
+  </data>
+  <data name="Settings_LoggingHelp" xml:space="preserve">
+    <value>Aplikasi menulis tindakannya ke berkas ~/.local/share/vantah/app.log. Ini berguna untuk menganalisis masalah. Log dimatikan secara bawaan.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Versi baru Vantah tersedia — {0}</value>
   </data>

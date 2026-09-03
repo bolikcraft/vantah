@@ -1,5 +1,6 @@
 using Vantah.Core.Cli;
 using Vantah.Core.Errors;
+using Vantah.Core.Logs;
 using Vantah.Core.Models;
 using Vantah.Core.Parsing;
 
@@ -11,10 +12,15 @@ public sealed class VpnCommandException(AppError error) : Exception(error.ToStri
     public AppError Error { get; } = error;
 }
 
-public sealed class VpnService(ICliRunner cli) : IVpnService
+public sealed class VpnService(ICliRunner cli, IAppLog? log = null) : IVpnService
 {
     private static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan QuickTimeout   = TimeSpan.FromSeconds(15);
+
+    private readonly IAppLog _log = log ?? NullAppLog.Instance;
+
+    // Последняя записанная строка про статус: опрос идёт каждые 4 с, повторы в лог не пишем.
+    private string? _lastStatusLine;
 
     public async Task<VpnStatus> GetStatusAsync(CancellationToken ct = default)
     {
@@ -23,8 +29,42 @@ public sealed class VpnService(ICliRunner cli) : IVpnService
         // и рвал бы активную сессию истории — сбой ловим по коду возврата.
         if (!r.Ok)
             throw new VpnCommandException(AppError.FromCli(r, "status"));
-        return StatusParser.Parse(r.Stdout);
+        var status = StatusParser.Parse(r.Stdout);
+        LogStatus(r.Stdout, status);
+        return status;
     }
+
+    // Сырой ответ CLI рядом с результатом разбора: по этой паре видно, где именно разошлись
+    // ответ и показанное состояние.
+    private void LogStatus(string stdout, VpnStatus status)
+    {
+        if (!_log.Enabled)
+        {
+            // Лог могли выключить и включить снова — тогда первую же строку надо записать.
+            _lastStatusLine = null;
+            return;
+        }
+
+        var line = $"status: \"{FirstLine(stdout)}\" → {Describe(status)}";
+        if (line == _lastStatusLine) return;
+        _lastStatusLine = line;
+        _log.Write(line);
+    }
+
+    private static string FirstLine(string stdout)
+    {
+        foreach (var raw in Ansi.Strip(stdout).Split('\n'))
+            if (raw.Trim() is { Length: > 0 } line) return line;
+        return "";
+    }
+
+    private static string Describe(VpnStatus status) =>
+        string.Join(", ", new[]
+            {
+                status.Phase.ToString(), status.Location, status.Mode,
+                status.Interface ?? status.Endpoint,
+            }
+            .Where(part => !string.IsNullOrEmpty(part)));
 
     public async Task<IReadOnlyList<Location>> GetLocationsAsync(int count = 300, CancellationToken ct = default)
     {

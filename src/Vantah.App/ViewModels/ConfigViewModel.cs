@@ -42,6 +42,8 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     private readonly KillSwitchStore _killSwitch;
     private readonly ICliUpdater? _updater;
     private readonly WindowTransparency _transparency;
+    private readonly LoggingStore _logging;
+    private readonly IAppLog _appLog;
     private bool _lastRadioWasFastest;
 
     // Подавляет авто-применение, пока форму заполняем программно: иначе загрузка конфига
@@ -60,7 +62,9 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
         AppUpdateService? appUpdates = null,
         KillSwitchStore? killSwitch = null,
         ICliUpdater? updater = null,
-        WindowTransparency? transparency = null)
+        WindowTransparency? transparency = null,
+        LoggingStore? logging = null,
+        IAppLog? appLog = null)
     {
         _config = config;
         _languageStore = languageStore;
@@ -84,6 +88,10 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
         _updater = updater;
         // Прозрачность окон — своё локальное хранилище, опционально как автозапуск.
         _transparency = transparency ?? new WindowTransparency(new WindowOpacityStore());
+        // Лог приложения: стор — настройка, _appLog — сам лог, который тумблер включает на лету.
+        // Без переданного лога тумблер только пишет настройку (следующий запуск её подхватит).
+        _logging = logging ?? new LoggingStore();
+        _appLog = appLog ?? NullAppLog.Instance;
 
         // Пишем в backing-поле, а не в свойство: стартовый язык — не выбор пользователя,
         // сохранять его в ~/.config/vantah/language незачем.
@@ -110,6 +118,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
             AutostartEnabled = _autostart.IsEnabled();
             CheckAppUpdates = _appUpdates?.Enabled ?? true;
             KillSwitchEnabled = _killSwitch.Load();
+            LoggingEnabled = _logging.Load();
             WindowOpacity = _transparency.Percent;
         }
         finally { _loading = false; }
@@ -207,6 +216,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     [ObservableProperty] private bool _autostartEnabled;
     [ObservableProperty] private bool _checkAppUpdates = true;
     [ObservableProperty] private bool _killSwitchEnabled;
+    [ObservableProperty] private bool _loggingEnabled;
 
     partial void OnAutoConnectEnabledChanged(bool value) => PersistAutoConnect();
 
@@ -233,6 +243,23 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     {
         if (_loading) return;
         _killSwitch.Save(value);
+    }
+
+    partial void OnLoggingEnabledChanged(bool value)
+    {
+        if (_loading) return;
+        _logging.Save(value);
+        // Порядок важен: выключение записываем, пока лог ещё пишет, включение — уже после.
+        if (value)
+        {
+            _appLog.Enabled = true;
+            _appLog.Write("лог включён");
+        }
+        else
+        {
+            _appLog.Write("лог выключен");
+            _appLog.Enabled = false;
+        }
     }
 
     /// <summary>Непрозрачность окон в процентах: 100 — обычное окно, 0 — фона не видно совсем.</summary>

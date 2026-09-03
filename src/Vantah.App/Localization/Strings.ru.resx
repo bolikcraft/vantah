@@ -468,6 +468,12 @@
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (не терять защиту при обрыве)</value>
   </data>
+  <data name="Settings_Logging" xml:space="preserve">
+    <value>Писать лог</value>
+  </data>
+  <data name="Settings_LoggingHelp" xml:space="preserve">
+    <value>Приложение записывает свои действия в файл ~/.local/share/vantah/app.log. Это нужно, чтобы разобрать проблему. По умолчанию лог выключен.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Доступна новая версия Vantah — {0}</value>
   </data>

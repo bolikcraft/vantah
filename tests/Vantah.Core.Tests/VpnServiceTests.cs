@@ -1,4 +1,5 @@
 using System.Linq;
+using Vantah.Core.Models;
 using Vantah.Core.Tests.Fakes;
 using Vantah.Core.Vpn;
 using Xunit;
@@ -41,7 +42,7 @@ public class VpnServiceTests
 
         var status = await new VpnService(cli).ConnectAsync("Amsterdam", fastest: false, killSwitch: true);
 
-        Assert.True(status.IsStarting);
+        Assert.Equal(VpnPhase.Starting, status.Phase);
         Assert.False(status.IsConnected);
     }
 

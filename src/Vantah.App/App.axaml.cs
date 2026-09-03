@@ -39,6 +39,11 @@ public partial class App : Application
     // Наблюдатель за трей-watcher'ом владеет собственным D-Bus-соединением — тоже держим ссылку.
     private StatusNotifierWatcherMonitor? _trayWatcher;
 
+    // Лог приложения и его настройка: тумблер в настройках включает запись на лету, поэтому
+    // оба экземпляра живут всю сессию.
+    private FileAppLog? _appLog;
+    private LoggingStore? _loggingStore;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -59,8 +64,14 @@ public partial class App : Application
             // Путь к CLI и команда убийства настраиваются: ~/.config/vantah/vantah.conf, затем env,
             // затем дефолт «adguardvpn-cli» из PATH.
             var cliOptions = CliOptionsResolver.Resolve(config, Environment.GetEnvironmentVariable);
-            var runner = new CliRunner(cliOptions.Executable);
-            var vpn = new VpnService(runner);
+
+            // Лог поднимаем до первого вызова CLI, иначе старт в него не попадёт.
+            _loggingStore = new LoggingStore();
+            _appLog = new FileAppLog { Enabled = _loggingStore.Load() };
+            _appLog.Write($"старт: Vantah {AboutViewModel.CurrentVersion}, CLI {cliOptions.Executable}");
+
+            var runner = new CliRunner(cliOptions.Executable, _appLog);
+            var vpn = new VpnService(runner, _appLog);
 
             // Процессы CLI ищем сканом системы, а не учётом собственных детей: туннель CLI
             // демонизирует через «sudo -b», нашим ребёнком он не становится, и в реестре
@@ -86,7 +97,7 @@ public partial class App : Application
             // интерактивный login идут через один и тот же процесс-раннер.
             var auth = new AuthService(runner, runner);
             var lastLocationStore = new LastLocationStore();
-            var coordinator = new VpnCoordinator(vpn, traffic, store, history, ipVersionStore, auth, lastLocationStore, killSwitchStore);
+            var coordinator = new VpnCoordinator(vpn, traffic, store, history, ipVersionStore, auth, lastLocationStore, killSwitchStore, _appLog);
             var favorites = new FavoritesStore();
             var exclusionsStore = new ExclusionsStore();
             var exclusions = new ExclusionsService(runner, exclusionsStore);
@@ -126,7 +137,8 @@ public partial class App : Application
             var configVm = new ConfigViewModel(
                 vpnConfig, store, languageStore, updateChecker, logExporter,
                 () => PickLogFolderAsync(mainWindowRef),
-                autoConnectStore, autostart, appUpdates, killSwitchStore, cliUpdater, transparency);
+                autoConnectStore, autostart, appUpdates, killSwitchStore, cliUpdater, transparency,
+                _loggingStore, _appLog);
 
             // Без активного VPN чтения CLI нередко не проходят: раздел, который не прочитался,
             // перечитает себя сам, когда туннель поднимется. Ссылку держим в поле — сервис

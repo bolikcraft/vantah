@@ -468,6 +468,12 @@
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (Schutz bei Verbindungsabbruch behalten)</value>
   </data>
+  <data name="Settings_Logging" xml:space="preserve">
+    <value>Protokoll schreiben</value>
+  </data>
+  <data name="Settings_LoggingHelp" xml:space="preserve">
+    <value>Die Anwendung schreibt ihre Aktionen in die Datei ~/.local/share/vantah/app.log. Das hilft bei der Fehlersuche. Standardmäßig ist das Protokoll ausgeschaltet.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Eine neue Version von Vantah ist verfügbar — {0}</value>
   </data>

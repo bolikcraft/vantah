@@ -468,6 +468,12 @@
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (stay protected if the connection drops)</value>
   </data>
+  <data name="Settings_Logging" xml:space="preserve">
+    <value>Write log</value>
+  </data>
+  <data name="Settings_LoggingHelp" xml:space="preserve">
+    <value>Vantah writes its actions to the file ~/.local/share/vantah/app.log. This file helps you to find the cause of a problem. The log is off by default.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>A new version of Vantah is available — {0}</value>
   </data>
