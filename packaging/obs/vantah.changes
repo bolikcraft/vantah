@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Wed Sep  3 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
+
+- Update to 0.5.0: in SOCKS mode with the kill switch the window no
+  longer shows the Connect button while the CLI reconnects, short
+  network outages are no longer missed, and Vantah can write its own
+  log (off by default).
+
+-------------------------------------------------------------------
 Tue Sep  2 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
 
 - Update to 0.4.0: traffic is now counted in SOCKS mode, window
