@@ -132,9 +132,15 @@ when it writes its own files there.
 - **System tray.** Menu with connect / disconnect, the fastest location, your
   favorite locations, and the number of excluded domains; the tooltip shows the
   location and the live speed. The window and the tray always show one state.
+- **Appearance.** The buttons and toggles follow the system accent color of your
+  desktop. A slider in Settings sets the opacity of the windows.
+- **Diagnostics.** Vantah writes its own log to `~/.local/share/vantah/app.log`:
+  the CLI commands with their exit codes and durations, the replies to `status`,
+  and each change of the connection state. This log is off by default — you switch
+  it on in Settings. You can also export the `adguardvpn-cli` logs to a folder.
 - **Convenience.** UI language switching, update checks for Vantah itself and
-  for `adguardvpn-cli`, log export, an About page with the Vantah and CLI
-  versions, and viewing/terminating CLI processes.
+  for `adguardvpn-cli`, an About page with the Vantah and CLI versions, and
+  viewing/terminating CLI processes.
 
 ## Interface languages
 
