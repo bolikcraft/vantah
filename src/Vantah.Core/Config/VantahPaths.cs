@@ -21,6 +21,13 @@ public static class VantahPaths
     /// <summary>Директория данных — ~/.local/share/vantah.</summary>
     public static string DataDir { get; } = Path.Combine(DataHome, "vantah");
 
+    /// <summary>
+    /// Каталог рантайм-файлов — $XDG_RUNTIME_DIR/vantah. Он чистится при выходе из сеанса, что и
+    /// нужно замку одного экземпляра. Без переменной откатываемся в ~/.local/share/vantah.
+    /// </summary>
+    public static string RuntimeDir { get; } =
+        ResolveRuntime(Environment.GetEnvironmentVariable("XDG_RUNTIME_DIR"), DataDir);
+
     private static string XdgHome(string variable, string relativeToHome) =>
         Resolve(
             Environment.GetEnvironmentVariable(variable),
@@ -30,6 +37,10 @@ public static class VantahPaths
             Environment.GetFolderPath(
                 Environment.SpecialFolder.UserProfile, Environment.SpecialFolderOption.DoNotVerify),
             relativeToHome);
+
+    /// <summary>Каталог рантайма: $XDG_RUNTIME_DIR/vantah, иначе запасной каталог данных.</summary>
+    internal static string ResolveRuntime(string? xdgRuntime, string fallback) =>
+        string.IsNullOrWhiteSpace(xdgRuntime) ? fallback : Path.Combine(xdgRuntime, "vantah");
 
     /// <summary>Корень XDG: переменная окружения, если задана, иначе путь внутри домашней директории.</summary>
     internal static string Resolve(string? xdgHome, string home, string relativeToHome) =>

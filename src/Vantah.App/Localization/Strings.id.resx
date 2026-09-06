@@ -462,6 +462,9 @@
   <data name="Settings_Autostart" xml:space="preserve">
     <value>Jalankan saat masuk sistem</value>
   </data>
+  <data name="Settings_StartMinimized" xml:space="preserve">
+    <value>Mulai diperkecil ke baki sistem</value>
+  </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
     <value>Periksa pembaruan Vantah</value>
   </data>

@@ -107,6 +107,68 @@ public class ConfigViewStartupTests
         Assert.False(autostart.IsEnabled());
     }
 
+    /// <summary>Тумблер «свернуть в трей» включён по умолчанию — на каждый вход в систему
+    /// окно в лицо не лезет.</summary>
+    [AvaloniaFact]
+    public void Start_minimized_is_on_by_default()
+    {
+        var (vm, _, _) = Build();
+
+        Assert.True(vm.StartMinimized);
+    }
+
+    [AvaloniaFact]
+    public void Enabling_autostart_writes_the_minimized_flag()
+    {
+        var (vm, _, autostart) = Build();
+
+        vm.AutostartEnabled = true;
+
+        Assert.True(autostart.IsMinimized());
+    }
+
+    [AvaloniaFact]
+    public void Turning_the_flag_off_regenerates_the_entry_without_it()
+    {
+        var (vm, _, autostart) = Build();
+
+        vm.AutostartEnabled = true;
+        vm.StartMinimized = false;
+
+        Assert.True(autostart.IsEnabled());
+        Assert.False(autostart.IsMinimized());
+    }
+
+    // Без автозапуска ключ писать некуда: тумблер не должен создавать .desktop-файл.
+    [AvaloniaFact]
+    public void The_flag_alone_does_not_enable_autostart()
+    {
+        var (vm, _, autostart) = Build();
+
+        vm.StartMinimized = false;
+        vm.StartMinimized = true;
+
+        Assert.False(autostart.IsEnabled());
+    }
+
+    [AvaloniaFact]
+    public void Form_reflects_an_existing_entry_without_the_flag()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
+        var autostart = new AutostartService(Path.Combine(root, "autostart"), "vantah", "vantah");
+        autostart.Enable(minimized: false);
+
+        var vm = new ConfigViewModel(
+            new FakeConfigService(), new AppStateStore(),
+            new LanguageStore(Path.Combine(root, "language")),
+            new FakeUpdateChecker(), new FakeLogExporter(),
+            () => Task.FromResult<string?>(null),
+            new AutoConnectStore(Path.Combine(root, "autoconnect")), autostart);
+
+        Assert.True(vm.AutostartEnabled);
+        Assert.False(vm.StartMinimized);
+    }
+
     [AvaloniaFact]
     public void Form_reflects_a_previously_saved_autoconnect_mode()
     {

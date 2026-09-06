@@ -24,6 +24,7 @@ using Vantah.Core.History;
 using Vantah.Core.Localization;
 using Vantah.Core.Logs;
 using Vantah.Core.Settings;
+using Vantah.Core.Startup;
 using Vantah.Core.State;
 using Vantah.Core.Traffic;
 using Vantah.Core.Update;
@@ -33,6 +34,26 @@ namespace Vantah.App;
 
 public partial class App : Application
 {
+    private readonly StartupOptions _options;
+    private readonly SingleInstance? _instance;
+    private readonly bool _unguarded;
+
+    /// <summary>Конструктор для дизайнера XAML и headless-тестов: обычный запуск с окном.</summary>
+    public App() : this(StartupOptions.Default, null)
+    {
+    }
+
+    /// <param name="instance">Замок единственного экземпляра; по сокету из него второй запуск
+    /// просит показать окно. null — приложение подняли мимо Program (дизайнер, тесты) либо замок
+    /// оказался недоступен.</param>
+    /// <param name="unguarded">Замок взять не удалось — запись об этом уходит в лог приложения.</param>
+    public App(StartupOptions options, SingleInstance? instance, bool unguarded = false)
+    {
+        _options = options;
+        _instance = instance;
+        _unguarded = unguarded;
+    }
+
     // Сервис подписан на AppStateStore и обязан пережить метод инициализации.
     private SectionReloader? _sectionReloader;
 
@@ -69,6 +90,7 @@ public partial class App : Application
             _loggingStore = new LoggingStore();
             _appLog = new FileAppLog { Enabled = _loggingStore.Load() };
             _appLog.Write($"старт: Vantah {AboutViewModel.CurrentVersion}, CLI {cliOptions.Executable}");
+            if (_unguarded) _appLog.Write("замок единственного экземпляра недоступен — работаем без защиты от дубля");
 
             var runner = new CliRunner(cliOptions.Executable, _appLog);
             var vpn = new VpnService(runner, _appLog);
@@ -159,7 +181,14 @@ public partial class App : Application
 
             var window = new MainWindow { DataContext = mainVm };
             mainWindowRef = window;
-            desktop.MainWindow = window;
+            // Окно открывает сам лайфтайм — то, что лежит в MainWindow. Со стартом в трей
+            // показывать нечего, поэтому при --minimized не назначаем его вовсе.
+            if (!_options.Minimized) desktop.MainWindow = window;
+
+            // Второй запуск просит показать окно по сокету. Колбэк приходит с потока пула,
+            // а трогать окно можно только с UI-потока.
+            _instance?.StartListening(() =>
+                _ = UiThread.RunAsync(() => { window.Show(); window.Activate(); }));
             // Ссылку авторизации открываем системным браузером через Launcher окна.
             // Открываем только http/https: страховка на случай изменения парсера ссылки.
             // TryCreate вместо new Uri — кривая ссылка не должна ронять команду баннера
@@ -202,6 +231,10 @@ public partial class App : Application
             // трея не открывали соединение к настоящей сессионной шине пользователя.
             _trayWatcher = StatusNotifierWatcherMonitor.TryStart(tray.RebuildAsync);
 
+            // Прятаться можно только там, где трей действительно есть: без watcher'а (GNOME без
+            // расширения AppIndicator) спрятанное приложение исчезло бы совсем, без единого окна.
+            if (_options.Minimized) _ = ShowIfTrayMissingAsync(window);
+
             // На выходе наблюдение закрываем: иначе за приложением остаётся живое
             // D-Bus-соединение, а пересоздание, начатое в середине пятисекундной паузы,
             // доедет до уже разобранного трея.
@@ -229,6 +262,15 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    // Старт свёрнутым: окна нет, всё управление — в трее. Если трея нет, показываем окно,
+    // несмотря на флаг. Проверка асинхронная, поэтому в таком случае окно появляется с
+    // задержкой в доли секунды — лучше, чем невидимое приложение.
+    private static async Task ShowIfTrayMissingAsync(Window window)
+    {
+        if (await StatusNotifierWatcherMonitor.IsWatcherPresentAsync()) return;
+        await UiThread.RunAsync(() => { window.Show(); window.Activate(); });
     }
 
     // Автоподключение на старте: сперва опрашиваем реальное состояние CLI (снапшот мог быть

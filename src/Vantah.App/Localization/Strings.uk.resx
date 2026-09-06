@@ -462,6 +462,9 @@
   <data name="Settings_Autostart" xml:space="preserve">
     <value>Запускати під час входу в систему</value>
   </data>
+  <data name="Settings_StartMinimized" xml:space="preserve">
+    <value>Запускати згорнутим у трей</value>
+  </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
     <value>Перевіряти оновлення Vantah</value>
   </data>

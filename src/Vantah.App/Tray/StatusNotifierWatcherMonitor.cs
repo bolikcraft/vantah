@@ -30,6 +30,9 @@ internal sealed class StatusNotifierWatcherMonitor : IDisposable
     /// <summary>Пауза перед переподключением к шине после обрыва соединения.</summary>
     private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(5);
 
+    /// <summary>Предел ожидания ответа шины на разовый вопрос «есть ли watcher».</summary>
+    private static readonly TimeSpan ProbeTimeout = TimeSpan.FromSeconds(5);
+
     private readonly TrayRestartPolicy _policy;
     private readonly CancellationTokenSource _cts = new();
 
@@ -59,6 +62,32 @@ internal sealed class StatusNotifierWatcherMonitor : IDisposable
         var monitor = new StatusNotifierWatcherMonitor(rebuild);
         _ = monitor.RunAsync();
         return monitor;
+    }
+
+    /// <summary>
+    /// Сидит ли на сессионной шине владелец org.kde.StatusNotifierWatcher — то есть примет ли
+    /// панель нашу иконку. Отвечаем false везде, где спросить не у кого (не Linux, нет шины,
+    /// шина молчит): вызывающий тогда показывает окно, а не прячет его в несуществующий трей.
+    /// </summary>
+    public static async Task<bool> IsWatcherPresentAsync()
+    {
+        if (!OperatingSystem.IsLinux()) return false;
+        if (string.IsNullOrEmpty(DBusAddress.Session)) return false;
+
+        try { return await ProbeWatcherAsync().WaitAsync(ProbeTimeout); }
+        catch { return false; }
+    }
+
+    private static async Task<bool> ProbeWatcherAsync()
+    {
+        using var connection = new DBusConnection(new DBusConnectionOptions(DBusAddress.Session!)
+        {
+            AutoConnect = false,
+        });
+        await connection.ConnectAsync();
+        // Список имён шины, а не NameHasOwner: готовый метод высокого уровня, своё сообщение
+        // собирать не нужно.
+        return Array.IndexOf(await connection.ListServicesAsync(), WatcherName) >= 0;
     }
 
     private async Task RunAsync()

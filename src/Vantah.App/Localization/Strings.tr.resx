@@ -462,6 +462,9 @@
   <data name="Settings_Autostart" xml:space="preserve">
     <value>Sistem açılışında başlat</value>
   </data>
+  <data name="Settings_StartMinimized" xml:space="preserve">
+    <value>Sistem tepsisine küçültülmüş başlat</value>
+  </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
     <value>Vantah güncellemelerini denetle</value>
   </data>

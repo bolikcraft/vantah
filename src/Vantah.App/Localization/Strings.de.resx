@@ -462,6 +462,9 @@
   <data name="Settings_Autostart" xml:space="preserve">
     <value>Bei der Anmeldung starten</value>
   </data>
+  <data name="Settings_StartMinimized" xml:space="preserve">
+    <value>Minimiert im Infobereich starten</value>
+  </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
     <value>Nach Vantah-Updates suchen</value>
   </data>

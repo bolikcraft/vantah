@@ -462,6 +462,9 @@
   <data name="Settings_Autostart" xml:space="preserve">
     <value>Launch on system login</value>
   </data>
+  <data name="Settings_StartMinimized" xml:space="preserve">
+    <value>Start minimized to the tray</value>
+  </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
     <value>Check for Vantah updates</value>
   </data>

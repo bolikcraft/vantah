@@ -462,6 +462,9 @@
   <data name="Settings_Autostart" xml:space="preserve">
     <value>Iniciar al entrar en el sistema</value>
   </data>
+  <data name="Settings_StartMinimized" xml:space="preserve">
+    <value>Iniciar minimizado en la bandeja</value>
+  </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
     <value>Buscar actualizaciones de Vantah</value>
   </data>

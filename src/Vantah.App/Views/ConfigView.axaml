@@ -213,6 +213,13 @@
             <ToggleSwitch IsChecked="{Binding AutostartEnabled}"
                           OnContent="{Binding [Settings_Autostart], Source={x:Static loc:Localizer.Instance}}"
                           OffContent="{Binding [Settings_Autostart], Source={x:Static loc:Localizer.Instance}}"/>
+            <!-- Ключ автозапуска, а не отдельная настройка приложения: без автозапуска писать
+                 его некуда, поэтому тумблер доступен только вместе с ним. -->
+            <StackPanel Margin="24,0,0,0" IsEnabled="{Binding AutostartEnabled}">
+              <ToggleSwitch IsChecked="{Binding StartMinimized}"
+                            OnContent="{Binding [Settings_StartMinimized], Source={x:Static loc:Localizer.Instance}}"
+                            OffContent="{Binding [Settings_StartMinimized], Source={x:Static loc:Localizer.Instance}}"/>
+            </StackPanel>
             <ToggleSwitch IsChecked="{Binding CheckAppUpdates}"
                           OnContent="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"
                           OffContent="{Binding [Settings_CheckAppUpdates], Source={x:Static loc:Localizer.Instance}}"/>

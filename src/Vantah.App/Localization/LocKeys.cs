@@ -159,6 +159,7 @@ public static class LocKeys
     public const string Settings_AutoConnectLast = "Settings_AutoConnectLast";
     public const string Settings_AutoConnectFastest = "Settings_AutoConnectFastest";
     public const string Settings_Autostart = "Settings_Autostart";
+    public const string Settings_StartMinimized = "Settings_StartMinimized";
     public const string Settings_CheckAppUpdates = "Settings_CheckAppUpdates";
     public const string Settings_KillSwitch = "Settings_KillSwitch";
     public const string Settings_KillSwitchHelp = "Settings_KillSwitchHelp";

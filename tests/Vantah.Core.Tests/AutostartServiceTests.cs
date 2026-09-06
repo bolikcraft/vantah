@@ -42,6 +42,56 @@ public class AutostartServiceTests
     }
 
     [Fact]
+    public void Enable_minimized_appends_the_flag_after_the_quoted_path()
+    {
+        var dir = TempDir();
+        var svc = Make(dir);
+        svc.Enable(minimized: true);
+
+        var text = File.ReadAllText(Path.Combine(dir, "vantah.desktop"));
+        // Ключ — отдельный аргумент за кавычками: внутри них он стал бы частью имени файла.
+        Assert.Contains("Exec=\"/home/u/.local/bin/vantah\" --minimized\n", text);
+        Assert.True(svc.IsMinimized());
+    }
+
+    [Fact]
+    public void Enable_without_the_flag_writes_a_bare_exec()
+    {
+        var dir = TempDir();
+        var svc = Make(dir);
+        svc.Enable();
+
+        var text = File.ReadAllText(Path.Combine(dir, "vantah.desktop"));
+        Assert.Contains("Exec=\"/home/u/.local/bin/vantah\"\n", text);
+        Assert.DoesNotContain("--minimized", text);
+        Assert.False(svc.IsMinimized());
+    }
+
+    [Fact]
+    public void Re_enabling_rewrites_the_flag()
+    {
+        var dir = TempDir();
+        var svc = Make(dir);
+
+        svc.Enable(minimized: true);
+        svc.Enable(minimized: false);
+        Assert.False(svc.IsMinimized());
+
+        svc.Enable(minimized: true);
+        Assert.True(svc.IsMinimized());
+        // Записи ровно одна: перегенерация переписывает файл, а не дописывает в него.
+        Assert.Single(File.ReadAllLines(Path.Combine(dir, "vantah.desktop")), l => l.StartsWith("Exec="));
+    }
+
+    // Тумблер в настройках включён по умолчанию, а его значение читается из записи автозапуска —
+    // значит без записи ответ обязан быть «да».
+    [Fact]
+    public void Minimized_defaults_to_true_without_a_desktop_file()
+    {
+        Assert.True(Make(TempDir()).IsMinimized());
+    }
+
+    [Fact]
     public void Disable_removes_the_file()
     {
         var dir = TempDir();

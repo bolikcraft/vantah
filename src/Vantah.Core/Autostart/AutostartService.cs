@@ -1,4 +1,5 @@
 using Vantah.Core.Config;
+using Vantah.Core.Startup;
 
 namespace Vantah.Core.Autostart;
 
@@ -19,14 +20,41 @@ public sealed class AutostartService
 
     public bool IsEnabled() => File.Exists(_file);
 
-    public void Enable()
+    /// <summary>
+    /// Стоит ли в записи автозапуска ключ «свернуть в трей». Записи нет — отвечаем «да»:
+    /// это значение по умолчанию для тумблера в настройках, автозапуск ещё не включали.
+    /// </summary>
+    public bool IsMinimized()
+    {
+        try
+        {
+            foreach (var line in File.ReadAllLines(_file))
+                if (line.StartsWith("Exec=", StringComparison.Ordinal))
+                    return line.Split(' ').Contains(StartupOptions.MinimizedFlag);
+            return false;
+        }
+        catch (IOException)
+        {
+            return true;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return true;
+        }
+    }
+
+    /// <param name="minimized">Дописать в Exec= ключ «стартовать свёрнутым в трей».</param>
+    public void Enable(bool minimized = false)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
+        // Ключ идёт ОТДЕЛЬНЫМ аргументом, за кавычками пути: внутри них он стал бы частью
+        // имени файла программы.
+        var flag = minimized ? " " + StartupOptions.MinimizedFlag : "";
         var content =
             "[Desktop Entry]\n" +
             "Type=Application\n" +
             "Name=Vantah\n" +
-            $"Exec={QuoteExec(StripNewlines(_execCommand))}\n" +
+            $"Exec={QuoteExec(StripNewlines(_execCommand))}{flag}\n" +
             $"Icon={StripNewlines(_iconName)}\n" +
             "Terminal=false\n" +
             "StartupWMClass=Vantah.App\n" +

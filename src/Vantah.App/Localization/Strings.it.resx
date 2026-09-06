@@ -462,6 +462,9 @@
   <data name="Settings_Autostart" xml:space="preserve">
     <value>Avvia all'accesso al sistema</value>
   </data>
+  <data name="Settings_StartMinimized" xml:space="preserve">
+    <value>Avvia ridotto nella barra di sistema</value>
+  </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
     <value>Controlla aggiornamenti di Vantah</value>
   </data>

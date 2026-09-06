@@ -462,6 +462,9 @@
   <data name="Settings_Autostart" xml:space="preserve">
     <value>Lancer à l’ouverture de session</value>
   </data>
+  <data name="Settings_StartMinimized" xml:space="preserve">
+    <value>Démarrer réduit dans la zone de notification</value>
+  </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
     <value>Vérifier les mises à jour de Vantah</value>
   </data>

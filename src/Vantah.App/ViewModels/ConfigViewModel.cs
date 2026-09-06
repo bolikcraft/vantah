@@ -116,6 +116,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
             AutoConnectUseFastest = mode == AutoConnectMode.Fastest;
             _lastRadioWasFastest = AutoConnectUseFastest;
             AutostartEnabled = _autostart.IsEnabled();
+            StartMinimized = _autostart.IsMinimized();
             CheckAppUpdates = _appUpdates?.Enabled ?? true;
             KillSwitchEnabled = _killSwitch.Load();
             LoggingEnabled = _logging.Load();
@@ -214,6 +215,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     [ObservableProperty] private bool _autoConnectEnabled;
     [ObservableProperty] private bool _autoConnectUseFastest;
     [ObservableProperty] private bool _autostartEnabled;
+    [ObservableProperty] private bool _startMinimized = true;
     [ObservableProperty] private bool _checkAppUpdates = true;
     [ObservableProperty] private bool _killSwitchEnabled;
     [ObservableProperty] private bool _loggingEnabled;
@@ -230,7 +232,15 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     partial void OnAutostartEnabledChanged(bool value)
     {
         if (_loading) return;
-        if (value) _autostart.Enable(); else _autostart.Disable();
+        if (value) _autostart.Enable(StartMinimized); else _autostart.Disable();
+    }
+
+    // Ключ запуска живёт в самой записи автозапуска, поэтому её надо переписать целиком.
+    // Без включённого автозапуска писать нечего: тумблер в UI в этот момент недоступен.
+    partial void OnStartMinimizedChanged(bool value)
+    {
+        if (_loading || !AutostartEnabled) return;
+        _autostart.Enable(value);
     }
 
     partial void OnCheckAppUpdatesChanged(bool value)

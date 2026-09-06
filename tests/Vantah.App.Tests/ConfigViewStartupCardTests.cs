@@ -68,6 +68,10 @@ public class ConfigViewStartupCardTests
         window.GetVisualDescendants().OfType<ToggleSwitch>()
             .Single(b => Equals(b.OnContent, Localizer.Instance[LocKeys.Settings_Autostart]));
 
+    private static ToggleSwitch MinimizedSwitch(Window window) =>
+        window.GetVisualDescendants().OfType<ToggleSwitch>()
+            .Single(b => Equals(b.OnContent, Localizer.Instance[LocKeys.Settings_StartMinimized]));
+
     [AvaloniaFact]
     public void Startup_card_renders_both_radios_and_both_toggles()
     {
@@ -81,6 +85,7 @@ public class ConfigViewStartupCardTests
         Assert.NotNull(FastestRadio(window));
         Assert.NotNull(AutoConnectSwitch(window));
         Assert.NotNull(AutostartSwitch(window));
+        Assert.NotNull(MinimizedSwitch(window));
     }
 
     [AvaloniaFact]
@@ -123,6 +128,47 @@ public class ConfigViewStartupCardTests
 
         Assert.False(vm.AutoConnectUseFastest);
         Assert.Equal(AutoConnectMode.LastUsed, autoConnect.Load());
+    }
+
+    /// <summary>
+    /// Ключ «свернуть в трей» живёт в записи автозапуска, поэтому без автозапуска тумблер
+    /// обязан быть недоступен — и в собранном дереве тоже, а не только во вьюмодели.
+    /// </summary>
+    [AvaloniaFact]
+    public void Minimized_switch_is_gated_by_autostart_in_the_rendered_tree()
+    {
+        var (vm, _, _) = VmWithStartup();
+        var window = Show(vm);
+
+        var box = MinimizedSwitch(window);
+        Assert.False(box.IsEffectivelyEnabled);
+
+        vm.AutostartEnabled = true;
+        Assert.True(box.IsEffectivelyEnabled);
+
+        vm.AutostartEnabled = false;
+        Assert.False(box.IsEffectivelyEnabled);
+    }
+
+    [AvaloniaFact]
+    public void Toggling_the_minimized_switch_through_the_rendered_control_rewrites_the_entry()
+    {
+        var (vm, _, autostart) = VmWithStartup();
+        var window = Show(vm);
+        AutostartSwitch(window).IsChecked = true;
+
+        // По умолчанию тумблер включён, значит и запись автозапуска сразу с ключом.
+        Assert.True(autostart.IsMinimized());
+
+        var box = MinimizedSwitch(window);
+        box.IsChecked = false;
+
+        Assert.False(vm.StartMinimized);
+        Assert.False(autostart.IsMinimized());
+
+        box.IsChecked = true;
+
+        Assert.True(autostart.IsMinimized());
     }
 
     [AvaloniaFact]
