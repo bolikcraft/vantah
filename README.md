@@ -183,7 +183,10 @@ commands.
 - **Notifications.** Vantah shows a desktop notification when the VPN
   connection drops, and one more when the connection comes back. Your own
   connect and disconnect commands cause no notification. The toggle is in
-  Settings and is on by default.
+  Settings and is on by default. It controls only these two messages of Vantah.
+  The `adguardvpn-cli` tool sends notifications of its own, and they have a
+  different toggle ("Show notifications") on the same Settings page. You switch
+  the two off independently.
 - **Appearance.** The buttons and toggles follow the system accent color of your
   desktop. A slider in Settings sets the opacity of the windows.
 - **Diagnostics.** Vantah writes its own log to `~/.local/share/vantah/app.log`:
@@ -422,6 +425,16 @@ used to force-terminate a CLI process — see
 No. The published AppImage, tar.gz, `.deb` and `.rpm` builds are self-contained —
 the runtime is embedded. The .NET 10 SDK is needed only to build from source,
 see [Building and running for development](#building-and-running-for-development).
+
+**How does Vantah know that the VPN connection dropped?**
+Vantah asks `adguardvpn-cli status` every few seconds. A drop is not only the
+reply "Connection lost" or "Waiting to reconnect": if the CLI does not answer
+two polls in a row, Vantah also counts the connection as lost. This silence is
+usual — after a drop with the kill switch on, the CLI starts to recover the
+tunnel and its `status` command hangs. The notification is not immediate,
+because the new state must first stay stable: in this case the message comes
+approximately half a minute after the drop. In exchange, a connection that goes
+down and comes back quickly gives no messages at all.
 
 **Does Vantah send anything over the network on its own?**
 Only an update check against this repository's GitHub releases page, which can be
