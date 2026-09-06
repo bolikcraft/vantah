@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Sun Sep  6 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
+
+- Update to 0.6.0: Vantah shows a desktop notification when the VPN
+  drops and when it comes back, it can start minimized to the tray, it
+  accepts the --minimized, --version and --help options, and a second
+  vantah command shows the window of the instance that already runs.
+
+-------------------------------------------------------------------
 Wed Sep  3 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
 
 - Update to 0.5.0: in SOCKS mode with the kill switch the window no
