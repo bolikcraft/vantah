@@ -478,10 +478,10 @@
     <value>Aplikasi menulis tindakannya ke berkas ~/.local/share/vantah/app.log. Ini berguna untuk menganalisis masalah. Log dimatikan secara bawaan.</value>
   </data>
   <data name="Settings_ConnectionAlerts" xml:space="preserve">
-    <value>Beri tahu saat koneksi terputus</value>
+    <value>Beri tahu saat VPN terputus</value>
   </data>
   <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
-    <value>Vantah menampilkan pesan di desktop jika koneksi VPN terputus dengan sendirinya, dan satu lagi saat koneksi kembali. Perintah «Sambungkan» dan «Putuskan» tidak menampilkan pesan.</value>
+    <value>Vantah menampilkan pesan di desktop jika VPN terputus dengan sendirinya, dan satu lagi saat VPN kembali. Perintah «Sambungkan» dan «Putuskan» tidak menampilkan pesan.</value>
   </data>
   <data name="Notify_ConnectionLost" xml:space="preserve">
     <value>Koneksi VPN terputus</value>

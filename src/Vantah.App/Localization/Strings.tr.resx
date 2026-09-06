@@ -478,10 +478,10 @@
     <value>Uygulama işlemlerini ~/.local/share/vantah/app.log dosyasına yazar. Bu, bir sorunu incelemek için gereklidir. Günlük varsayılan olarak kapalıdır.</value>
   </data>
   <data name="Settings_ConnectionAlerts" xml:space="preserve">
-    <value>Bağlantı koptuğunda bildir</value>
+    <value>VPN koptuğunda bildir</value>
   </data>
   <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
-    <value>Vantah, VPN bağlantısı kendiliğinden koptuğunda masaüstünde bir bildirim gösterir, bağlantı geri geldiğinde ise ikinci bir bildirim gösterir. «Bağlan» ve «Bağlantıyı kes» komutları bildirim göstermez.</value>
+    <value>Vantah, VPN kendiliğinden koptuğunda masaüstünde bir bildirim gösterir, VPN geri geldiğinde ise ikinci bir bildirim gösterir. «Bağlan» ve «Bağlantıyı kes» komutları bildirim göstermez.</value>
   </data>
   <data name="Notify_ConnectionLost" xml:space="preserve">
     <value>VPN bağlantısı koptu</value>

@@ -478,10 +478,10 @@
     <value>L'applicazione scrive le sue azioni nel file ~/.local/share/vantah/app.log. Serve ad analizzare un problema. Il registro è disattivato per impostazione predefinita.</value>
   </data>
   <data name="Settings_ConnectionAlerts" xml:space="preserve">
-    <value>Avvisa quando la connessione cade</value>
+    <value>Avvisa quando la VPN cade</value>
   </data>
   <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
-    <value>Vantah mostra un avviso sul desktop se la connessione VPN cade da sola e un secondo avviso quando ritorna. I comandi «Connetti» e «Disconnetti» non mostrano avvisi.</value>
+    <value>Vantah mostra un avviso sul desktop se la VPN cade da sola e un secondo avviso quando ritorna. I comandi «Connetti» e «Disconnetti» non mostrano avvisi.</value>
   </data>
   <data name="Notify_ConnectionLost" xml:space="preserve">
     <value>Connessione VPN persa</value>

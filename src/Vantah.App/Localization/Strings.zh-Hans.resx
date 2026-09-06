@@ -478,10 +478,10 @@
     <value>应用会将自己的操作写入文件 ~/.local/share/vantah/app.log。这有助于排查问题。日志默认关闭。</value>
   </data>
   <data name="Settings_ConnectionAlerts" xml:space="preserve">
-    <value>连接断开时通知</value>
+    <value>VPN 断开时通知</value>
   </data>
   <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
-    <value>如果 VPN 连接自行断开，Vantah 会在桌面上显示提示；连接恢复后再显示一次。手动执行“连接”和“断开”不会显示提示。</value>
+    <value>如果 VPN 自行断开，Vantah 会在桌面上显示提示；VPN 恢复后再显示一次。手动执行“连接”和“断开”不会显示提示。</value>
   </data>
   <data name="Notify_ConnectionLost" xml:space="preserve">
     <value>VPN 连接已断开</value>

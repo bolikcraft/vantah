@@ -478,10 +478,10 @@
     <value>Приложение записывает свои действия в файл ~/.local/share/vantah/app.log. Это нужно, чтобы разобрать проблему. По умолчанию лог выключен.</value>
   </data>
   <data name="Settings_ConnectionAlerts" xml:space="preserve">
-    <value>Уведомлять об обрыве связи</value>
+    <value>Сообщать о потере VPN</value>
   </data>
   <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
-    <value>Vantah показывает плашку на рабочем столе, если VPN-соединение пропало само, и вторую — когда оно вернулось. На команды «Подключить» и «Отключить» плашек нет.</value>
+    <value>Vantah показывает плашку на рабочем столе, если VPN пропал сам, и вторую — когда он вернулся. На команды «Подключить» и «Отключить» плашек нет.</value>
   </data>
   <data name="Notify_ConnectionLost" xml:space="preserve">
     <value>VPN-соединение потеряно</value>

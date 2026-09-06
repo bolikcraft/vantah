@@ -249,7 +249,7 @@
                 </ToolTip.Tip>
               </Border>
             </StackPanel>
-            <!-- Уведомления об обрыве: тумблер + «?» со справкой, как у kill switch выше. -->
+            <!-- Сообщения о потере VPN: тумблер + «?» со справкой, как у kill switch выше. -->
             <StackPanel Orientation="Horizontal" Spacing="6">
               <ToggleSwitch IsChecked="{Binding ConnectionAlerts}">
                 <ToggleSwitch.OnContent>

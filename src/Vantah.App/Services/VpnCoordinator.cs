@@ -38,6 +38,10 @@ public sealed class VpnCoordinator(
     // Пока демон восстанавливает связь, `status` подвисает и упирается в таймаут CLI:
     // одиночный промах не должен показывать «Ошибка» вместо живого туннеля.
     private const int PollFailuresBeforeError = 2;
+    // Порог «молчания» по времени: период опроса 4 c, таймаут `status` 15 c, и подвисший опрос
+    // съедает следующие тики — значит один промах стоит 15–19 c, а два подряд ≈ 30–38 c.
+    // Одиночный промах и медленный ответ событием не считаем.
+    private const int PollFailuresBeforeDrop = 2;
     private int _pollFailures;
     private readonly TimeSpan _loginProbePeriod = loginProbePeriod ?? TimeSpan.FromSeconds(30);
     private DateTime _lastLoginProbeUtc = DateTime.UtcNow;
@@ -155,7 +159,9 @@ public sealed class VpnCoordinator(
                 // Первый сбой подряд глотаем: снапшот остаётся прежним, решение принимаем
                 // по второму промаху.
                 var reason = OneLine(ex.Message);
-                if (++_pollFailures >= PollFailuresBeforeError)
+                ++_pollFailures;
+                ReportSilence();
+                if (_pollFailures >= PollFailuresBeforeError)
                 {
                     _log.Write($"опрос не удался ({_pollFailures}/{PollFailuresBeforeError}): {reason}");
                     SetState(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) }, "опрос");
@@ -279,10 +285,20 @@ public sealed class VpnCoordinator(
         }
     }
 
+    // Затянувшееся молчание CLI — тоже обрыв: при потере связи с kill switch `status` уходит
+    // в recovery и висит до таймаута, поэтому самый частый разрыв не даёт ни одного ответа.
+    private void ReportSilence()
+    {
+        if (link is null || _pollFailures < PollFailuresBeforeDrop) return;
+        // Опрос мог стартовать до нажатия кнопки и упасть уже после: пока команда пользователя
+        // в полёте, его сбой обрывом не считаем.
+        if (_operationInFlight) return;
+        if (_pollFailures == PollFailuresBeforeDrop) _log.Write("связь: молчание опроса считаем обрывом");
+        link.Observe(LinkEvent.Retrying);
+    }
+
     // Ответ CLI как событие связи: обрыв отличается от отключения по кнопке источником, а не
     // таймингом — команды пользователя шлют сюда своё событие сами (Connect/Disconnect).
-    // Сбой опроса не событие: `status` подвисает и во время восстановления, и ложный обрыв
-    // из этого не выводим.
     private void ReportLink(VpnStatus status)
     {
         if (link is null) return;

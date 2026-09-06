@@ -478,10 +478,10 @@
     <value>Aplikacja zapisuje swoje działania w pliku ~/.local/share/vantah/app.log. Służy to do analizy problemu. Dziennik jest domyślnie wyłączony.</value>
   </data>
   <data name="Settings_ConnectionAlerts" xml:space="preserve">
-    <value>Powiadamiaj o utracie połączenia</value>
+    <value>Powiadamiaj o utracie VPN</value>
   </data>
   <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
-    <value>Vantah pokazuje komunikat na pulpicie, gdy połączenie VPN zerwie się samo, i drugi, gdy wróci. Polecenia «Połącz» i «Rozłącz» nie pokazują komunikatów.</value>
+    <value>Vantah pokazuje komunikat na pulpicie, gdy VPN zerwie się sam, i drugi, gdy wróci. Polecenia «Połącz» i «Rozłącz» nie pokazują komunikatów.</value>
   </data>
   <data name="Notify_ConnectionLost" xml:space="preserve">
     <value>Utracono połączenie VPN</value>

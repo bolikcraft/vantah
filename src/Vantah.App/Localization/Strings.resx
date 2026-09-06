@@ -478,10 +478,10 @@
     <value>Vantah writes its actions to the file ~/.local/share/vantah/app.log. This file helps you to find the cause of a problem. The log is off by default.</value>
   </data>
   <data name="Settings_ConnectionAlerts" xml:space="preserve">
-    <value>Notify when the connection drops</value>
+    <value>Notify when the VPN drops</value>
   </data>
   <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
-    <value>Vantah shows a desktop message if the VPN connection stops without your command, and one more message when the connection comes back. Your own Connect and Disconnect commands show no message.</value>
+    <value>Vantah shows a desktop message if the VPN stops without your command, and one more message when the VPN comes back. Your own Connect and Disconnect commands show no message.</value>
   </data>
   <data name="Notify_ConnectionLost" xml:space="preserve">
     <value>VPN connection lost</value>

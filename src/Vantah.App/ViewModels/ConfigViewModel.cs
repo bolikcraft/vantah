@@ -226,7 +226,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     [ObservableProperty] private bool _killSwitchEnabled;
     [ObservableProperty] private bool _loggingEnabled;
 
-    /// <summary>Уведомлять об обрыве и восстановлении связи. По умолчанию включено.</summary>
+    /// <summary>Сообщать о потере VPN и о его возвращении. По умолчанию включено.</summary>
     [ObservableProperty] private bool _connectionAlerts = true;
 
     partial void OnAutoConnectEnabledChanged(bool value) => PersistAutoConnect();

@@ -478,10 +478,10 @@
     <value>Die Anwendung schreibt ihre Aktionen in die Datei ~/.local/share/vantah/app.log. Das hilft bei der Fehlersuche. Standardmäßig ist das Protokoll ausgeschaltet.</value>
   </data>
   <data name="Settings_ConnectionAlerts" xml:space="preserve">
-    <value>Bei Verbindungsabbruch benachrichtigen</value>
+    <value>Melden, wenn das VPN ausfällt</value>
   </data>
   <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
-    <value>Vantah zeigt eine Meldung auf dem Desktop, wenn die VPN-Verbindung von selbst abbricht, und eine zweite, wenn sie zurückkehrt. Die Befehle «Verbinden» und «Trennen» erzeugen keine Meldung.</value>
+    <value>Vantah zeigt eine Meldung auf dem Desktop, wenn das VPN von selbst ausfällt, und eine zweite, wenn es zurückkehrt. Die Befehle «Verbinden» und «Trennen» erzeugen keine Meldung.</value>
   </data>
   <data name="Notify_ConnectionLost" xml:space="preserve">
     <value>VPN-Verbindung unterbrochen</value>

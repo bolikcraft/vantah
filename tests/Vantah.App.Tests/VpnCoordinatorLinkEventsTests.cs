@@ -1,5 +1,8 @@
+using Vantah.App.Localization;
+using Vantah.App.Notifications;
 using Vantah.App.Services;
 using Vantah.App.Tests.Fakes;
+using Vantah.App.Tests.Notifications;
 using Vantah.Core.History;
 using Vantah.Core.Models;
 using Vantah.Core.Notifications;
@@ -44,9 +47,26 @@ public class VpnCoordinatorLinkEventsTests
         Assert.Empty(link.Events);
     }
 
-    /// <summary>Сбой опроса — не обрыв: `status` подвисает и во время восстановления связи.</summary>
+    /// <summary>Одиночный сбой — ещё не обрыв: медленный ответ CLI бывает и на живом туннеле.</summary>
     [Fact]
-    public async Task Failed_poll_reports_nothing()
+    public async Task A_single_failed_poll_reports_nothing()
+    {
+        var vpn = new FakeLinkVpnService(new VpnStatus(true, "AMSTERDAM", "TUN", "tun0"));
+        var (coord, link) = Make(vpn);
+        await coord.PollOnceAsync(TestContext.Current.CancellationToken);
+
+        vpn.Fail = true;
+        await coord.PollOnceAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal([LinkEvent.Up], link.Events);
+    }
+
+    /// <summary>
+    /// Обрыв с kill switch: `status` уходит в recovery и висит до таймаута, ответов больше нет.
+    /// Молчание с порога считаем обрывом, иначе самый частый разрыв прошёл бы незамеченным.
+    /// </summary>
+    [Fact]
+    public async Task Poll_failures_that_reach_the_threshold_report_a_drop()
     {
         var vpn = new FakeLinkVpnService(new VpnStatus(true, "AMSTERDAM", "TUN", "tun0"));
         var (coord, link) = Make(vpn);
@@ -55,8 +75,100 @@ public class VpnCoordinatorLinkEventsTests
         vpn.Fail = true;
         await coord.PollOnceAsync(TestContext.Current.CancellationToken);
         await coord.PollOnceAsync(TestContext.Current.CancellationToken);
+        await coord.PollOnceAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal([LinkEvent.Up], link.Events);
+        Assert.Equal([LinkEvent.Up, LinkEvent.Retrying, LinkEvent.Retrying], link.Events);
+    }
+
+    /// <summary>Успешный ответ обнуляет счётчик: разрозненные промахи в обрыв не складываются.</summary>
+    [Fact]
+    public async Task A_successful_poll_resets_the_failure_counter()
+    {
+        var vpn = new FakeLinkVpnService(new VpnStatus(true, "AMSTERDAM", "TUN", "tun0"));
+        var (coord, link) = Make(vpn);
+
+        for (var i = 0; i < 3; i++)
+        {
+            vpn.Fail = true;
+            await coord.PollOnceAsync(TestContext.Current.CancellationToken);
+            vpn.Fail = false;
+            await coord.PollOnceAsync(TestContext.Current.CancellationToken);
+        }
+
+        Assert.Equal([LinkEvent.Up, LinkEvent.Up, LinkEvent.Up], link.Events);
+    }
+
+    /// <summary>
+    /// Опрос мог стартовать до нажатия «Подключить» и упасть уже после: пока команда
+    /// пользователя в полёте, его сбой обрывом не считаем — иначе кнопка даст ложную плашку.
+    /// </summary>
+    [Fact]
+    public async Task Poll_that_fails_during_a_user_command_reports_nothing()
+    {
+        var vpn = new FakeLinkVpnService(new VpnStatus(true, "AMSTERDAM", "TUN", "tun0"));
+        var (coord, link) = Make(vpn);
+        await coord.PollOnceAsync(TestContext.Current.CancellationToken);
+
+        vpn.Fail = true;
+        await coord.PollOnceAsync(TestContext.Current.CancellationToken);
+
+        // Второй опрос висит, как настоящий `status`; пользователь тем временем жмёт «Подключить».
+        vpn.StatusGate = new TaskCompletionSource();
+        var poll = coord.PollOnceAsync(TestContext.Current.CancellationToken);
+        vpn.ConnectGate = new TaskCompletionSource();
+        var connect = coord.ConnectAsync("Amsterdam", fastest: false, TestContext.Current.CancellationToken);
+        await vpn.ConnectEntered.Task;
+        vpn.StatusGate.SetResult();
+        await poll;
+        vpn.ConnectGate.SetResult();
+        await connect;
+
+        Assert.Equal([LinkEvent.Up, LinkEvent.UserConnect], link.Events);
+    }
+
+    /// <summary>
+    /// Сквозная проверка: обрыв «по тишине» доходит до плашки, а вернувшийся туннель — до
+    /// плашки о восстановлении. Окно устаканивания в решателе стоит на пути только первого
+    /// успешного ответа, дальше восстановление объявляется.
+    /// </summary>
+    [Fact]
+    public async Task Silent_drop_and_the_recovery_after_it_reach_the_notifier()
+    {
+        var vpn = new FakeLinkVpnService(new VpnStatus(true, "AMSTERDAM", "TUN", "tun0"));
+        var notifier = new FakeNotifier();
+        var now = new DateTimeOffset(2026, 9, 6, 12, 0, 0, TimeSpan.Zero);
+        var settings = new NotificationsStore(
+            Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "notifications"));
+        var alerts = new ConnectionAlertService(notifier, settings, clock: () => now);
+        var (coord, _) = Make(vpn, alerts);
+
+        await coord.PollOnceAsync(TestContext.Current.CancellationToken);
+        await alerts.LastNotifyTask;
+
+        // Ответов больше нет: каждый подвисший опрос съедает около 15 секунд.
+        vpn.Fail = true;
+        for (var i = 0; i < 4; i++)
+        {
+            now += TimeSpan.FromSeconds(15);
+            await coord.PollOnceAsync(TestContext.Current.CancellationToken);
+            await alerts.LastNotifyTask;
+        }
+        Assert.Equal([Localizer.Instance[LocKeys.Notify_ConnectionLost]], notifier.Sent.Select(s => s.Summary));
+
+        // CLI снова отвечает «Connected».
+        vpn.Fail = false;
+        for (var i = 0; i < 3; i++)
+        {
+            now += TimeSpan.FromSeconds(4);
+            await coord.PollOnceAsync(TestContext.Current.CancellationToken);
+            await alerts.LastNotifyTask;
+        }
+
+        Assert.Equal(
+        [
+            Localizer.Instance[LocKeys.Notify_ConnectionLost],
+            Localizer.Instance[LocKeys.Notify_ConnectionRestored],
+        ], notifier.Sent.Select(s => s.Summary));
     }
 
     [Fact]
@@ -87,10 +199,11 @@ public class VpnCoordinatorLinkEventsTests
         Assert.Equal([LinkEvent.Down, LinkEvent.UserConnect, LinkEvent.Up], link.Events);
     }
 
-    private static (VpnCoordinator Coordinator, RecordingLinkObserver Link) Make(IVpnService vpn)
+    private static (VpnCoordinator Coordinator, RecordingLinkObserver Link) Make(
+        IVpnService vpn, ILinkObserver? also = null)
     {
         var dir = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
-        var link = new RecordingLinkObserver();
+        var link = new RecordingLinkObserver(also);
         var history = new ConnectionHistoryTracker(
             new ConnectionHistoryStore(Path.Combine(dir, "connections-history")),
             new ActiveSessionStore(Path.Combine(dir, "connection-active")));
@@ -102,12 +215,16 @@ public class VpnCoordinatorLinkEventsTests
     }
 }
 
-/// <summary>Приёмник событий связи: запоминает порядок, ничего не решает.</summary>
-internal sealed class RecordingLinkObserver : ILinkObserver
+/// <summary>Приёмник событий связи: запоминает порядок и по желанию передаёт событие дальше.</summary>
+internal sealed class RecordingLinkObserver(ILinkObserver? next = null) : ILinkObserver
 {
     public List<LinkEvent> Events { get; } = [];
 
-    public void Observe(LinkEvent link) => Events.Add(link);
+    public void Observe(LinkEvent link)
+    {
+        Events.Add(link);
+        next?.Observe(link);
+    }
 }
 
 /// <summary>Дубль VPN-сервиса с настраиваемым статусом и переключаемым сбоем.</summary>
@@ -116,13 +233,30 @@ internal sealed class FakeLinkVpnService(VpnStatus status) : IVpnService
     public VpnStatus Status { get; set; } = status;
     public bool Fail { get; set; }
 
-    public Task<VpnStatus> ConnectAsync(string? location, bool fastest,
-        IpVersionPreference ipVersion = IpVersionPreference.Auto,
-        bool killSwitch = false, CancellationToken ct = default) => Task.FromResult(Status);
+    /// <summary>Задержка ответа `status` — ею воспроизводим подвисший опрос.</summary>
+    public TaskCompletionSource? StatusGate { get; set; }
 
-    public Task<VpnStatus> GetStatusAsync(CancellationToken ct = default) =>
-        Fail ? Task.FromException<VpnStatus>(new InvalidOperationException("CLI молчит"))
-             : Task.FromResult(Status);
+    /// <summary>Задержка `connect` — ею держим команду пользователя в полёте.</summary>
+    public TaskCompletionSource? ConnectGate { get; set; }
+
+    /// <summary>Взводится, когда `connect` начался: тест дожидается операции, а не спит.</summary>
+    public TaskCompletionSource ConnectEntered { get; } = new();
+
+    public async Task<VpnStatus> ConnectAsync(string? location, bool fastest,
+        IpVersionPreference ipVersion = IpVersionPreference.Auto,
+        bool killSwitch = false, CancellationToken ct = default)
+    {
+        ConnectEntered.TrySetResult();
+        if (ConnectGate is { } gate) await gate.Task;
+        return Status;
+    }
+
+    public async Task<VpnStatus> GetStatusAsync(CancellationToken ct = default)
+    {
+        if (StatusGate is { } gate) await gate.Task;
+        if (Fail) throw new InvalidOperationException("CLI молчит");
+        return Status;
+    }
 
     public Task<IReadOnlyList<Location>> GetLocationsAsync(int count = 300, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<Location>>([]);
