@@ -477,6 +477,24 @@
   <data name="Settings_LoggingHelp" xml:space="preserve">
     <value>应用会将自己的操作写入文件 ~/.local/share/vantah/app.log。这有助于排查问题。日志默认关闭。</value>
   </data>
+  <data name="Settings_ConnectionAlerts" xml:space="preserve">
+    <value>连接断开时通知</value>
+  </data>
+  <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
+    <value>如果 VPN 连接自行断开，Vantah 会在桌面上显示提示；连接恢复后再显示一次。手动执行“连接”和“断开”不会显示提示。</value>
+  </data>
+  <data name="Notify_ConnectionLost" xml:space="preserve">
+    <value>VPN 连接已断开</value>
+  </data>
+  <data name="Notify_ConnectionLostBody" xml:space="preserve">
+    <value>AdGuard VPN 隧道已中断。</value>
+  </data>
+  <data name="Notify_ConnectionRestored" xml:space="preserve">
+    <value>VPN 连接已恢复</value>
+  </data>
+  <data name="Notify_ConnectionRestoredBody" xml:space="preserve">
+    <value>AdGuard VPN 隧道重新工作。</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Vantah 有新版本 — {0}</value>
   </data>

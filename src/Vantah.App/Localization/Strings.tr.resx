@@ -477,6 +477,24 @@
   <data name="Settings_LoggingHelp" xml:space="preserve">
     <value>Uygulama işlemlerini ~/.local/share/vantah/app.log dosyasına yazar. Bu, bir sorunu incelemek için gereklidir. Günlük varsayılan olarak kapalıdır.</value>
   </data>
+  <data name="Settings_ConnectionAlerts" xml:space="preserve">
+    <value>Bağlantı koptuğunda bildir</value>
+  </data>
+  <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
+    <value>Vantah, VPN bağlantısı kendiliğinden koptuğunda masaüstünde bir bildirim gösterir, bağlantı geri geldiğinde ise ikinci bir bildirim gösterir. «Bağlan» ve «Bağlantıyı kes» komutları bildirim göstermez.</value>
+  </data>
+  <data name="Notify_ConnectionLost" xml:space="preserve">
+    <value>VPN bağlantısı koptu</value>
+  </data>
+  <data name="Notify_ConnectionLostBody" xml:space="preserve">
+    <value>AdGuard VPN tüneli kapandı.</value>
+  </data>
+  <data name="Notify_ConnectionRestored" xml:space="preserve">
+    <value>VPN bağlantısı geri geldi</value>
+  </data>
+  <data name="Notify_ConnectionRestoredBody" xml:space="preserve">
+    <value>AdGuard VPN tüneli yeniden çalışıyor.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Vantah için yeni sürüm mevcut — {0}</value>
   </data>

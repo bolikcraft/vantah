@@ -15,6 +15,7 @@ using Vantah.Core.Errors;
 using Vantah.Core.Localization;
 using Vantah.Core.Logs;
 using Vantah.Core.Models;
+using Vantah.Core.Notifications;
 using Vantah.Core.Settings;
 using Vantah.Core.State;
 using Vantah.Core.Update;
@@ -43,6 +44,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     private readonly ICliUpdater? _updater;
     private readonly WindowTransparency _transparency;
     private readonly LoggingStore _logging;
+    private readonly NotificationsStore _notifications;
     private readonly IAppLog _appLog;
     private bool _lastRadioWasFastest;
 
@@ -64,7 +66,8 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
         ICliUpdater? updater = null,
         WindowTransparency? transparency = null,
         LoggingStore? logging = null,
-        IAppLog? appLog = null)
+        IAppLog? appLog = null,
+        NotificationsStore? notifications = null)
     {
         _config = config;
         _languageStore = languageStore;
@@ -92,6 +95,8 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
         // Без переданного лога тумблер только пишет настройку (следующий запуск её подхватит).
         _logging = logging ?? new LoggingStore();
         _appLog = appLog ?? NullAppLog.Instance;
+        // Уведомления об обрыве — своё локальное хранилище, опционально как автозапуск.
+        _notifications = notifications ?? new NotificationsStore();
 
         // Пишем в backing-поле, а не в свойство: стартовый язык — не выбор пользователя,
         // сохранять его в ~/.config/vantah/language незачем.
@@ -120,6 +125,7 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
             CheckAppUpdates = _appUpdates?.Enabled ?? true;
             KillSwitchEnabled = _killSwitch.Load();
             LoggingEnabled = _logging.Load();
+            ConnectionAlerts = _notifications.Load();
             WindowOpacity = _transparency.Percent;
         }
         finally { _loading = false; }
@@ -220,6 +226,9 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
     [ObservableProperty] private bool _killSwitchEnabled;
     [ObservableProperty] private bool _loggingEnabled;
 
+    /// <summary>Уведомлять об обрыве и восстановлении связи. По умолчанию включено.</summary>
+    [ObservableProperty] private bool _connectionAlerts = true;
+
     partial void OnAutoConnectEnabledChanged(bool value) => PersistAutoConnect();
 
     partial void OnAutoConnectUseFastestChanged(bool value)
@@ -270,6 +279,12 @@ public partial class ConfigViewModel : ErrorAwareViewModel, IReloadableSection
             _appLog.Write("лог выключен");
             _appLog.Enabled = false;
         }
+    }
+
+    partial void OnConnectionAlertsChanged(bool value)
+    {
+        if (_loading) return;
+        _notifications.Save(value);
     }
 
     /// <summary>Непрозрачность окон в процентах: 100 — обычное окно, 0 — фона не видно совсем.</summary>

@@ -165,6 +165,14 @@ public static class LocKeys
     public const string Settings_KillSwitchHelp = "Settings_KillSwitchHelp";
     public const string Settings_Logging = "Settings_Logging";
     public const string Settings_LoggingHelp = "Settings_LoggingHelp";
+    public const string Settings_ConnectionAlerts = "Settings_ConnectionAlerts";
+    public const string Settings_ConnectionAlertsHelp = "Settings_ConnectionAlertsHelp";
+
+    // Плашки рабочего стола об обрыве и восстановлении связи
+    public const string Notify_ConnectionLost = "Notify_ConnectionLost";
+    public const string Notify_ConnectionLostBody = "Notify_ConnectionLostBody";
+    public const string Notify_ConnectionRestored = "Notify_ConnectionRestored";
+    public const string Notify_ConnectionRestoredBody = "Notify_ConnectionRestoredBody";
 
     // Плашка «доступна новая версия Vantah» в главном окне
     public const string Update_Available = "Update_Available";

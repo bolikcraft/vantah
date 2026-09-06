@@ -477,6 +477,24 @@
   <data name="Settings_LoggingHelp" xml:space="preserve">
     <value>Застосунок записує свої дії у файл ~/.local/share/vantah/app.log. Це потрібно, щоб розібрати проблему. Типово журнал вимкнено.</value>
   </data>
+  <data name="Settings_ConnectionAlerts" xml:space="preserve">
+    <value>Сповіщати про обрив зв'язку</value>
+  </data>
+  <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
+    <value>Vantah показує повідомлення на робочому столі, якщо VPN-з'єднання зникло саме, і друге — коли воно повернулося. На команди «Підключити» та «Відключити» повідомлень немає.</value>
+  </data>
+  <data name="Notify_ConnectionLost" xml:space="preserve">
+    <value>VPN-з'єднання втрачено</value>
+  </data>
+  <data name="Notify_ConnectionLostBody" xml:space="preserve">
+    <value>Тунель AdGuard VPN розірвано.</value>
+  </data>
+  <data name="Notify_ConnectionRestored" xml:space="preserve">
+    <value>VPN-з'єднання відновлено</value>
+  </data>
+  <data name="Notify_ConnectionRestoredBody" xml:space="preserve">
+    <value>Тунель AdGuard VPN знову працює.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Доступна нова версія Vantah — {0}</value>
   </data>

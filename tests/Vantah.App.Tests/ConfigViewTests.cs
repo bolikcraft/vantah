@@ -73,9 +73,9 @@ public class ConfigViewTests
         Assert.Equal("beta", vm.SelectedChannel);
         Assert.Equal("script", vm.SelectedRouting);
 
-        // Все флажки настроек — переключатели ToggleSwitch (13 штук) плюс «Режим работы» = 14.
+        // Все флажки настроек — переключатели ToggleSwitch (14 штук) плюс «Режим работы» = 15.
         var toggles = window.GetVisualDescendants().OfType<ToggleSwitch>().ToArray();
-        Assert.Equal(14, toggles.Length);
+        Assert.Equal(15, toggles.Length);
         Assert.Contains(toggles, b => b.IsChecked == true);   // post-quantum и debug пришли включёнными
     }
 

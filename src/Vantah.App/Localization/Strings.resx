@@ -477,6 +477,24 @@
   <data name="Settings_LoggingHelp" xml:space="preserve">
     <value>Vantah writes its actions to the file ~/.local/share/vantah/app.log. This file helps you to find the cause of a problem. The log is off by default.</value>
   </data>
+  <data name="Settings_ConnectionAlerts" xml:space="preserve">
+    <value>Notify when the connection drops</value>
+  </data>
+  <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
+    <value>Vantah shows a desktop message if the VPN connection stops without your command, and one more message when the connection comes back. Your own Connect and Disconnect commands show no message.</value>
+  </data>
+  <data name="Notify_ConnectionLost" xml:space="preserve">
+    <value>VPN connection lost</value>
+  </data>
+  <data name="Notify_ConnectionLostBody" xml:space="preserve">
+    <value>The AdGuard VPN tunnel stopped.</value>
+  </data>
+  <data name="Notify_ConnectionRestored" xml:space="preserve">
+    <value>VPN connection restored</value>
+  </data>
+  <data name="Notify_ConnectionRestoredBody" xml:space="preserve">
+    <value>The AdGuard VPN tunnel is up again.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>A new version of Vantah is available — {0}</value>
   </data>

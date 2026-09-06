@@ -7,6 +7,7 @@ using Vantah.Core.History;
 using Vantah.Core.Logs;
 using Vantah.Core.Models;
 using Vantah.Core.Errors;
+using Vantah.Core.Notifications;
 using Vantah.Core.State;
 using Vantah.Core.Traffic;
 using Vantah.Core.Vpn;
@@ -23,7 +24,8 @@ public sealed class VpnCoordinator(
     LastLocationStore? lastLocation = null,
     KillSwitchStore? killSwitch = null,
     IAppLog? log = null,
-    TimeSpan? loginProbePeriod = null)
+    TimeSpan? loginProbePeriod = null,
+    ILinkObserver? link = null)
 {
     private readonly IAppLog _log = log ?? NullAppLog.Instance;
 
@@ -100,6 +102,7 @@ public sealed class VpnCoordinator(
             {
                 var status = await vpn.GetStatusAsync(ct);
                 _pollFailures = 0;
+                ReportLink(status);
                 var now = DateTime.UtcNow;
                 var elapsed = (now - _lastPollUtc).TotalSeconds;
                 _lastPollUtc = now;
@@ -178,6 +181,7 @@ public sealed class VpnCoordinator(
         try
         {
             _operationInFlight = true;
+            link?.Observe(LinkEvent.UserConnect);
             SetState(s => s with { Connection = ConnectionState.Connecting, Error = null }, "connect");
             try
             {
@@ -245,6 +249,7 @@ public sealed class VpnCoordinator(
         try
         {
             _operationInFlight = true;
+            link?.Observe(LinkEvent.UserDisconnect);
             SetState(s => s with { Connection = ConnectionState.Disconnecting, Error = null }, "disconnect");
             try
             {
@@ -271,6 +276,22 @@ public sealed class VpnCoordinator(
         {
             _operationInFlight = false;
             _opGate.Release();
+        }
+    }
+
+    // Ответ CLI как событие связи: обрыв отличается от отключения по кнопке источником, а не
+    // таймингом — команды пользователя шлют сюда своё событие сами (Connect/Disconnect).
+    // Сбой опроса не событие: `status` подвисает и во время восстановления, и ложный обрыв
+    // из этого не выводим.
+    private void ReportLink(VpnStatus status)
+    {
+        if (link is null) return;
+        switch (status.Phase)
+        {
+            case VpnPhase.Connected: link.Observe(LinkEvent.Up); break;
+            case VpnPhase.Reconnecting: link.Observe(LinkEvent.Retrying); break;
+            case VpnPhase.Disconnected: link.Observe(LinkEvent.Down); break;
+            // Starting — туннель ещё поднимается после connect, судить о связи рано.
         }
     }
 

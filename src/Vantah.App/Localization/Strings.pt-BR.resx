@@ -477,6 +477,24 @@
   <data name="Settings_LoggingHelp" xml:space="preserve">
     <value>O aplicativo grava suas ações no arquivo ~/.local/share/vantah/app.log. Isso serve para analisar um problema. O log fica desativado por padrão.</value>
   </data>
+  <data name="Settings_ConnectionAlerts" xml:space="preserve">
+    <value>Avisar quando a conexão cair</value>
+  </data>
+  <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
+    <value>O Vantah mostra um aviso na área de trabalho se a conexão VPN cair sozinha e outro quando ela voltar. Os comandos «Conectar» e «Desconectar» não mostram avisos.</value>
+  </data>
+  <data name="Notify_ConnectionLost" xml:space="preserve">
+    <value>Conexão VPN perdida</value>
+  </data>
+  <data name="Notify_ConnectionLostBody" xml:space="preserve">
+    <value>O túnel do AdGuard VPN caiu.</value>
+  </data>
+  <data name="Notify_ConnectionRestored" xml:space="preserve">
+    <value>Conexão VPN restaurada</value>
+  </data>
+  <data name="Notify_ConnectionRestoredBody" xml:space="preserve">
+    <value>O túnel do AdGuard VPN funciona de novo.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Há uma nova versão do Vantah — {0}</value>
   </data>

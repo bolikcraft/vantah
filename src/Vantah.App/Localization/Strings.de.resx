@@ -477,6 +477,24 @@
   <data name="Settings_LoggingHelp" xml:space="preserve">
     <value>Die Anwendung schreibt ihre Aktionen in die Datei ~/.local/share/vantah/app.log. Das hilft bei der Fehlersuche. Standardmäßig ist das Protokoll ausgeschaltet.</value>
   </data>
+  <data name="Settings_ConnectionAlerts" xml:space="preserve">
+    <value>Bei Verbindungsabbruch benachrichtigen</value>
+  </data>
+  <data name="Settings_ConnectionAlertsHelp" xml:space="preserve">
+    <value>Vantah zeigt eine Meldung auf dem Desktop, wenn die VPN-Verbindung von selbst abbricht, und eine zweite, wenn sie zurückkehrt. Die Befehle «Verbinden» und «Trennen» erzeugen keine Meldung.</value>
+  </data>
+  <data name="Notify_ConnectionLost" xml:space="preserve">
+    <value>VPN-Verbindung unterbrochen</value>
+  </data>
+  <data name="Notify_ConnectionLostBody" xml:space="preserve">
+    <value>Der AdGuard-VPN-Tunnel ist ausgefallen.</value>
+  </data>
+  <data name="Notify_ConnectionRestored" xml:space="preserve">
+    <value>VPN-Verbindung wiederhergestellt</value>
+  </data>
+  <data name="Notify_ConnectionRestoredBody" xml:space="preserve">
+    <value>Der AdGuard-VPN-Tunnel läuft wieder.</value>
+  </data>
   <data name="Update_Available" xml:space="preserve">
     <value>Eine neue Version von Vantah ist verfügbar — {0}</value>
   </data>

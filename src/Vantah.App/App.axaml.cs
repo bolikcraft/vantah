@@ -9,6 +9,7 @@ using Avalonia.Input.Platform;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Vantah.App.Localization;
+using Vantah.App.Notifications;
 using Vantah.App.Services;
 using Vantah.App.Tray;
 using Vantah.App.ViewModels;
@@ -23,6 +24,7 @@ using Vantah.Core.Favorites;
 using Vantah.Core.History;
 using Vantah.Core.Localization;
 using Vantah.Core.Logs;
+using Vantah.Core.Notifications;
 using Vantah.Core.Settings;
 using Vantah.Core.Startup;
 using Vantah.Core.State;
@@ -64,6 +66,9 @@ public partial class App : Application
     // оба экземпляра живут всю сессию.
     private FileAppLog? _appLog;
     private LoggingStore? _loggingStore;
+
+    // Уведомления об обрыве держат своё D-Bus-соединение — на выходе его надо закрыть.
+    private DBusDesktopNotifier? _notifier;
 
     public override void Initialize()
     {
@@ -119,7 +124,12 @@ public partial class App : Application
             // интерактивный login идут через один и тот же процесс-раннер.
             var auth = new AuthService(runner, runner);
             var lastLocationStore = new LastLocationStore();
-            var coordinator = new VpnCoordinator(vpn, traffic, store, history, ipVersionStore, auth, lastLocationStore, killSwitchStore, _appLog);
+            // Плашки «связь потеряна/восстановлена». Решение принимает координатор по ответам
+            // CLI, а не по таймингу: команды пользователя он помечает сам.
+            var notificationsStore = new NotificationsStore();
+            _notifier = new DBusDesktopNotifier();
+            var alerts = new ConnectionAlertService(_notifier, notificationsStore);
+            var coordinator = new VpnCoordinator(vpn, traffic, store, history, ipVersionStore, auth, lastLocationStore, killSwitchStore, _appLog, link: alerts);
             var favorites = new FavoritesStore();
             var exclusionsStore = new ExclusionsStore();
             var exclusions = new ExclusionsService(runner, exclusionsStore);
@@ -160,7 +170,7 @@ public partial class App : Application
                 vpnConfig, store, languageStore, updateChecker, logExporter,
                 () => PickLogFolderAsync(mainWindowRef),
                 autoConnectStore, autostart, appUpdates, killSwitchStore, cliUpdater, transparency,
-                _loggingStore, _appLog);
+                _loggingStore, _appLog, notificationsStore);
 
             // Без активного VPN чтения CLI нередко не проходят: раздел, который не прочитался,
             // перечитает себя сам, когда туннель поднимется. Ссылку держим в поле — сервис
@@ -238,7 +248,11 @@ public partial class App : Application
             // На выходе наблюдение закрываем: иначе за приложением остаётся живое
             // D-Bus-соединение, а пересоздание, начатое в середине пятисекундной паузы,
             // доедет до уже разобранного трея.
-            desktop.Exit += (_, _) => _trayWatcher?.Dispose();
+            desktop.Exit += (_, _) =>
+            {
+                _trayWatcher?.Dispose();
+                _notifier?.Dispose();
+            };
 
             // Прячем окно только когда его закрывает пользователь (крестик / Alt+F4). При
             // завершении сеанса причина другая (ApplicationShutdown/OSShutdown), и вето здесь
