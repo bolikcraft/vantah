@@ -15,6 +15,13 @@ tool. Vantah does **not** implement a VPN itself — it merely runs `adguardvpn-
 as an external process, parses its output, and shows the state in a graphical
 interface.
 
+## Why?
+
+AdGuard makes official VPN clients with a window for Windows and macOS. For
+Linux, AdGuard supplies only `adguardvpn-cli`, a command-line tool. Vantah puts
+a window and a tray icon on top of that tool, so you do not type commands to
+connect, to change the location, or to read the current state.
+
 > **Naming and legal notice.** Vantah is an independent, unofficial project. It
 > is **not** affiliated with AdGuard, and is not developed, sponsored, or
 > endorsed by them; it is not an AdGuard product.
@@ -83,6 +90,25 @@ green in dark theme, blue in light theme.
   adguardvpn-cli login
   ```
 
+## Desktop environments
+
+Vantah uses the X11 backend of Avalonia. In a Wayland session it runs through
+XWayland. Native Wayland support waits for an Avalonia release that sets the
+Wayland `app_id`; until that release Vantah stays on X11.
+
+The window works on any desktop that runs X11 applications — GNOME, KDE Plasma,
+Xfce, Cinnamon, MATE, Budgie, LXQt.
+
+The tray icon uses the StatusNotifierItem interface on the D-Bus session bus.
+KDE Plasma, Cinnamon and Budgie show such an icon themselves. Xfce and MATE need
+their status-notifier panel plugin. **GNOME shows the icon only with the
+AppIndicator extension** — without that extension the icon does not appear in
+the top bar.
+
+A desktop without a tray host stays usable, but then the window is the only
+interface. The close button hides the window, so start `vantah` again to show
+it — the second command does not start a second application.
+
 ## Configuration and trust model
 
 Vantah reads an optional INI file at `~/.config/vantah/vantah.conf` (you create it
@@ -110,6 +136,25 @@ to write to it can make Vantah run an arbitrary command on your behalf. Keep
 creates that directory with `0700` permissions (and tightens an existing one)
 when it writes its own files there.
 
+## Files and folders
+
+Vantah keeps all its files in your home directory. The table shows the default
+paths; `XDG_CONFIG_HOME` and `XDG_DATA_HOME` move the two roots.
+
+| Path | Content |
+| --- | --- |
+| `~/.config/vantah/vantah.conf` | The optional INI file with the CLI command and the kill command — see [Configuration and trust model](#configuration-and-trust-model). |
+| `~/.config/vantah/` | The Vantah settings, one small file for each: `language`, `favorites.json`, `autoconnect`, `last-location`, `ip-version`, `killswitch`, `logging`, `notifications`, `window-opacity`, `appupdate.json`, and the `site-exclusions/` copies of the domain lists. |
+| `~/.config/autostart/vantah.desktop` | The autostart entry. Vantah writes this file when you switch autostart on, and deletes it when you switch autostart off. |
+| `~/.local/share/vantah/app.log` | The Vantah log. It is off by default. |
+| `~/.local/share/vantah/connections-history` | The connection history that the Status tab shows. |
+| `~/.local/share/vantah/connection-active` | The connection session that runs now. It stays when you close Vantah, because the VPN also stays. |
+| `$XDG_RUNTIME_DIR/vantah/` | The lock file and the socket that keep one instance. Without `XDG_RUNTIME_DIR` Vantah uses `~/.local/share/vantah`. |
+
+The `adguardvpn-cli` tool keeps its own settings and logs in its own places.
+Vantah does not write there; it changes those settings with `adguardvpn-cli`
+commands.
+
 ## Features
 
 - **Connection.** Connect / disconnect, "fastest location", IP protocol choice
@@ -128,10 +173,17 @@ when it writes its own files there.
 - **Account.** Sign in directly from the UI (device-code flow via the browser),
   license details, sign out.
 - **Automation.** Autostart on login and auto-connect (fastest or last-used
-  location).
+  location). The autostart entry can start Vantah minimized to the tray — a
+  toggle in Settings adds the `--minimized` key to that entry.
 - **System tray.** Menu with connect / disconnect, the fastest location, your
   favorite locations, and the number of excluded domains; the tooltip shows the
   location and the live speed. The window and the tray always show one state.
+  Only one Vantah runs at a time: a second launch shows the window of the
+  instance that already runs, and does not add a second icon.
+- **Notifications.** Vantah shows a desktop notification when the VPN
+  connection drops, and one more when the connection comes back. Your own
+  connect and disconnect commands cause no notification. The toggle is in
+  Settings and is on by default.
 - **Appearance.** The buttons and toggles follow the system accent color of your
   desktop. A slider in Settings sets the opacity of the windows.
 - **Diagnostics.** Vantah writes its own log to `~/.local/share/vantah/app.log`:
@@ -242,6 +294,32 @@ sha256sum -c Vantah-*-x86_64.AppImage.sha256
 To get an application-menu entry with an icon, build from source and run
 [`packaging/install.sh`](#installing-into-the-application-menu).
 
+## Usage
+
+Start Vantah from the application menu — the `.deb`, the `.rpm` and
+[`packaging/install.sh`](#installing-into-the-application-menu) add the menu
+entry — or from a terminal:
+
+```bash
+vantah
+```
+
+Vantah opens the window and puts an icon in the tray. The close button hides the
+window and the application continues to run in the tray; to stop it, use the
+`Exit` item of the tray menu.
+
+| Option | Action |
+| --- | --- |
+| `--minimized` | Start without the window and show only the tray icon. If the desktop has no tray, Vantah shows the window. |
+| `--version` | Print the version and exit. |
+| `-h`, `--help` | Print the list of the options and exit. |
+
+Vantah ignores an option that it does not know: autostart entries and desktop
+files can contain keys of the session manager.
+
+Only one Vantah runs at a time. When you start `vantah` again, the new process
+asks the first one to show its window, and then stops.
+
 ## Building and running for development
 
 Requires the **.NET 10 SDK**.
@@ -300,20 +378,27 @@ packaging/install.sh` (as root); to uninstall, run `packaging/install.sh
 - xUnit — tests for the core (`Vantah.Core`) and for the UI (`Vantah.App`,
   headless Avalonia).
 
-The project is **Linux-only**. AdGuard already ships official VPN GUI clients for
-Windows and macOS, so there is no point duplicating them.
+The project is **Linux-only**.
 
 ## Roadmap
 
 - IP-address and region leak detection — verifying that traffic actually goes
   through the VPN.
 
-## FAQ
+## Similar projects
 
-**Is there an official AdGuard VPN GUI for Linux?**
-No. AdGuard ships official VPN GUI clients for Windows and macOS, while the
-Linux client is the `adguardvpn-cli` command-line tool. Vantah is an independent,
-unofficial third-party front-end for that CLI and is not an AdGuard product.
+Other unofficial front-ends for `adguardvpn-cli`:
+
+- [grafov/adgui](https://github.com/grafov/adgui) — Go and Fyne; it also checks
+  the IP address and the region.
+- [SpazzRabbit/adguardvpn-gui](https://github.com/SpazzRabbit/adguardvpn-gui) —
+  Python and PySide6.
+- [ineedmypills/adguardvpn-gui](https://github.com/ineedmypills/adguardvpn-gui) —
+  Rust and Slint.
+- [0xGingi/AdGuardVPNGUI](https://github.com/0xGingi/AdGuardVPNGUI) — Python and
+  Tkinter; the last commit is from March 2025.
+
+## FAQ
 
 **Does Vantah work without an AdGuard VPN account or subscription?**
 No. Vantah only drives `adguardvpn-cli`, so you need the CLI installed and a
