@@ -97,6 +97,18 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.6.0" date="2026-09-06">
+      <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.6.0</url>
+      <description>
+        <p>New in this release:</p>
+        <ul>
+          <li>The command-line options --version, --help and --minimized.</li>
+          <li>Only one Vantah runs at a time: a second launch shows the window of the first one.</li>
+          <li>The autostart entry can start Vantah minimized to the tray — a toggle in Settings.</li>
+          <li>Desktop notifications when the VPN connection drops and when it comes back, with a toggle in Settings.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.5.0" date="2026-09-03">
       <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.5.0</url>
     </release>

@@ -1,7 +1,7 @@
 # Maintainer: bolikcraft <bolikcraft@gmail.com>
 
 pkgname=vantah-bin
-pkgver=0.5.0
+pkgver=0.6.0
 pkgrel=1
 pkgdesc="Unofficial GUI and tray front-end for the AdGuard VPN CLI (adguardvpn-cli)"
 arch=('x86_64' 'aarch64')
