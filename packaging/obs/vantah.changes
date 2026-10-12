@@ -1,6 +1,15 @@
 -------------------------------------------------------------------
 Mon Oct 12 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
 
+- Update to 0.6.3: use Avalonia 12.1.4, which fixes the duplicate
+  tray icon and the crash on exit. Vantah no longer has its own
+  workaround for these bugs.
+- The Favorites submenu in the tray shows changes at once.
+- If Vantah cannot save the favorites, it no longer closes.
+
+-------------------------------------------------------------------
+Mon Oct 12 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
+
 - Update to 0.6.2: when the AdGuard VPN CLI disappears while the VPN
   is connected, the Status screen no longer shows the old location and
   speed, and the history no longer splits one session into two.
