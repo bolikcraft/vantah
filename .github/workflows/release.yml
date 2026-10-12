@@ -130,8 +130,13 @@ jobs:
           chmod +x "$APPDIR/AppRun"
 
           OUT="Vantah-${VER}-${{ matrix.appimage_arch }}.AppImage"
-          # --appimage-extract-and-run: на GitHub-раннере нет FUSE, иначе appimagetool не стартует
-          ARCH=${{ matrix.appimage_arch }} ./appimagetool --appimage-extract-and-run "$APPDIR" "$OUT"
+          # --appimage-extract-and-run: на GitHub-раннере нет FUSE, иначе appimagetool не стартует.
+          # -u вшивает адрес обновлений для AppImageUpdate и менеджеров AppImage; с ним
+          # appimagetool сам кладёт рядом "$OUT.zsync" (zsyncmake у него внутри).
+          ARCH=${{ matrix.appimage_arch }} ./appimagetool --appimage-extract-and-run \
+            -u "gh-releases-zsync|bolikcraft|vantah|latest|Vantah-*-${{ matrix.appimage_arch }}.AppImage.zsync" \
+            "$APPDIR" "$OUT"
+          test -s "${OUT}.zsync"
           sha256sum "$OUT" > "${OUT}.sha256"
 
       - name: Package deb/rpm (nfpm)
@@ -171,6 +176,7 @@ jobs:
             vantah-*-${{ matrix.rid }}.tar.gz.sha256
             Vantah-*-${{ matrix.appimage_arch }}.AppImage
             Vantah-*-${{ matrix.appimage_arch }}.AppImage.sha256
+            Vantah-*-${{ matrix.appimage_arch }}.AppImage.zsync
             vantah_*_${{ matrix.pkg_arch }}.deb
             vantah_*_${{ matrix.pkg_arch }}.deb.sha256
             vantah-*.${{ matrix.rpm_arch }}.rpm
