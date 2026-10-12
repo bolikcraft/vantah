@@ -5,7 +5,7 @@
 #
 
 Name:           vantah
-Version:        0.6.2
+Version:        0.6.3
 Release:        0
 Summary:        Unofficial GUI and tray front-end for the AdGuard VPN CLI
 License:        GPL-3.0-or-later

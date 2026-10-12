@@ -97,6 +97,17 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.6.3" date="2026-10-12">
+      <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.6.3</url>
+      <description>
+        <p>Changes in this release:</p>
+        <ul>
+          <li>Avalonia 12.1.4, which fixes the duplicate tray icon after the screen lock and the crash on exit. Vantah no longer needs its own workaround for these bugs.</li>
+          <li>The Favorites submenu in the tray shows changes at once, without a restart.</li>
+          <li>If Vantah cannot save the favorites, it shows a message instead of closing.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.6.2" date="2026-10-12">
       <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.6.2</url>
       <description>
