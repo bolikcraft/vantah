@@ -100,6 +100,43 @@ public class TrayIconControllerTests
     }
 
     /// <summary>
+    /// Без CLI меню не должно предлагать подключиться (это не сработает), а подсказка и
+    /// строка статуса — говорить «Отключено» без причины или «Ошибка» с текстом исключения.
+    /// </summary>
+    [AvaloniaFact]
+    public void Missing_cli_is_named_in_tooltip_and_menu_and_connect_items_are_disabled()
+    {
+        var store = new AppStateStore();
+        var trayIcon = NewController(store, new TrayIconSet())._icon;
+        var loc = Localizer.Instance;
+
+        store.Set(s => s with
+        {
+            Connection = ConnectionState.CliMissing,
+            Error = new AppError(AppErrorCode.CliMissing, "adguardvpn-cli"),
+        });
+        Dispatcher.UIThread.RunJobs();
+
+        var tip = trayIcon.ToolTipText!;
+        Assert.Contains(loc[LocKeys.Status_CliMissing], tip);
+        Assert.DoesNotContain(loc.Format(LocKeys.Tray_Tooltip_ErrorFormat, ""), tip);
+        Assert.Equal(3, tip.Split('\n').Length);
+
+        var items = trayIcon.Menu!.Items.OfType<NativeMenuItem>().ToList();
+        Assert.Contains(loc[LocKeys.Status_CliMissing], items[0].Header);
+        string[] connectItems = [loc[LocKeys.Common_Connect], loc[LocKeys.Tray_Fastest], loc[LocKeys.Tray_Location]];
+        Assert.All(items.Where(i => connectItems.Contains(i.Header)), i => Assert.False(i.IsEnabled));
+        Assert.Equal(3, items.Count(i => connectItems.Contains(i.Header)));
+
+        // CLI появился — пункты снова доступны.
+        store.Set(s => s with { Connection = ConnectionState.Disconnected, Error = null });
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.All(items.Where(i => connectItems.Contains(i.Header)), i => Assert.True(i.IsEnabled));
+        Assert.DoesNotContain(loc[LocKeys.Status_CliMissing], trayIcon.ToolTipText!);
+    }
+
+    /// <summary>
     /// Обход дубля иконки в GNOME умеет закрывать только соединение настоящей
     /// StatusNotifier-реализации. Там, где его не нашли (headless, XEmbed-трей, другая версия
     /// Avalonia), пересоздание обязано быть полным no-op: сняв иконку без закрытия соединения,

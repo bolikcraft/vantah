@@ -131,6 +131,15 @@
   <data name="Status_Error" xml:space="preserve">
     <value>Erro</value>
   </data>
+  <data name="Status_CliMissing" xml:space="preserve">
+    <value>É necessário o AdGuard VPN CLI</value>
+  </data>
+  <data name="Status_CliMissingHint" xml:space="preserve">
+    <value>O Vantah funciona sobre o AdGuard VPN CLI. Instale-o, e o Vantah vai detectá-lo automaticamente.</value>
+  </data>
+  <data name="Status_CliMissingInstall" xml:space="preserve">
+    <value>Como instalar</value>
+  </data>
   <data name="Status_Checking" xml:space="preserve">
     <value>Verificando o status da conexão…</value>
   </data>
@@ -572,6 +581,9 @@
   </data>
   <data name="Error_Timeout" xml:space="preserve">
     <value>{0} excedeu o tempo limite</value>
+  </data>
+  <data name="Error_CliMissing" xml:space="preserve">
+    <value>Para isso, é necessário o AdGuard VPN CLI.</value>
   </data>
   <data name="Error_AddDomainFailed" xml:space="preserve">
     <value>não foi possível adicionar {0}</value>

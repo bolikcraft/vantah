@@ -156,6 +156,18 @@ public sealed class VpnCoordinator(
             }
             catch (Exception ex)
             {
+                // Файла CLI нет — это точный ответ ОС, а не зависший опрос: порог промахов и
+                // «молчание» тут ни при чём. Опрос идёт дальше и сам вернёт обычное состояние,
+                // когда CLI установят.
+                var error = AppError.From(ex);
+                if (error.Code == AppErrorCode.CliMissing)
+                {
+                    // Промахи до пропажи CLI не должны сократить порог после его установки.
+                    _pollFailures = 0;
+                    SetState(s => s with { Connection = ConnectionState.CliMissing, Error = error }, "опрос");
+                    return;
+                }
+
                 // Первый сбой подряд глотаем: снапшот остаётся прежним, решение принимаем
                 // по второму промаху.
                 var reason = OneLine(ex.Message);
@@ -164,7 +176,7 @@ public sealed class VpnCoordinator(
                 if (_pollFailures >= PollFailuresBeforeError)
                 {
                     _log.Write($"опрос не удался ({_pollFailures}/{PollFailuresBeforeError}): {reason}");
-                    SetState(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) }, "опрос");
+                    SetState(s => s with { Connection = ConnectionState.Error, Error = error }, "опрос");
                 }
                 else
                 {
@@ -238,7 +250,8 @@ public sealed class VpnCoordinator(
             catch (Exception ex)
             {
                 _log.Write($"connect не удался: {OneLine(ex.Message)}");
-                SetState(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) }, "connect");
+                var error = AppError.From(ex);
+                SetState(s => s with { Connection = FailureState(error), Error = error }, "connect");
             }
         }
         finally
@@ -275,7 +288,8 @@ public sealed class VpnCoordinator(
             catch (Exception ex)
             {
                 _log.Write($"disconnect не удался: {OneLine(ex.Message)}");
-                SetState(s => s with { Connection = ConnectionState.Error, Error = AppError.From(ex) }, "disconnect");
+                var error = AppError.From(ex);
+                SetState(s => s with { Connection = FailureState(error), Error = error }, "disconnect");
             }
         }
         finally
@@ -284,6 +298,10 @@ public sealed class VpnCoordinator(
             _opGate.Release();
         }
     }
+
+    // Без CLI не пройдёт ни одна команда: это отдельное состояние, а не общий сбой.
+    private static ConnectionState FailureState(AppError error) =>
+        error.Code == AppErrorCode.CliMissing ? ConnectionState.CliMissing : ConnectionState.Error;
 
     // Затянувшееся молчание CLI — тоже обрыв: при потере связи с kill switch `status` уходит
     // в recovery и висит до таймаута, поэтому самый частый разрыв не даёт ни одного ответа.

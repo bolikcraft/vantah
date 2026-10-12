@@ -15,6 +15,9 @@ namespace Vantah.App.ViewModels;
 
 public partial class StatusViewModel : ErrorAwareViewModel
 {
+    /// <summary>Страница AdGuard VPN CLI с инструкцией по установке.</summary>
+    public const string CliInstallUrl = "https://github.com/AdguardTeam/AdGuardVPNCLI";
+
     private readonly VpnCoordinator _coordinator;
     private readonly VpnLogReader _logReader;
     private readonly AppStateStore _store;
@@ -40,6 +43,10 @@ public partial class StatusViewModel : ErrorAwareViewModel
     // Статус ещё не опрошен: вместо блока статуса показываем скелетон, кнопку держим заблокированной.
     [ObservableProperty] private bool _isStatusUnknown = true;
     [ObservableProperty] private string _log = "";
+    // CLI не установлен: вместо кнопки подключения показываем, что поставить и где взять.
+    [ObservableProperty] private bool _isCliMissing;
+
+    public Uri CliInstallUri { get; } = new(CliInstallUrl);
 
     // Отключение без сети идёт до 10 c: кнопка на это время заблокирована, поэтому подписываем
     // её процессом. Иначе висит неактивная «Подключить» — как будто окно замерло.
@@ -123,6 +130,7 @@ public partial class StatusViewModel : ErrorAwareViewModel
             ConnectionState.Connecting    => LocKeys.Status_Connecting,
             ConnectionState.Disconnecting => LocKeys.Status_Disconnecting,
             ConnectionState.Error         => LocKeys.Status_Error,
+            ConnectionState.CliMissing    => LocKeys.Status_CliMissing,
             _                             => LocKeys.Status_Disconnected,
         }];
         Location = s.LocationDisplay ?? s.Location;                  // полная локация: «Amsterdam, Netherlands»
@@ -130,7 +138,9 @@ public partial class StatusViewModel : ErrorAwareViewModel
         ExclusionsText = loc[s.ExclusionsMode == SiteExclusionMode.Selective
             ? LocKeys.Status_Exclusions_Selective
             : LocKeys.Status_Exclusions_General];
-        SetError(s.Error is { } e ? UiText.Of(e) : UiText.None);
+        IsCliMissing = s.Connection == ConnectionState.CliMissing;
+        // Без CLI причину уже называют заголовок и подсказка, красная строка повторяла бы их.
+        SetError(!IsCliMissing && s.Error is { } e ? UiText.Of(e) : UiText.None);
         IsConnected = s.Connection == ConnectionState.Connected;
         IsConnecting = s.Connection == ConnectionState.Connecting;
         IsDisconnecting = s.Connection == ConnectionState.Disconnecting;

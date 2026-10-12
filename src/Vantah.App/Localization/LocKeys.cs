@@ -41,6 +41,9 @@ public static class LocKeys
     public const string Status_Disconnecting = "Status_Disconnecting";
     public const string Status_Disconnected = "Status_Disconnected";
     public const string Status_Error = "Status_Error";
+    public const string Status_CliMissing = "Status_CliMissing";
+    public const string Status_CliMissingHint = "Status_CliMissingHint";
+    public const string Status_CliMissingInstall = "Status_CliMissingInstall";
     public const string Status_Checking = "Status_Checking";
     public const string Status_SpeedLabel = "Status_SpeedLabel";
     public const string Status_SessionLabel = "Status_SessionLabel";
@@ -203,6 +206,7 @@ public static class LocKeys
 
     public const string Error_CommandFailed = "Error_CommandFailed";
     public const string Error_Timeout = "Error_Timeout";
+    public const string Error_CliMissing = "Error_CliMissing";
     public const string Error_AddDomainFailed = "Error_AddDomainFailed";
     public const string Error_RemoveDomainFailed = "Error_RemoveDomainFailed";
     public const string Error_ModeSwitchFailed = "Error_ModeSwitchFailed";

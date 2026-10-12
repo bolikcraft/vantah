@@ -153,6 +153,64 @@ public class SectionReloaderTests
         Assert.Equal(2, section.Reloads);
     }
 
+    /// <summary>
+    /// Без CLI разделы падают с «нужен AdGuard VPN CLI». Когда CLI поставили, опрос пишет
+    /// Disconnected — и разделы не должны держать устаревшее сообщение до подключения.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task Failed_sections_reload_when_the_cli_appears()
+    {
+        var section = new StubSection("failed") { LoadFailed = true };
+        var store = new AppStateStore();
+        var reloader = new SectionReloader(store, [section]);
+
+        store.Set(s => s with { Connection = ConnectionState.CliMissing });
+        Disconnect(store);
+        await reloader.LastRunTask;
+
+        Assert.Equal(1, section.Reloads);
+    }
+
+    /// <summary>
+    /// После установки CLI опрос может сначала дать Error (например, таймаут) и только потом
+    /// Disconnected: перечитывание не должно зависеть от прямого перехода.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task Failed_sections_reload_when_the_cli_appears_after_an_error()
+    {
+        var section = new StubSection("failed") { LoadFailed = true };
+        var store = new AppStateStore();
+        var reloader = new SectionReloader(store, [section]);
+
+        store.Set(s => s with { Connection = ConnectionState.CliMissing });
+        store.Set(s => s with { Connection = ConnectionState.Error });
+        Disconnect(store);
+        await reloader.LastRunTask;
+        Assert.Equal(1, section.Reloads);
+
+        // Признак снят: следующие «отключено» сами по себе прогон не запускают.
+        section.LoadFailed = true;
+        store.Set(s => s with { Connection = ConnectionState.Error });
+        Disconnect(store);
+        await reloader.LastRunTask;
+        Assert.Equal(1, section.Reloads);
+    }
+
+    // Обычное «отключено» без CLI в прошлом — не повод перечитывать: CLI и так был на месте.
+    [AvaloniaFact]
+    public async Task Plain_disconnect_does_not_reload()
+    {
+        var section = new StubSection("failed") { LoadFailed = true };
+        var store = new AppStateStore();
+        var reloader = new SectionReloader(store, [section]);
+
+        store.Set(s => s with { Connection = ConnectionState.Error });
+        Disconnect(store);
+        await reloader.LastRunTask;
+
+        Assert.Equal(0, section.Reloads);
+    }
+
     // Сбой одного раздела не должен мешать остальным: у каждого своя ошибка на экране.
     [AvaloniaFact]
     public async Task A_throwing_section_does_not_stop_the_others()

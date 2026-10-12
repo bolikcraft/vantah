@@ -131,6 +131,15 @@
   <data name="Status_Error" xml:space="preserve">
     <value>Kesalahan</value>
   </data>
+  <data name="Status_CliMissing" xml:space="preserve">
+    <value>AdGuard VPN CLI diperlukan</value>
+  </data>
+  <data name="Status_CliMissingHint" xml:space="preserve">
+    <value>Vantah berjalan di atas AdGuard VPN CLI. Pasang CLI tersebut, dan Vantah akan mendeteksinya secara otomatis.</value>
+  </data>
+  <data name="Status_CliMissingInstall" xml:space="preserve">
+    <value>Cara memasang</value>
+  </data>
   <data name="Status_Checking" xml:space="preserve">
     <value>Memeriksa status koneksi…</value>
   </data>
@@ -572,6 +581,9 @@
   </data>
   <data name="Error_Timeout" xml:space="preserve">
     <value>{0} melewati batas waktu</value>
+  </data>
+  <data name="Error_CliMissing" xml:space="preserve">
+    <value>AdGuard VPN CLI diperlukan untuk ini.</value>
   </data>
   <data name="Error_AddDomainFailed" xml:space="preserve">
     <value>tidak dapat menambahkan {0}</value>

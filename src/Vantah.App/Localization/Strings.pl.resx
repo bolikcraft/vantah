@@ -131,6 +131,15 @@
   <data name="Status_Error" xml:space="preserve">
     <value>Błąd</value>
   </data>
+  <data name="Status_CliMissing" xml:space="preserve">
+    <value>Wymagany AdGuard VPN CLI</value>
+  </data>
+  <data name="Status_CliMissingHint" xml:space="preserve">
+    <value>Vantah działa w oparciu o AdGuard VPN CLI. Zainstaluj go, a Vantah wykryje go automatycznie.</value>
+  </data>
+  <data name="Status_CliMissingInstall" xml:space="preserve">
+    <value>Jak zainstalować</value>
+  </data>
   <data name="Status_Checking" xml:space="preserve">
     <value>Sprawdzanie stanu połączenia…</value>
   </data>
@@ -572,6 +581,9 @@
   </data>
   <data name="Error_Timeout" xml:space="preserve">
     <value>{0} przekroczyło limit czasu</value>
+  </data>
+  <data name="Error_CliMissing" xml:space="preserve">
+    <value>Do tego potrzebny jest AdGuard VPN CLI.</value>
   </data>
   <data name="Error_AddDomainFailed" xml:space="preserve">
     <value>nie udało się dodać {0}</value>

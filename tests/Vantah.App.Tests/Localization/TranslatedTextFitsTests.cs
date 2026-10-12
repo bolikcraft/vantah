@@ -125,6 +125,9 @@ public class TranslatedTextFitsTests
                 });
                 CheckView($"Статус ({state})", statusView);
             }
+            // Без CLI на экране свой заголовок, подсказка и ссылка вместо кнопки.
+            statusStore.Set(s => s with { Connection = ConnectionState.CliMissing, LocationDisplay = null, Mode = null });
+            CheckView("Статус (CliMissing)", statusView);
 
             var (locations, locationsStore) = LocationsVm();
             await locations.LoadTask;

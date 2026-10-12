@@ -81,6 +81,12 @@
     <StackPanel x:Name="StatusBlock" Grid.Row="0" Spacing="8" HorizontalAlignment="Center"
                 IsVisible="{Binding !IsStatusUnknown}">
       <TextBlock Text="{Binding ConnectionText}" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+      <TextBlock Text="{Binding [Status_CliMissingHint], Source={x:Static loc:Localizer.Instance}}"
+                 IsVisible="{Binding IsCliMissing}" TextWrapping="Wrap" MaxWidth="480"
+                 TextAlignment="Center" HorizontalAlignment="Center"/>
+      <HyperlinkButton Content="{Binding [Status_CliMissingInstall], Source={x:Static loc:Localizer.Instance}}"
+                       NavigateUri="{Binding CliInstallUri}"
+                       IsVisible="{Binding IsCliMissing}" HorizontalAlignment="Center"/>
       <TextBlock Text="{Binding Location}" FontSize="16" HorizontalAlignment="Center"/>
       <TextBlock Text="{Binding Mode}" Opacity="0.7" HorizontalAlignment="Center"/>
       <TextBlock Text="{Binding ExclusionsText}" Opacity="0.7" HorizontalAlignment="Center"/>
@@ -100,7 +106,8 @@
            Минимум оставлен прежним, чтобы короткое «Подключить» не сжимало кнопку. -->
       <Button Content="{Binding ToggleText}" Command="{Binding ToggleCommand}"
               Classes.danger="{Binding IsConnected}"
-              IsEnabled="{Binding !IsBusy}" HorizontalAlignment="Center" MinWidth="180"/>
+              IsEnabled="{Binding !IsBusy}" IsVisible="{Binding !IsCliMissing}"
+              HorizontalAlignment="Center" MinWidth="180"/>
       <TextBlock Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap" MaxWidth="480"
                  IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"/>
       <StackPanel Spacing="4" HorizontalAlignment="Center">

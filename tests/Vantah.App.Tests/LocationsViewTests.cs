@@ -105,11 +105,28 @@ public class LocationsViewTests
         var vm = MakeVm(new ScriptedVpn(() => new[] { Loc("NL", "Netherlands", "Amsterdam", 10) }), store);
 
         await vm.LoadTask;
-        Assert.False(vm.IsStatusKnown);   // статус ещё Unknown — кнопки строк заблокированы
+        Assert.False(vm.CanToggleRows);   // статус ещё Unknown — кнопки строк заблокированы
 
         store.Set(s => s with { Connection = ConnectionState.Disconnected });
         Dispatcher.UIThread.RunJobs();
-        Assert.True(vm.IsStatusKnown);    // статус определился — кнопки строк доступны
+        Assert.True(vm.CanToggleRows);    // статус определился — кнопки строк доступны
+    }
+
+    // Без CLI подключиться нельзя: кнопки строк заблокированы, как кнопка на «Статусе».
+    [AvaloniaFact]
+    public async Task Row_actions_are_disabled_without_cli()
+    {
+        var store = new AppStateStore();
+        var vm = MakeVm(new ScriptedVpn(() => new[] { Loc("NL", "Netherlands", "Amsterdam", 10) }), store);
+        await vm.LoadTask;
+
+        store.Set(s => s with { Connection = ConnectionState.CliMissing });
+        Dispatcher.UIThread.RunJobs();
+        Assert.False(vm.CanToggleRows);
+
+        store.Set(s => s with { Connection = ConnectionState.Disconnected });
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(vm.CanToggleRows);
     }
 
     // Заполнение списка, привязанного к отрисованному ListBox, при асинхронном ответе CLI
