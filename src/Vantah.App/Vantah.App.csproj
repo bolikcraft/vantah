@@ -47,9 +47,9 @@
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <!--
       Уже приезжает транзитивно через Avalonia.FreeDesktop; ссылка явная, потому что мы сами
-      слушаем на сессионной шине NameOwnerChanged для org.kde.StatusNotifierWatcher
-      (StatusNotifierWatcherMonitor). Версию держать ровно ту, что тянет Avalonia, — иначе
-      наше соединение и соединение трея разъедутся по разным сборкам Tmds.DBus.Protocol.
+      ходим на сессионную шину: уведомления (DBusDesktopNotifier) и проверка трея перед стартом
+      свёрнутым (StatusNotifierWatcherProbe). Версию держать ровно ту, что тянет Avalonia: сборка
+      в процессе одна, и более новая версия досталась бы и трею Avalonia.
     -->
     <PackageReference Include="Tmds.DBus.Protocol" Version="0.94.1" />
   </ItemGroup>
