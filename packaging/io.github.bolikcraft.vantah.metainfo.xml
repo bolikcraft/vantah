@@ -97,6 +97,16 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.6.1" date="2026-10-12">
+      <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.6.1</url>
+      <description>
+        <p>Fixes in this release:</p>
+        <ul>
+          <li>When AdGuard VPN CLI is not installed, Vantah tells what it needs and links to the install guide, instead of showing a raw system message. Once the CLI is installed, Vantah picks it up without a restart.</li>
+          <li>The app log no longer stores the SOCKS user name and password.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.6.0" date="2026-09-06">
       <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.6.0</url>
       <description>
