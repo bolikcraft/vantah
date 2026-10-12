@@ -54,6 +54,21 @@ public class ProcessesViewTests
         Assert.Contains(texts, t => t is not null && t.Contains("connect --no-fork -l Amsterdam"));
     }
 
+    /// <summary>Опрос может застать короткий `config set-socks-password`: пароль на экран не идёт.</summary>
+    [AvaloniaFact]
+    public void Command_line_hides_the_socks_password()
+    {
+        var vm = new ProcessesViewModel(new StubMonitor(
+            new RunningProcess(4242, 4242, Exe, ["config", "set-socks-password", "s3cr3t"], DateTimeOffset.Now)));
+
+        var window = Show(vm);
+
+        var texts = window.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text ?? "").ToArray();
+        Assert.Contains(texts, t => t.Contains("config set-socks-password ***"));
+        Assert.DoesNotContain(texts, t => t.Contains("s3cr3t"));
+        Assert.DoesNotContain("s3cr3t", vm.Processes.Single().CommandLine);
+    }
+
     [AvaloniaFact]
     public async Task Kill_button_of_a_row_kills_that_row_process()
     {
