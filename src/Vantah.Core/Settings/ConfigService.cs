@@ -117,7 +117,7 @@ public sealed class ConfigService(ICliRunner cli) : IConfigService
         var r = await cli.RunAsync(args, Timeout, ct);
         if (!r.Ok)
             throw new ConfigCommandException(
-                AppError.FromCli(r, string.Join(' ', args)));
+                AppError.FromCli(r, SecretArgs.Join(args)));
         return await GetAsync(ct);
     }
 

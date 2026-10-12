@@ -68,6 +68,17 @@ public class ProcFsProcessSourceTests : IDisposable
         Assert.Equal("sudo -b env HOME=/home/user " + Exe + " connect", found.CommandLine);
     }
 
+    /// <summary>Скан может застать короткий `config set-socks-password`: пароль в окно процессов не идёт.</summary>
+    [Fact]
+    public void Command_line_hides_the_socks_password()
+    {
+        FakeProcess(300, [Exe, "config", "set-socks-password", "s3cr3t"]);
+
+        var found = Assert.Single(Source().Scan());
+
+        Assert.Equal(Exe + " config set-socks-password ***", found.CommandLine);
+    }
+
     [Fact]
     public void Scan_skips_foreign_processes()
     {

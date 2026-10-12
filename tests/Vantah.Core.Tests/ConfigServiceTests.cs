@@ -306,6 +306,20 @@ public class ConfigServiceTests
         Assert.Contains("set-socks-username", ex.Message);
     }
 
+    // Текст ошибки идёт только в UI, но маска та же, что в логе и в тексте таймаута.
+    [Fact]
+    public async Task Dns_fallback_message_hides_the_address()
+    {
+        var cli = new FakeCliRunner().Enqueue(new CliResult(1, "", ""));
+        var svc = new ConfigService(cli);
+
+        var ex = await Assert.ThrowsAsync<ConfigCommandException>(
+            () => svc.SetDnsAsync("https://d.adguard-dns.com/dns-query/abc123"));
+
+        Assert.DoesNotContain("abc123", ex.Message);
+        Assert.Equal("config set-dns ***", ex.Error.Argument);
+    }
+
     private sealed class ThrowingTimeoutRunner : ICliRunner
     {
         public Task<CliResult> RunAsync(string[] args, TimeSpan? timeout = null, CancellationToken ct = default) =>

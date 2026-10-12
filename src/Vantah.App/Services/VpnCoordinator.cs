@@ -164,7 +164,7 @@ public sealed class VpnCoordinator(
                 {
                     // Промахи до пропажи CLI не должны сократить порог после его установки.
                     _pollFailures = 0;
-                    SetState(s => s with { Connection = ConnectionState.CliMissing, Error = error }, "опрос");
+                    SetCliMissing(error, "опрос");
                     return;
                 }
 
@@ -250,8 +250,7 @@ public sealed class VpnCoordinator(
             catch (Exception ex)
             {
                 _log.Write($"connect не удался: {OneLine(ex.Message)}");
-                var error = AppError.From(ex);
-                SetState(s => s with { Connection = FailureState(error), Error = error }, "connect");
+                SetFailure(AppError.From(ex), "connect");
             }
         }
         finally
@@ -277,7 +276,7 @@ public sealed class VpnCoordinator(
                 var session = history.Active;
                 history.OnDisconnected(DateTimeOffset.UtcNow);
                 LogHistory(session, history.Active);
-                SetState(s => s with { Connection = ConnectionState.Disconnected, Location = null, LocationDisplay = null, Interface = null, Traffic = null }, "disconnect");
+                SetState(s => WithoutTunnel(s) with { Connection = ConnectionState.Disconnected }, "disconnect");
             }
             catch (OperationCanceledException)
             {
@@ -288,8 +287,7 @@ public sealed class VpnCoordinator(
             catch (Exception ex)
             {
                 _log.Write($"disconnect не удался: {OneLine(ex.Message)}");
-                var error = AppError.From(ex);
-                SetState(s => s with { Connection = FailureState(error), Error = error }, "disconnect");
+                SetFailure(AppError.From(ex), "disconnect");
             }
         }
         finally
@@ -300,8 +298,27 @@ public sealed class VpnCoordinator(
     }
 
     // Без CLI не пройдёт ни одна команда: это отдельное состояние, а не общий сбой.
-    private static ConnectionState FailureState(AppError error) =>
-        error.Code == AppErrorCode.CliMissing ? ConnectionState.CliMissing : ConnectionState.Error;
+    private void SetFailure(AppError error, string source)
+    {
+        if (error.Code == AppErrorCode.CliMissing)
+            SetCliMissing(error, source);
+        else
+            SetState(s => s with { Connection = ConnectionState.Error, Error = error }, source);
+    }
+
+    // Без CLI о туннеле ничего не узнать: стираем его данные, как при отключении. Но демон без
+    // файла CLI может жить дальше, поэтому сессию не закрываем, а ждём ответа вернувшегося CLI.
+    private void SetCliMissing(AppError error, string source)
+    {
+        traffic.Reset();
+        history.Suspend();
+        SetState(s => WithoutTunnel(s) with { Connection = ConnectionState.CliMissing, Error = error }, source);
+    }
+
+    private static AppSnapshot WithoutTunnel(AppSnapshot s) => s with
+    {
+        Location = null, LocationDisplay = null, Mode = null, Interface = null, Traffic = null,
+    };
 
     // Затянувшееся молчание CLI — тоже обрыв: при потере связи с kill switch `status` уходит
     // в recovery и висит до таймаута, поэтому самый частый разрыв не даёт ни одного ответа.

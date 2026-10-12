@@ -8,7 +8,9 @@ public sealed record RunningProcess(
     IReadOnlyList<string> Args,
     DateTimeOffset StartedAt)
 {
-    /// <summary>Команда с аргументами через пробел, как её видит пользователь.</summary>
-    public string CommandLine =>
-        Args.Count == 0 ? Command : $"{Command} {string.Join(' ', Args)}";
+    /// <summary>
+    /// Команда с аргументами через пробел, как её видит пользователь. Секреты маскируем до склейки:
+    /// опрос может застать короткий `config set-socks-password`.
+    /// </summary>
+    public string CommandLine => SecretArgs.Join([Command, .. Args]);
 }
