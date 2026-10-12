@@ -25,7 +25,7 @@ public sealed class ConnectionHistoryTracker
     private ConnectionHistoryEntry? _active;
     private DateTimeOffset _lastSeenAt;        // когда активную сессию последний раз видели живой
     private DateTimeOffset _persistedLastSeen; // какой heartbeat уже лежит на диске
-    // Активная сессия поднята с диска и ещё не подтверждена наблюдением в этом процессе.
+    // Активная сессия поднята с диска (или подвешена через Suspend) и ещё не подтверждена наблюдением.
     // Такую сессию нельзя закрывать по «сейчас» — только по _lastSeenAt: между падением/закрытием
     // приложения и его новым стартом могли пройти часы, и мы не знаем, был ли VPN жив всё это время.
     private bool _restored;
@@ -95,6 +95,23 @@ public sealed class ConnectionHistoryTracker
         }
     }
 
+    /// <summary>
+    /// Активную сессию больше не видно, но и закрыть её нельзя: например, пропал файл CLI, а туннель
+    /// мог остаться жив. Дальше сессия ведёт себя как поднятая с диска: тот же город её продолжит,
+    /// а закроет её момент, когда её последний раз видели живой.
+    /// </summary>
+    public void Suspend()
+    {
+        lock (_gate)
+        {
+            if (_active is null) return;
+            _restored = true;
+            // Троттлинг мог не донести последний живой опрос до диска. Без него перезапуск
+            // в этом состоянии закрыл бы сессию раньше.
+            if (_lastSeenAt != _persistedLastSeen) PersistActiveLocked();
+        }
+    }
+
     // Страна/пинг могут приехать позже города: дозаполняем, но никогда не затираем
     // уже известные значения пустышками. Написание города берём из обогащённого
     // источника («Amsterdam» из списка локаций вместо «AMSTERDAM» из status).
@@ -111,8 +128,8 @@ public sealed class ConnectionHistoryTracker
         return a with { City = newCity, Country = newCountry, Ping = newPing };
     }
 
-    // Сессию, поднятую с диска, закрываем последним моментом, когда мы её видели живой,
-    // а наблюдаемую в этом процессе — текущим временем.
+    // Сессию, поднятую с диска или подвешенную, закрываем последним моментом, когда мы её видели
+    // живой, а наблюдаемую в этом процессе — текущим временем.
     private void FinalizeLocked(DateTimeOffset now)
     {
         var endedAt = _restored ? _lastSeenAt : now;

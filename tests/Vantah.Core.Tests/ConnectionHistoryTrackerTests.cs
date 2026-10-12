@@ -272,6 +272,84 @@ public class ConnectionHistoryTrackerTests
         finally { Cleanup(path); }
     }
 
+    // --- Сессия подвешена: пропал CLI, а туннель мог остаться жив ---
+
+    [Fact]
+    public void Suspended_session_is_finalized_with_LastSeenAt()
+    {
+        var (t, path) = NewTracker();
+        try
+        {
+            t.OnConnected("Amsterdam", "Netherlands", 24, At(0));
+            t.OnConnected("Amsterdam", "Netherlands", 24, At(10)); // последний живой опрос
+            t.Suspend();
+
+            t.OnDisconnected(At(60)); // CLI вернулся через час и говорит «отключено»
+
+            Assert.Null(t.Active);
+            Assert.Equal(At(10), Assert.Single(t.Previous).EndedAt);
+        }
+        finally { Cleanup(path); }
+    }
+
+    [Fact]
+    public void Suspended_session_continues_with_the_same_city()
+    {
+        var (t, path) = NewTracker();
+        try
+        {
+            t.OnConnected("Amsterdam", "Netherlands", 24, At(0));
+            t.Suspend();
+
+            t.OnConnected("AMSTERDAM", "", 0, At(60));
+            t.OnDisconnected(At(90));
+
+            // Сессия снова подтверждена живьём, поэтому закрыта текущим временем.
+            var e = Assert.Single(t.Previous);
+            Assert.Equal(At(0), e.StartedAt);
+            Assert.Equal(At(90), e.EndedAt);
+        }
+        finally { Cleanup(path); }
+    }
+
+    [Fact]
+    public void Suspended_session_with_different_city_is_finalized_with_LastSeenAt()
+    {
+        var (t, path) = NewTracker();
+        try
+        {
+            t.OnConnected("Amsterdam", "Netherlands", 24, At(0));
+            t.OnConnected("Amsterdam", "Netherlands", 24, At(10));
+            t.Suspend();
+
+            t.OnConnected("Oslo", "Norway", 40, At(60));
+
+            Assert.Equal(At(10), Assert.Single(t.Previous).EndedAt);
+            Assert.Equal("Oslo", t.Active!.City);
+            Assert.Equal(At(60), t.Active.StartedAt);
+        }
+        finally { Cleanup(path); }
+    }
+
+    /// <summary>Выход из приложения, пока сессия подвешена: на старте её закроет последний живой опрос.</summary>
+    [Fact]
+    public void Suspend_writes_the_throttled_heartbeat_for_the_next_start()
+    {
+        var (t1, path) = NewTracker();
+        try
+        {
+            t1.OnConnected("Amsterdam", "Netherlands", 24, At(0));
+            t1.OnConnected("Amsterdam", "Netherlands", 24, At(0).AddSeconds(20)); // троттлинг: не на диске
+            t1.Suspend();
+
+            var t2 = NewTracker(path);
+            t2.OnDisconnected(At(100));
+
+            Assert.Equal(At(0).AddSeconds(20), Assert.Single(t2.Previous).EndedAt);
+        }
+        finally { Cleanup(path); }
+    }
+
     [Fact]
     public void Finalized_session_clears_the_active_session_file()
     {
