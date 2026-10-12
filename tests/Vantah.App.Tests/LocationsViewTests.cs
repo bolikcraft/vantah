@@ -2,6 +2,7 @@ using Vantah.Core.Errors;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
+using Vantah.App.Localization;
 using Vantah.App.Services;
 using Vantah.App.Tests.Fakes;
 using Vantah.App.ViewModels;
@@ -53,7 +54,8 @@ public class LocationsViewTests
     private static Location Loc(string iso, string country, string city, int ping) =>
         new(iso, country, city, ping);
 
-    private static LocationsViewModel MakeVm(IVpnService vpn, AppStateStore? store = null)
+    private static LocationsViewModel MakeVm(
+        IVpnService vpn, AppStateStore? store = null, FavoritesStore? favorites = null)
     {
         var dir = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
         store ??= new AppStateStore();
@@ -63,8 +65,39 @@ public class LocationsViewTests
             new ActiveSessionStore(Path.Combine(dir, "connection-active")));
         var ipStore = new IpVersionStore(Path.Combine(dir, "ip-version"));
         var coord = new VpnCoordinator(vpn, traffic, store, history, ipStore, new FakeAuthService());
-        var favorites = new FavoritesStore(Path.Combine(dir, "favorites"));
+        favorites ??= new FavoritesStore(Path.Combine(dir, "favorites"));
         return new LocationsViewModel(vpn, coord, favorites, store);
+    }
+
+    /// <summary>
+    /// Избранное не записалось (диск полон или только для чтения). Исключение из синхронной
+    /// команды ушло бы на диспетчер и уронило процесс. Вместо этого звёздочка возвращается,
+    /// а на экране — переводимое сообщение без текста исключения.
+    /// </summary>
+    [AvaloniaFact]
+    public async Task Failed_favorite_save_reverts_the_star_and_shows_a_message()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        // Файл на месте каталога: запись не пройдёт ни у кого, в том числе у root.
+        var blocker = Path.Combine(dir, "blocker");
+        File.WriteAllText(blocker, "");
+        var vm = MakeVm(new ScriptedVpn(() => new[] { Loc("NL", "Netherlands", "Amsterdam", 10) }),
+            favorites: new FavoritesStore(Path.Combine(blocker, "favorites.json")));
+        await vm.LoadTask;
+        var item = Assert.Single(vm.Items);
+
+        vm.ToggleFavoriteCommand.Execute(item);
+
+        Assert.False(item.IsFavorite);
+        Assert.Equal(Localizer.Instance[LocKeys.Locations_FavoritesNotSaved], vm.Error);
+
+        // Место для записи появилось — следующая звёздочка сохраняется, сообщение уходит.
+        File.Delete(blocker);
+        vm.ToggleFavoriteCommand.Execute(item);
+
+        Assert.True(item.IsFavorite);
+        Assert.Null(vm.Error);
     }
 
     [AvaloniaFact]

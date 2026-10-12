@@ -76,6 +76,9 @@
               ToolTip.Tip="{Binding [Locations_Tooltip_SortByPing], Source={x:Static loc:Localizer.Instance}}"/>
     </Grid>
 
+    <TextBlock DockPanel.Dock="Bottom" Text="{Binding Error}" Foreground="IndianRed" TextWrapping="Wrap"
+               IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}" Margin="0,8,0,0"/>
+
     <Grid>
     <ListBox ItemsSource="{Binding Items}" Padding="0">
       <ListBox.ItemTemplate>

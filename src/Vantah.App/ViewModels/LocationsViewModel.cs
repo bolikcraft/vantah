@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Threading;
@@ -16,7 +17,7 @@ using Vantah.Core.Vpn;
 
 namespace Vantah.App.ViewModels;
 
-public partial class LocationsViewModel : ObservableObject, IReloadableSection
+public partial class LocationsViewModel : ErrorAwareViewModel, IReloadableSection
 {
     private readonly IVpnService _vpn;
     private readonly VpnCoordinator _coordinator;
@@ -243,7 +244,19 @@ public partial class LocationsViewModel : ObservableObject, IReloadableSection
     private void ToggleFavorite(LocationItemViewModel item)
     {
         item.IsFavorite = !item.IsFavorite;
-        _favorites.Save(_all.Where(i => i.IsFavorite).Select(i => i.Key));
+        try
+        {
+            _favorites.Save(_all.Where(i => i.IsFavorite).Select(i => i.Key));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Файл не записан: звёздочку возвращаем, иначе экран показал бы избранное, которого
+            // нет на диске. Ловим только сбой записи: подписчики Changed работают уже после неё.
+            item.IsFavorite = !item.IsFavorite;
+            SetError(LocKeys.Locations_FavoritesNotSaved);
+            return;
+        }
+        ClearError();
         ApplyFilter();
     }
 }
