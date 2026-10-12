@@ -1,6 +1,16 @@
 -------------------------------------------------------------------
 Mon Oct 12 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
 
+- Update to 0.6.2: when the AdGuard VPN CLI disappears while the VPN
+  is connected, the Status screen no longer shows the old location and
+  speed, and the history no longer splits one session into two.
+- The process window and the app log hide the SOCKS password and the
+  DNS address.
+- The AppImage contains update information (zsync).
+
+-------------------------------------------------------------------
+Mon Oct 12 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
+
 - Update to 0.6.1: when the AdGuard VPN CLI is not installed, Vantah
   shows a clear screen that tells what it needs, and the app log no
   longer stores the SOCKS user name and password.
