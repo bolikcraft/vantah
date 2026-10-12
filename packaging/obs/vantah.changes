@@ -1,4 +1,11 @@
 -------------------------------------------------------------------
+Mon Oct 12 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
+
+- Update to 0.6.1: when the AdGuard VPN CLI is not installed, Vantah
+  shows a clear screen that tells what it needs, and the app log no
+  longer stores the SOCKS user name and password.
+
+-------------------------------------------------------------------
 Sun Sep  6 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
 
 - Update to 0.6.0: Vantah shows a desktop notification when the VPN
