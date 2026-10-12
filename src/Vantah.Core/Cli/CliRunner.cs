@@ -38,6 +38,13 @@ public sealed class CliRunner(
         exitCode != 0 || elapsedMs > SlowCallMs
         || args is not [var command] || !PollCommands.Contains(command);
 
+    /// <summary>Команды, чей следующий аргумент — логин или пароль SOCKS.</summary>
+    private static readonly string[] SecretValueCommands = ["set-socks-username", "set-socks-password"];
+
+    /// <summary>Аргументы для строки лога: значение после секретной команды заменено на «***».</summary>
+    internal static string ArgsForLog(string[] args) =>
+        string.Join(' ', args.Select((a, i) => i > 0 && SecretValueCommands.Contains(args[i - 1]) ? "***" : a));
+
     public async Task<CliResult> RunAsync(string[] args, TimeSpan? timeout = null, CancellationToken ct = default)
     {
         var psi = new ProcessStartInfo
@@ -80,15 +87,15 @@ public sealed class CliRunner(
                 // Если отмену запросил вызывающий — показываем настоящую OperationCanceledException,
                 // а не маскируем её таймаутом (linked cts срабатывает и на ct, и на timeout).
                 ct.ThrowIfCancellationRequested();
-                _log.Write($"cli: {string.Join(' ', args)} → таймаут через {started.ElapsedMilliseconds} ms");
+                _log.Write($"cli: {ArgsForLog(args)} → таймаут через {started.ElapsedMilliseconds} ms");
                 throw new CliTimeoutException(
-                    new AppError(AppErrorCode.Timeout, $"{executable} {string.Join(' ', args)}"));
+                    new AppError(AppErrorCode.Timeout, $"{executable} {ArgsForLog(args)}"));
             }
 
             var elapsed = started.ElapsedMilliseconds;
             // Вывод команд в лог не идёт: у `license` в нём почта пользователя.
             if (ShouldLogCall(args, proc.ExitCode, elapsed))
-                _log.Write($"cli: {string.Join(' ', args)} → rc={proc.ExitCode}, {elapsed} ms");
+                _log.Write($"cli: {ArgsForLog(args)} → rc={proc.ExitCode}, {elapsed} ms");
 
             return new CliResult(proc.ExitCode, stdout.ToString(), stderr.ToString());
         }
