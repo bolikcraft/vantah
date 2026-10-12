@@ -5,11 +5,11 @@ namespace Vantah.App.Services;
 /// <summary>
 /// Раздел, читающий данные через CLI и умеющий перечитать себя после неудачи. Без активного
 /// VPN такие чтения нередко не проходят (таймаут), и раздел остаётся с текстом ошибки —
-/// SectionReloader дёргает эти разделы, когда VPN подключился.
+/// SectionReloader дёргает эти разделы, когда VPN подключился или появился CLI.
 /// </summary>
 public interface IReloadableSection
 {
-    /// <summary>Идентификатор раздела ("locations" | "domains" | "settings") — для тестов и логов.</summary>
+    /// <summary>Идентификатор раздела ("locations" | "domains" | "settings" | "account" | "about") — для тестов и логов.</summary>
     string Id { get; }
 
     /// <summary>Последняя загрузка не удалась.</summary>

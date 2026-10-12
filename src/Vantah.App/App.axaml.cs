@@ -172,18 +172,22 @@ public partial class App : Application
                 autoConnectStore, autostart, appUpdates, killSwitchStore, cliUpdater, transparency,
                 _loggingStore, _appLog, notificationsStore);
 
+            var license = new LicenseViewModel(vpn, auth, coordinator);
+            var about = new AboutViewModel(vpn);
+
             // Без активного VPN чтения CLI нередко не проходят: раздел, который не прочитался,
-            // перечитает себя сам, когда туннель поднимется. Ссылку держим в поле — сервис
-            // подписан на стор и должен жить всю сессию.
-            _sectionReloader = new SectionReloader(store, [locations, domains, configVm]);
+            // перечитает себя сам, когда туннель поднимется или появится сам CLI. Ссылку держим
+            // в поле — сервис подписан на стор и должен жить всю сессию. license и about идут
+            // первыми: их чтения быстрые, а остальные без VPN могут висеть до таймаута.
+            _sectionReloader = new SectionReloader(store, [license, about, locations, domains, configVm]);
 
             var mainVm = new MainWindowViewModel(
                 new StatusViewModel(coordinator, store, logReader,
                     new HistoryViewModel(coordinator, store), ipVersionStore),
                 locations,
                 domains,
-                new LicenseViewModel(vpn, auth, coordinator),
-                new AboutViewModel(vpn),
+                license,
+                about,
                 new ProcessesViewModel(processes),
                 configVm,
                 login,

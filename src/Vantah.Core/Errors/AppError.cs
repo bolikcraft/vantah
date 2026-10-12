@@ -14,6 +14,8 @@ public enum AppErrorCode
     CommandFailed,
     /// <summary>Команда CLI не уложилась в таймаут. Аргумент — команда.</summary>
     Timeout,
+    /// <summary>Исполняемого файла CLI нет. Аргумент — имя или путь файла.</summary>
+    CliMissing,
     /// <summary>Не удалось добавить домен в исключения. Аргумент — домен.</summary>
     AddDomainFailed,
     /// <summary>Не удалось удалить домен из исключений. Аргумент — домен.</summary>

@@ -131,6 +131,15 @@
   <data name="Status_Error" xml:space="preserve">
     <value>Помилка</value>
   </data>
+  <data name="Status_CliMissing" xml:space="preserve">
+    <value>Потрібен AdGuard VPN CLI</value>
+  </data>
+  <data name="Status_CliMissingHint" xml:space="preserve">
+    <value>Vantah працює поверх AdGuard VPN CLI. Встановіть CLI, і Vantah підхопить його сам.</value>
+  </data>
+  <data name="Status_CliMissingInstall" xml:space="preserve">
+    <value>Як встановити</value>
+  </data>
   <data name="Status_Checking" xml:space="preserve">
     <value>Отримуємо стан підключення…</value>
   </data>
@@ -572,6 +581,9 @@
   </data>
   <data name="Error_Timeout" xml:space="preserve">
     <value>{0} перевищив час очікування</value>
+  </data>
+  <data name="Error_CliMissing" xml:space="preserve">
+    <value>Для цього потрібен AdGuard VPN CLI.</value>
   </data>
   <data name="Error_AddDomainFailed" xml:space="preserve">
     <value>не вдалося додати {0}</value>

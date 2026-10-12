@@ -255,6 +255,10 @@ public sealed class TrayIconController
         var connected = s.Connection == ConnectionState.Connected;
         _toggle.Header = loc[connected ? LocKeys.Common_Disconnect : LocKeys.Common_Connect];
 
+        // Без CLI подключиться нельзя: пункты подключения гасим, как кнопку на «Статусе».
+        var cliMissing = s.Connection == ConnectionState.CliMissing;
+        _toggle.IsEnabled = _fastest.IsEnabled = _locations.IsEnabled = !cliMissing;
+
         var glyph = connected ? "🟢" : "⚪";
         if (connected)
         {
@@ -271,11 +275,13 @@ public sealed class TrayIconController
         }
         else
         {
-            _statusItem.Header = $"{glyph} {loc[LocKeys.Status_Disconnected]}";
+            _statusItem.Header = $"{glyph} {loc[cliMissing ? LocKeys.Status_CliMissing : LocKeys.Status_Disconnected]}";
             _icon.ToolTipText = loc.Format(LocKeys.Tray_Tooltip_DisconnectedFormat, glyph);
 
             // Ошибку не показываем глифом (на 16px не читается) — значит, она обязана быть здесь.
-            if (s.Connection == ConnectionState.Error && s.Error is { } err && UiText.Of(err).Text is { Length: > 0 } text)
+            if (cliMissing)
+                _icon.ToolTipText += "\n" + loc[LocKeys.Status_CliMissing];
+            else if (s.Connection == ConnectionState.Error && s.Error is { } err && UiText.Of(err).Text is { Length: > 0 } text)
                 _icon.ToolTipText += "\n" + loc.Format(LocKeys.Tray_Tooltip_ErrorFormat, text);
         }
 

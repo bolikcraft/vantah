@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Vantah.App.Localization;
+using Vantah.App.Services;
 using Vantah.Core.Vpn;
 
 namespace Vantah.App.ViewModels;
 
-public partial class AboutViewModel : ObservableObject
+public partial class AboutViewModel : ObservableObject, IReloadableSection
 {
     public const string RepositoryUrl = "https://github.com/bolikcraft/vantah";
 
@@ -31,8 +32,21 @@ public partial class AboutViewModel : ObservableObject
             OnPropertyChanged(nameof(LegalNotice));
             if (_cliVersionKey is { } key) CliVersion = Localizer.Instance[key];
         });
-        _ = LoadCliVersionAsync(CancellationToken.None);
+        LoadTask = LoadCliVersionAsync(CancellationToken.None);
     }
+
+    /// <summary>Текущее (повторное) чтение версии CLI — чтобы его можно было дождаться в тестах.</summary>
+    public Task LoadTask { get; private set; }
+
+    /// <inheritdoc/>
+    public string Id => "about";
+
+    /// <inheritdoc/>
+    public bool LoadFailed => _cliVersionKey == LocKeys.Common_NotAvailable;
+
+    /// <inheritdoc/>
+    public Task ReloadIfFailedAsync() =>
+        LoadFailed ? LoadTask = LoadCliVersionAsync(CancellationToken.None) : Task.CompletedTask;
 
     /// <summary>Версия сборки — общая для экрана «О программе» и проверки обновлений.</summary>
     public static string CurrentVersion { get; } = ReadAppVersion();

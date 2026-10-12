@@ -15,8 +15,8 @@ public static class TrayIconResolver
     {
         ConnectionState.Connected => "connected",
         ConnectionState.Connecting or ConnectionState.Disconnecting => "connecting",
-        // Disconnected и Error: защиты нет. Отдельный аварийный глиф на 16px не читается,
-        // а причина ошибки уходит в тултип.
+        // Disconnected, Error и CliMissing: защиты нет. Отдельный аварийный глиф на 16px не
+        // читается, а причина уходит в тултип.
         _ => "disconnected",
     };
 

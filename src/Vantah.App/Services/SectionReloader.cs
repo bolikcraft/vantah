@@ -11,7 +11,8 @@ namespace Vantah.App.Services;
 /// <summary>
 /// Разделы, которые не удалось прочитать без VPN (таймаут CLI), перечитываются сами в момент
 /// успешного подключения: CLI снова отвечает, и требовать от пользователя ручного «Обновить»
-/// незачем. Признак «не прочиталось» живёт в самих разделах и только в памяти процесса.
+/// незачем. Так же — когда появился сам CLI (выход из <see cref="ConnectionState.CliMissing"/>).
+/// Признак «не прочиталось» живёт в самих разделах и только в памяти процесса.
 /// </summary>
 public sealed class SectionReloader
 {
@@ -25,10 +26,15 @@ public sealed class SectionReloader
     // достаточно перечитать то, что на текущий момент всё ещё LoadFailed.
     private volatile bool _rerunRequested;
 
+    // CLI пропадал после прошлого прогона. Нужен признак, а не прямой переход: между CliMissing
+    // и нормальным состоянием может пройти Error или Connecting.
+    private volatile bool _cliWasMissing;
+
     public SectionReloader(AppStateStore store, IReadOnlyList<IReloadableSection> sections)
     {
         _sections = sections;
         _previous = store.Current.Connection;
+        _cliWasMissing = _previous == ConnectionState.CliMissing;
         store.Changed += OnStoreChanged;
     }
 
@@ -39,10 +45,16 @@ public sealed class SectionReloader
     {
         var previous = _previous;
         _previous = snapshot.Connection;
+        if (snapshot.Connection == ConnectionState.CliMissing) _cliWasMissing = true;
 
         // Реагируем на ПЕРЕХОД в Connected: опрос пишет Connected каждые несколько секунд,
         // и реакция на само значение перезапускала бы загрузку бесконечно.
-        if (snapshot.Connection != ConnectionState.Connected || previous == ConnectionState.Connected) return;
+        var connected = snapshot.Connection == ConnectionState.Connected && previous != ConnectionState.Connected;
+        // CLI установили: разделы, упавшие без него, не должны ждать подключения.
+        var cliAppeared = _cliWasMissing
+            && snapshot.Connection is ConnectionState.Connected or ConnectionState.Disconnected;
+        if (!connected && !cliAppeared) return;
+        _cliWasMissing = false;
 
         // Single-flight: пока прошлый прогон не закончился, новый параллельно не начинаем — но
         // и не отбрасываем переход молча. Раньше именно так и было: если реальный переход

@@ -57,8 +57,9 @@ public partial class LocationsViewModel : ObservableObject, IReloadableSection
 
     // Пока статус подключения не определён (Unknown — до первого ответа CLI), кнопки
     // «Подключить/Отключить» в строках заблокированы: иначе список уже предлагает подключиться,
-    // хотя туннель, возможно, уже поднят. Разблокируются, как только статус становится известен.
-    [ObservableProperty] private bool _isStatusKnown;
+    // хотя туннель, возможно, уже поднят. Без CLI (CliMissing) они тоже заблокированы, как
+    // кнопка на «Статусе» и пункты трея: подключиться всё равно нельзя.
+    [ObservableProperty] private bool _canToggleRows;
 
     /// <summary>Строки-заглушки «скелетона» на время загрузки (значения не важны, важно их число).</summary>
     public IReadOnlyList<int> SkeletonRows { get; } = Enumerable.Range(0, 9).ToList();
@@ -223,7 +224,7 @@ public partial class LocationsViewModel : ObservableObject, IReloadableSection
 
     private void ApplyConnected(AppSnapshot s)
     {
-        IsStatusKnown = s.Connection != ConnectionState.Unknown;
+        CanToggleRows = s.Connection is not (ConnectionState.Unknown or ConnectionState.CliMissing);
         var connectedCity = s.Connection == ConnectionState.Connected ? s.Location : null;
         foreach (var item in _all)
             item.IsConnected = connectedCity is not null &&

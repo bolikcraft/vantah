@@ -61,6 +61,7 @@ public readonly record struct UiText
     private static string KeyOf(AppErrorCode code) => code switch
     {
         AppErrorCode.Timeout            => LocKeys.Error_Timeout,
+        AppErrorCode.CliMissing         => LocKeys.Error_CliMissing,
         AppErrorCode.AddDomainFailed    => LocKeys.Error_AddDomainFailed,
         AppErrorCode.RemoveDomainFailed => LocKeys.Error_RemoveDomainFailed,
         AppErrorCode.ModeSwitchFailed   => LocKeys.Error_ModeSwitchFailed,

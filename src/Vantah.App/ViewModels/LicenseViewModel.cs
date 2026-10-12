@@ -8,12 +8,13 @@ using CommunityToolkit.Mvvm.Input;
 using Vantah.App.Localization;
 using Vantah.App.Services;
 using Vantah.Core.Auth;
+using Vantah.Core.Errors;
 using Vantah.Core.Models;
 using Vantah.Core.Vpn;
 
 namespace Vantah.App.ViewModels;
 
-public partial class LicenseViewModel : ErrorAwareViewModel
+public partial class LicenseViewModel : ErrorAwareViewModel, IReloadableSection
 {
     private const string Empty = "—";
 
@@ -51,6 +52,16 @@ public partial class LicenseViewModel : ErrorAwareViewModel
 
     /// <summary>Текущая (пере)загрузка лицензии — чтобы её можно было дождаться в тестах.</summary>
     public Task LoadTask { get; private set; } = Task.CompletedTask;
+
+    /// <inheritdoc/>
+    public string Id => "account";
+
+    /// <inheritdoc/>
+    public bool LoadFailed => HasError;
+
+    /// <inheritdoc/>
+    public Task ReloadIfFailedAsync() =>
+        LoadFailed ? LoadTask = RefreshAsync(CancellationToken.None) : Task.CompletedTask;
 
     public LicenseViewModel(IVpnService vpn, IAuthService auth, VpnCoordinator coordinator)
     {
@@ -117,7 +128,9 @@ public partial class LicenseViewModel : ErrorAwareViewModel
             await UiThread.RunAsync(() =>
             {
                 Clear();
-                SetTexts(status: null, error: LocKeys.License_ErrorFormat, errorArgument: ex.Message);
+                // Без CLI сообщение уже полное, префикс «Не удалось получить лицензию» к нему не нужен.
+                if (AppError.From(ex).Code == AppErrorCode.CliMissing) SetError(ex);
+                else SetTexts(status: null, error: LocKeys.License_ErrorFormat, errorArgument: ex.Message);
             });
         }
         finally

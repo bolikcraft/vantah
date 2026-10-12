@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Channels;
@@ -13,6 +14,16 @@ namespace Vantah.Core.Cli;
 /// из <see cref="Error"/> и переводит.
 /// </summary>
 public sealed class CliTimeoutException(AppError error) : TimeoutException(error.ToString()), IAppErrorException
+{
+    public AppError Error { get; } = error;
+}
+
+/// <summary>
+/// Исполняемого файла CLI нет: запуск процесса вернул ENOENT. Исходная ошибка ОС лежит
+/// в <see cref="Exception.InnerException"/>, текст для пользователя UI берёт из <see cref="Error"/>.
+/// </summary>
+public sealed class CliMissingException(AppError error, Exception inner)
+    : FileNotFoundException(error.ToString(), error.Argument, inner), IAppErrorException
 {
     public AppError Error { get; } = error;
 }
@@ -66,7 +77,7 @@ public sealed class CliRunner(
         proc.ErrorDataReceived  += (_, e) => { if (e.Data is not null) stderr.AppendLine(e.Data); };
 
         var started = Stopwatch.StartNew();
-        proc.Start();
+        Start(proc);
 
         try
         {
@@ -131,7 +142,7 @@ public sealed class CliRunner(
         var proc = new Process { StartInfo = psi };
         try
         {
-            proc.Start();
+            Start(proc);
         }
         catch
         {
@@ -139,6 +150,31 @@ public sealed class CliRunner(
             throw;
         }
         return Task.FromResult<IInteractiveCliSession>(new ProcessInteractiveSession(proc));
+    }
+
+    /// <summary>errno «нет такого файла»: .NET кладёт его в NativeErrorCode, если CLI нет ни по пути, ни в PATH.</summary>
+    private const int ENOENT = 2;
+
+    // Без CLI опрос падает каждые 4 c: в лог пишем только первый промах, пока файл не появится.
+    private int _missingLogged;
+
+    // Голое имя .NET ищет в PATH только среди исполняемых файлов, поэтому файл без бита x там
+    // тоже даёт ENOENT. Прочие сбои старта (например, нет прав на файл по абсолютному пути)
+    // пробрасываем как есть.
+    private void Start(Process proc)
+    {
+        try
+        {
+            proc.Start();
+            Interlocked.Exchange(ref _missingLogged, 0);
+        }
+        catch (Win32Exception ex) when (ex.NativeErrorCode == ENOENT)
+        {
+            // При выключенном логе флаг не взводим: иначе после включения строка не появится.
+            if (_log.Enabled && Interlocked.Exchange(ref _missingLogged, 1) == 0)
+                _log.Write($"cli: нет исполняемого файла {executable}");
+            throw new CliMissingException(new AppError(AppErrorCode.CliMissing, executable), ex);
+        }
     }
 
     /// <summary>

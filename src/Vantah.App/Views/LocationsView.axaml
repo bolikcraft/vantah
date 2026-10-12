@@ -101,7 +101,7 @@
                          HorizontalAlignment="Right" VerticalAlignment="Center"/>
               <Button Grid.Column="7" Classes="rowaction"
                       Classes.on="{Binding IsConnected}" Classes.danger="{Binding IsConnected}"
-                      IsEnabled="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).IsStatusKnown}"
+                      IsEnabled="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).CanToggleRows}"
                       Command="{Binding $parent[ListBox].((vm:LocationsViewModel)DataContext).ToggleConnectionCommand}"
                       CommandParameter="{Binding}" VerticalAlignment="Center"/>
             </Grid>
