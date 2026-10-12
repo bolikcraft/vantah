@@ -8,6 +8,7 @@ using Vantah.App.Tray;
 using Vantah.Core.Cli;
 using Vantah.Core.Favorites;
 using Vantah.Core.History;
+using Vantah.Core.Localization;
 using Vantah.Core.Models;
 using Vantah.Core.State;
 using Vantah.Core.Traffic;
@@ -137,100 +138,86 @@ public class TrayIconControllerTests
     }
 
     /// <summary>
-    /// Обход дубля иконки в GNOME умеет закрывать только соединение настоящей
-    /// StatusNotifier-реализации. Там, где его не нашли (headless, XEmbed-трей, другая версия
-    /// Avalonia), пересоздание обязано быть полным no-op: сняв иконку без закрытия соединения,
-    /// мы оставили бы в панели призрак — то есть сделали бы ровно то, что чиним.
+    /// Звёздочка на «Локациях» меняет подменю трея сразу, без перезапуска. Одно сохранение идёт
+    /// с потока пула: пункты меню — объекты Avalonia, и без переноса на UI-поток оно бы упало.
     /// </summary>
     [AvaloniaFact]
-    public async Task Rebuild_is_a_no_op_when_the_dbus_connection_is_not_found()
+    public async Task Favorites_submenu_follows_saved_favorites()
     {
-        var store = new AppStateStore();
-        var icons = new TrayIconSet();
-        var controller = NewController(store, icons);
-        var before = controller._icon;
+        var favorites = new FavoritesStore(Path.Combine(NewTempDir(), "favorites.json"));
+        var trayIcon = NewController(new AppStateStore(), new TrayIconSet(), favorites)._icon;
 
-        await controller.RebuildAsync();
+        AssertPlaceholder(FavoriteItems(trayIcon));
 
-        Assert.Same(before, controller._icon);
-
-        // И контроллер продолжает работать: состояние по-прежнему доезжает до иконки.
-        store.Set(s => s with { Connection = ConnectionState.Connected });
+        favorites.Save(["EE|Tallinn", "NL|Amsterdam"]);
         Dispatcher.UIThread.RunJobs();
-        Assert.Same(icons.For(ConnectionState.Connected), before.Icon);
+        Assert.Equal(["Amsterdam", "Tallinn"], FavoriteItems(trayIcon).Select(i => i.Header).Order());
+        Assert.All(FavoriteItems(trayIcon), i => Assert.True(i.IsEnabled));
+
+        await Task.Run(() => favorites.Save(["NL|Amsterdam"]));
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal(["Amsterdam"], FavoriteItems(trayIcon).Select(i => i.Header));
+
+        // Список опустел — снова заглушка, и с подписью, а не пустым пунктом.
+        favorites.Save([]);
+        Dispatcher.UIThread.RunJobs();
+        AssertPlaceholder(FavoriteItems(trayIcon));
     }
 
     /// <summary>
-    /// Полное пересоздание: новая иконка, закрытое старое соединение, собранное заново меню и
-    /// текущее состояние на месте. Меню здесь — не формальность: NativeMenuItem, однажды
-    /// попавший в NativeMenu, во второе меню не добавляется (Avalonia бросает «already has a
-    /// parent»), так что переиспользование пунктов уронило бы пересоздание на первом же вызове.
+    /// Смена языка переводит заглушку через поле _noFavorites. Заглушка, собранная заново во
+    /// время работы, обязана попасть в это поле, иначе останется на прежнем языке.
     /// </summary>
     [AvaloniaFact]
-    public async Task Rebuild_replaces_the_icon_and_reapplies_state()
+    public void Placeholder_added_at_runtime_follows_language_switch()
     {
-        var store = new AppStateStore();
-        var icons = new TrayIconSet();
-        var controller = NewController(store, icons);
+        var favorites = new FavoritesStore(Path.Combine(NewTempDir(), "favorites.json"));
+        favorites.Save(["EE|Tallinn"]);
+        var trayIcon = NewController(new AppStateStore(), new TrayIconSet(), favorites)._icon;
 
-        store.Set(s => s with { Connection = ConnectionState.Connected });
+        favorites.Save([]);
         Dispatcher.UIThread.RunJobs();
-        var before = controller._icon;
+        AssertPlaceholder(FavoriteItems(trayIcon));
 
-        var connection = new SpyDisposable();
-        await controller.RebuildAsync(_ => connection);
-        var after = controller._icon;
+        try
+        {
+            Localizer.Instance.SetLanguage("ru");
+            Dispatcher.UIThread.RunJobs();
 
-        Assert.NotSame(before, after);
-        Assert.True(connection.Disposed);
-
-        // Состояние и подписи применены сразу, без ожидания следующего снимка стора.
-        Assert.Same(icons.For(ConnectionState.Connected), after.Icon);
-        var headers = after.Menu!.Items.OfType<NativeMenuItem>().Select(i => i.Header).ToList();
-        Assert.Contains(Localizer.Instance[LocKeys.Tray_Exit], headers);
-        Assert.Contains(Localizer.Instance[LocKeys.Tray_Fastest], headers);
-        Assert.Contains(Localizer.Instance[LocKeys.Common_Disconnect], headers);
-
-        // Подписка на стор пережила пересоздание и не задвоилась: обновления доезжают до
-        // НОВОЙ иконки, а старая больше никем не трогается.
-        store.Set(s => s with { Connection = ConnectionState.Disconnected });
-        Dispatcher.UIThread.RunJobs();
-        Assert.Same(icons.For(ConnectionState.Disconnected), after.Icon);
-        Assert.Same(icons.For(ConnectionState.Connected), before.Icon);
+            // FavoriteItems ищет пункт «Локация» по подписи, поэтому и он должен быть на русском.
+            var placeholder = Assert.Single(FavoriteItems(trayIcon));
+            Assert.Equal("Нет избранного", placeholder.Header);
+        }
+        finally
+        {
+            // Localizer.Instance — синглтон на весь тест-хост: не вернём язык — протечёт в соседей.
+            Localizer.Instance.SetLanguage(CultureSelector.Default);
+            Dispatcher.UIThread.RunJobs();
+        }
     }
 
-    /// <summary>Пересоздание не одноразовое: экран блокируют не единожды за сеанс.</summary>
-    [AvaloniaFact]
-    public async Task Rebuild_can_run_more_than_once()
+    private static List<NativeMenuItem> FavoriteItems(TrayIcon trayIcon)
     {
-        var store = new AppStateStore();
-        var icons = new TrayIconSet();
-        var controller = NewController(store, icons);
-
-        var first = controller._icon;
-        await controller.RebuildAsync(_ => new SpyDisposable());
-        var second = controller._icon;
-        await controller.RebuildAsync(_ => new SpyDisposable());
-        var third = controller._icon;
-
-        Assert.NotSame(first, second);
-        Assert.NotSame(second, third);
-
-        store.Set(s => s with { Connection = ConnectionState.Connected });
-        Dispatcher.UIThread.RunJobs();
-        Assert.Same(icons.For(ConnectionState.Connected), third.Icon);
+        var locations = trayIcon.Menu!.Items.OfType<NativeMenuItem>()
+            .Single(i => i.Header == Localizer.Instance[LocKeys.Tray_Location]);
+        return locations.Menu!.Items.OfType<NativeMenuItem>().ToList();
     }
 
-    private sealed class SpyDisposable : IDisposable
+    private static void AssertPlaceholder(List<NativeMenuItem> items)
     {
-        public bool Disposed { get; private set; }
-        public void Dispose() => Disposed = true;
+        var placeholder = Assert.Single(items);
+        Assert.Equal(Localizer.Instance[LocKeys.Tray_NoFavorites], placeholder.Header);
+        Assert.False(placeholder.IsEnabled);
     }
+
+    private static string NewTempDir() =>
+        Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
 
     // Пути хранилищ уводим в temp: тест не должен читать настоящий ~/.config пользователя.
-    private static TrayIconController NewController(AppStateStore store, TrayIconSet icons)
+    private static TrayIconController NewController(
+        AppStateStore store, TrayIconSet icons, FavoritesStore? favorites = null)
     {
-        var temp = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
+        var temp = NewTempDir();
         var runner = new CliRunner("adguardvpn-cli");
         var coordinator = new VpnCoordinator(
             new VpnService(runner),
@@ -245,7 +232,7 @@ public class TrayIconControllerTests
         return new TrayIconController(
             coordinator,
             store,
-            new FavoritesStore(Path.Combine(temp, "favorites.json")),
+            favorites ?? new FavoritesStore(Path.Combine(temp, "favorites.json")),
             new Window(),
             icons);
     }

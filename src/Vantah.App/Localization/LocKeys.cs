@@ -71,6 +71,7 @@ public static class LocKeys
     public const string Locations_Tooltip_SortByCity = "Locations_Tooltip_SortByCity";
     public const string Locations_Tooltip_SortByCountry = "Locations_Tooltip_SortByCountry";
     public const string Locations_Tooltip_SortByPing = "Locations_Tooltip_SortByPing";
+    public const string Locations_FavoritesNotSaved = "Locations_FavoritesNotSaved";
 
     // Вкладка «Домены»
     public const string Domains_Mode_General = "Domains_Mode_General";

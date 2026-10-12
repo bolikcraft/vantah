@@ -24,8 +24,15 @@ public sealed class FavoritesStore
         catch { return new(); }
     }
 
+    /// <summary>
+    /// Избранное сохранено. Поднимается после записи файла, на потоке вызвавшего
+    /// <see cref="Save"/>; при сбое записи не поднимается.
+    /// </summary>
+    public event EventHandler? Changed;
+
     public void Save(IEnumerable<string> keys)
     {
         SecureFile.WriteAllText(_path, JsonSerializer.Serialize(keys.Distinct().ToArray()));
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 }

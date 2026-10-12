@@ -213,6 +213,9 @@
   <data name="Locations_Tooltip_SortByPing" xml:space="preserve">
     <value>Trier par ping</value>
   </data>
+  <data name="Locations_FavoritesNotSaved" xml:space="preserve">
+    <value>Les favoris n’ont pas été enregistrés. Vérifiez l’espace disque libre et l’accès au dossier des paramètres.</value>
+  </data>
 
   <!-- Вкладка «Домены» -->
   <data name="Domains_Mode_General" xml:space="preserve">

@@ -14,10 +14,11 @@ installed by the user and covered by AdGuard's own license and terms.
 
 | Component | Version | Purpose | License | Project |
 | --- | --- | --- | --- | --- |
-| Avalonia | 12.1.1 | Cross-platform UI framework Vantah is built on | MIT | https://github.com/AvaloniaUI/Avalonia |
-| Avalonia.Desktop | 12.1.1 | Desktop (X11/Wayland) platform backends for Avalonia | MIT | https://github.com/AvaloniaUI/Avalonia |
-| Avalonia.Themes.Fluent | 12.1.1 | Fluent visual theme for Avalonia controls | MIT | https://github.com/AvaloniaUI/Avalonia |
-| Avalonia.Fonts.Inter | 12.1.1 | Bundled Inter font family used as the default UI font | MIT (package); the font itself is under SIL OFL 1.1, see below | https://github.com/AvaloniaUI/Avalonia |
+| Avalonia | 12.1.4 | Cross-platform UI framework Vantah is built on | MIT | https://github.com/AvaloniaUI/Avalonia |
+| Avalonia.Desktop | 12.1.4 | Desktop (X11/Wayland) platform backends for Avalonia | MIT | https://github.com/AvaloniaUI/Avalonia |
+| Avalonia.Themes.Fluent | 12.1.4 | Fluent visual theme for Avalonia controls | MIT | https://github.com/AvaloniaUI/Avalonia |
+| Avalonia.Fonts.Inter | 12.1.4 | Bundled Inter font family used as the default UI font | MIT (package); the font itself is under SIL OFL 1.1, see below | https://github.com/AvaloniaUI/Avalonia |
+| Tmds.DBus.Protocol | 0.94.1 | D-Bus client for desktop notifications and the system tray check | MIT | https://github.com/tmds/Tmds.DBus |
 | CommunityToolkit.Mvvm | 8.4.2 | MVVM primitives (observable properties, commands, source generators) | MIT | https://github.com/CommunityToolkit/dotnet |
 | AvaloniaUI.DiagnosticsSupport | 2.2.3 | Bridge to the Avalonia Developer Tools; **Debug builds only** — excluded from any non-Debug configuration and therefore not part of released binaries | See note below | https://avaloniaui.net/ |
 

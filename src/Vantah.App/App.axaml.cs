@@ -59,9 +59,6 @@ public partial class App : Application
     // Сервис подписан на AppStateStore и обязан пережить метод инициализации.
     private SectionReloader? _sectionReloader;
 
-    // Наблюдатель за трей-watcher'ом владеет собственным D-Bus-соединением — тоже держим ссылку.
-    private StatusNotifierWatcherMonitor? _trayWatcher;
-
     // Лог приложения и его настройка: тумблер в настройках включает запись на лету, поэтому
     // оба экземпляра живут всю сессию.
     private FileAppLog? _appLog;
@@ -224,39 +221,16 @@ public partial class App : Application
             // Проверка обновлений — фоном и без ожидания: старт и автоподключение она не задерживает.
             _ = CheckAppUpdateAsync(appUpdates, updateBanner);
 
-            // Сеть под снятие иконки трея ставим ДО её создания: без неё отмена из петли
-            // DBusTrayIconImpl.WatchAsync прилетает на диспетчер и роняет процесс — и при
-            // пересоздании иконки, и на обычном выходе через меню трея (rc=134 вместо 0).
-            // Только Linux: петля живёт в DBusTrayIconImpl, пересоздание трея нигде больше не
-            // запускается, а подписка на UnhandledException диспетчера — вещь глобальная, и
-            // ставить её там, где она заведомо ничего не ловит, значит менять поведение зря.
-            if (OperatingSystem.IsLinux()) TrayIconGuard.Install();
-
             // Системный трей + сворачивание окна вместо выхода. Иконки цветные (серый /
             // янтарный / зелёный) — знак среднего тона читается и на светлой, и на тёмной
             // панели, поэтому подстройка под тему трею не нужна.
-            var tray = new TrayIconController(coordinator, store, favorites, window, new TrayIconSet());
-
-            // GNOME при блокировке экрана выгружает расширение appindicatorsupport, а на
-            // возврате регистрирует наш /StatusNotifierItem раньше, чем Avalonia успевает взять
-            // своё well-known имя, — в трее оказываются ДВЕ иконки одного процесса. Обход:
-            // дождаться возврата watcher'а и пересоздать трей вместе с D-Bus-соединением.
-            // Наблюдение поднимается здесь, а не в конструкторе контроллера, чтобы headless-тесты
-            // трея не открывали соединение к настоящей сессионной шине пользователя.
-            _trayWatcher = StatusNotifierWatcherMonitor.TryStart(tray.RebuildAsync);
+            _ = new TrayIconController(coordinator, store, favorites, window, new TrayIconSet());
 
             // Прятаться можно только там, где трей действительно есть: без watcher'а (GNOME без
             // расширения AppIndicator) спрятанное приложение исчезло бы совсем, без единого окна.
             if (_options.Minimized) _ = ShowIfTrayMissingAsync(window);
 
-            // На выходе наблюдение закрываем: иначе за приложением остаётся живое
-            // D-Bus-соединение, а пересоздание, начатое в середине пятисекундной паузы,
-            // доедет до уже разобранного трея.
-            desktop.Exit += (_, _) =>
-            {
-                _trayWatcher?.Dispose();
-                _notifier?.Dispose();
-            };
+            desktop.Exit += (_, _) => _notifier?.Dispose();
 
             // Прячем окно только когда его закрывает пользователь (крестик / Alt+F4). При
             // завершении сеанса причина другая (ApplicationShutdown/OSShutdown), и вето здесь
@@ -287,7 +261,7 @@ public partial class App : Application
     // задержкой в доли секунды — лучше, чем невидимое приложение.
     private static async Task ShowIfTrayMissingAsync(Window window)
     {
-        if (await StatusNotifierWatcherMonitor.IsWatcherPresentAsync()) return;
+        if (await StatusNotifierWatcherProbe.IsPresentAsync()) return;
         await UiThread.RunAsync(() => { window.Show(); window.Activate(); });
     }
 

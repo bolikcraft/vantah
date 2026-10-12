@@ -213,6 +213,9 @@
   <data name="Locations_Tooltip_SortByPing" xml:space="preserve">
     <value>按延迟排序</value>
   </data>
+  <data name="Locations_FavoritesNotSaved" xml:space="preserve">
+    <value>收藏未保存。请检查磁盘剩余空间以及设置文件夹的访问权限。</value>
+  </data>
 
   <!-- Вкладка «Домены» -->
   <data name="Domains_Mode_General" xml:space="preserve">
