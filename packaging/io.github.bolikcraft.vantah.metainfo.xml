@@ -97,6 +97,17 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.6.2" date="2026-10-12">
+      <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.6.2</url>
+      <description>
+        <p>Fixes in this release:</p>
+        <ul>
+          <li>When AdGuard VPN CLI disappears while the VPN is on, the Status screen no longer shows the old location and speed, and the connection history does not split one session into two.</li>
+          <li>The Processes window and the app log hide the SOCKS password and the DNS server address of CLI commands.</li>
+          <li>The AppImage contains update information, so AppImageUpdate and AppImage managers can update Vantah.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.6.1" date="2026-10-12">
       <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.6.1</url>
       <description>
