@@ -193,6 +193,32 @@ public class AppUpdateServiceTests
     }
 
     [Fact]
+    public async Task State_from_an_older_version_without_a_release_is_checked_before_24h()
+    {
+        // Прежние версии писали время проверки, но не релиз. Иначе новая версия сутки не знала бы
+        // о релизе, который старая уже нашла.
+        var (service, store, source) = Build(Newer);
+        store.Update(s => s with { LastCheckUtc = Now.AddHours(-1) });
+
+        var info = await service.CheckAsync(Now);
+
+        Assert.Equal(Newer, info);
+        Assert.Equal(1, source.Calls);
+    }
+
+    [Fact]
+    public async Task Once_the_release_is_stored_the_24h_cooldown_holds_again()
+    {
+        var (service, store, source) = Build(Newer);
+        store.Update(s => s with { LastCheckUtc = Now.AddHours(-1) });
+        await service.CheckAsync(Now);
+
+        await service.CheckAsync(Now.AddHours(1));
+
+        Assert.Equal(1, source.Calls);
+    }
+
+    [Fact]
     public async Task Check_after_24h_hits_the_source_again()
     {
         var path = TempPath();

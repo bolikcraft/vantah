@@ -19,14 +19,14 @@ public sealed class AppUpdateService(IAppReleaseSource source, AppUpdateStore st
 
     /// <summary>
     /// Релиз новее текущей версии или null. В сеть идёт не чаще <see cref="CheckInterval"/>,
-    /// в остальное время отвечает сохранённым релизом. Скрытую крестиком версию НЕ отсеивает.
+    /// пока релиз сохранён; в остальное время отвечает им. Скрытую крестиком версию НЕ отсеивает.
     /// </summary>
     public async Task<AppUpdateInfo?> CheckAsync(DateTimeOffset now, CancellationToken ct = default)
     {
         var state = store.Load();
         if (!state.Enabled) return null;
 
-        if (state.LastCheckUtc is not { } last || now - last >= CheckInterval)
+        if (CooldownExpired(state, now))
         {
             var fetched = await source.GetLatestAsync(ct);
             // Запрос длится до 10 секунд, и за это время пользователь мог выключить проверку:
@@ -49,6 +49,13 @@ public sealed class AppUpdateService(IAppReleaseSource source, AppUpdateStore st
     /// <summary>Скрыть эту версию навсегда — крестик на плашке.</summary>
     public void Dismiss(string version) =>
         store.Update(s => s with { DismissedVersion = version });
+
+    // Без сохранённого релиза сутки не ждём: прежние версии писали время проверки, но не релиз.
+    // Удачный запрос релиз всегда сохраняет, так что лишних запросов это не даёт.
+    private static bool CooldownExpired(AppUpdateState state, DateTimeOffset now) =>
+        state.LatestRelease is null
+        || state.LastCheckUtc is not { } last
+        || now - last >= CheckInterval;
 
     private bool IsNewer(AppUpdateInfo? release)
     {

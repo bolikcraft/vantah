@@ -98,11 +98,11 @@ public sealed class AppUpdateMonitorTests : IDisposable
         AppUpdateMonitor Monitor, ManualTime Time, ScriptedSource Source,
         AppUpdateService Service, UpdateBannerViewModel Banner, AboutViewModel About);
 
-    private static Rig Build(ScriptedSource source, string? dismissed = null)
+    private static Rig Build(ScriptedSource source, string? dismissed = null, DateTimeOffset? lastCheck = null)
     {
         var path = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "appupdate.json");
         var store = new AppUpdateStore(path);
-        if (dismissed is not null) store.Update(_ => new AppUpdateState { DismissedVersion = dismissed });
+        store.Update(_ => new AppUpdateState { DismissedVersion = dismissed, LastCheckUtc = lastCheck });
 
         var service = new AppUpdateService(source, store, "0.1.0");
         var banner = new UpdateBannerViewModel(service);
@@ -181,6 +181,24 @@ public sealed class AppUpdateMonitorTests : IDisposable
         await rig.Time.NextSleepAsync();
 
         Assert.Equal(2, rig.Source.Calls);
+    }
+
+    [AvaloniaFact]
+    public async Task State_from_an_older_version_retries_a_silent_network_once_an_hour()
+    {
+        // Без сохранённого релиза сервис идёт в сеть, не дожидаясь суток. Чаще тика монитора
+        // это не бывает: неудача ничего не пишет, и следующую попытку делает только тик.
+        var rig = Build(new ScriptedSource(Returns(null)), lastCheck: Start.AddHours(-1));
+
+        _ = rig.Monitor.Start(_stop.Token);
+        var sleep = await rig.Time.NextSleepAsync();
+        for (var hour = 1; hour <= 3; hour++)
+        {
+            rig.Time.Wake(sleep);
+            sleep = await rig.Time.NextSleepAsync();
+        }
+
+        Assert.Equal(4, rig.Source.Calls);
     }
 
     [AvaloniaFact]
