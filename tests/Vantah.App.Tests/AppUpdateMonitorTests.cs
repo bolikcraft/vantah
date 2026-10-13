@@ -102,7 +102,7 @@ public sealed class AppUpdateMonitorTests : IDisposable
     {
         var path = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"), "appupdate.json");
         var store = new AppUpdateStore(path);
-        if (dismissed is not null) store.Save(new AppUpdateState { DismissedVersion = dismissed });
+        if (dismissed is not null) store.Update(_ => new AppUpdateState { DismissedVersion = dismissed });
 
         var service = new AppUpdateService(source, store, "0.1.0");
         var banner = new UpdateBannerViewModel(service);

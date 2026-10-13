@@ -24,7 +24,7 @@ public class AppUpdateServiceTests
     {
         public Task<AppUpdateInfo?> GetLatestAsync(CancellationToken ct = default)
         {
-            store.Save(store.Load() with { Enabled = false });
+            store.Update(s => s with { Enabled = false });
             return Task.FromResult(release);
         }
     }

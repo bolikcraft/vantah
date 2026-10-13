@@ -14,7 +14,7 @@ public sealed class AppUpdateService(IAppReleaseSource source, AppUpdateStore st
     public bool Enabled
     {
         get => store.Load().Enabled;
-        set => store.Save(store.Load() with { Enabled = value });
+        set => store.Update(s => s with { Enabled = value });
     }
 
     /// <summary>
@@ -33,9 +33,9 @@ public sealed class AppUpdateService(IAppReleaseSource source, AppUpdateStore st
             // проверку на сутки. Пока сети нет, отвечаем тем, что нашли раньше.
             if (await source.GetLatestAsync(ct) is { } fetched)
             {
-                // Состояние перечитываем: запрос длится до 10 секунд, и за это время пользователь мог
-                // снять галку проверки в настройках — запись снимка, снятого ДО запроса, вернула бы её.
-                store.Save(store.Load() with { LastCheckUtc = now, LatestRelease = fetched });
+                // Не снимок, снятый ДО запроса: запрос длится до 10 секунд, и за это время пользователь
+                // мог снять галку или нажать крестик — запись снимка вернула бы их назад.
+                store.Update(s => s with { LastCheckUtc = now, LatestRelease = fetched });
                 release = fetched;
             }
         }
@@ -49,7 +49,7 @@ public sealed class AppUpdateService(IAppReleaseSource source, AppUpdateStore st
 
     /// <summary>Скрыть эту версию навсегда — крестик на плашке.</summary>
     public void Dismiss(string version) =>
-        store.Save(store.Load() with { DismissedVersion = version });
+        store.Update(s => s with { DismissedVersion = version });
 
     private bool IsNewer(AppUpdateInfo? release)
     {

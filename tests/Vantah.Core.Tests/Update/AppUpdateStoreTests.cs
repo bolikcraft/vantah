@@ -42,7 +42,7 @@ public sealed class AppUpdateStoreTests : IDisposable
 
         var release = new AppUpdateInfo("v0.3.0", "https://github.com/bolikcraft/vantah/releases/tag/v0.3.0");
 
-        store.Save(new AppUpdateState
+        store.Update(_ => new AppUpdateState
         {
             Enabled = false,
             LastCheckUtc = when,
@@ -75,6 +75,45 @@ public sealed class AppUpdateStoreTests : IDisposable
     }
 
     [Fact]
+    public void Update_hands_the_current_state_and_stores_the_result()
+    {
+        var path = TempPath();
+        var store = new AppUpdateStore(path);
+        store.Update(s => s with { DismissedVersion = "v0.2.0" });
+
+        var written = store.Update(s => s with { Enabled = !s.Enabled });
+
+        var loaded = new AppUpdateStore(path).Load();
+        Assert.Equal(written, loaded);
+        Assert.False(loaded.Enabled);
+        Assert.Equal("v0.2.0", loaded.DismissedVersion);
+    }
+
+    [Fact]
+    public void Concurrent_updates_do_not_lose_each_other()
+    {
+        // Фоновая проверка пишет свой результат, а UI-поток в этот момент выключает тумблер.
+        // Если чтение и запись не под одним замком, одно из изменений теряется.
+        var store = new AppUpdateStore(TempPath());
+        var ui = new Thread(() => store.Update(s => s with { Enabled = false }));
+
+        store.Update(s =>
+        {
+            ui.Start();
+            // Без таймеров: ждём, пока второй писатель закончит или встанет на замке.
+            Assert.True(SpinWait.SpinUntil(
+                () => !ui.IsAlive || ui.ThreadState.HasFlag(ThreadState.WaitSleepJoin),
+                TimeSpan.FromSeconds(10)));
+            return s with { DismissedVersion = "v0.2.0" };
+        });
+        ui.Join();
+
+        var state = store.Load();
+        Assert.False(state.Enabled);
+        Assert.Equal("v0.2.0", state.DismissedVersion);
+    }
+
+    [Fact]
     public void Garbage_file_gives_defaults()
     {
         var path = TempPath();
@@ -85,28 +124,28 @@ public sealed class AppUpdateStoreTests : IDisposable
     }
 
     [Fact]
-    public void Save_creates_file_readable_only_by_owner()
+    public void Update_creates_file_readable_only_by_owner()
     {
         var path = TempPath();
-        new AppUpdateStore(path).Save(new AppUpdateState());
+        new AppUpdateStore(path).Update(_ => new AppUpdateState());
 
         Assert.Equal(Private600, File.GetUnixFileMode(path));
     }
 
     [Fact]
-    public void Save_creates_directory_traversable_only_by_owner()
+    public void Update_creates_directory_traversable_only_by_owner()
     {
         var path = TempPath();
-        new AppUpdateStore(path).Save(new AppUpdateState());
+        new AppUpdateStore(path).Update(_ => new AppUpdateState());
 
         Assert.Equal(Private700, File.GetUnixFileMode(Path.GetDirectoryName(path)!));
     }
 
     [Fact]
-    public void Save_leaves_no_temp_files_behind()
+    public void Update_leaves_no_temp_files_behind()
     {
         var path = TempPath();
-        new AppUpdateStore(path).Save(new AppUpdateState());
+        new AppUpdateStore(path).Update(_ => new AppUpdateState());
 
         Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(path)!, "*.tmp"));
     }
