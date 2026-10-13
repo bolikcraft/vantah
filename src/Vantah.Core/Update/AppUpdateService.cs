@@ -52,9 +52,11 @@ public sealed class AppUpdateService(IAppReleaseSource source, AppUpdateStore st
 
     // Без сохранённого релиза сутки не ждём: прежние версии писали время проверки, но не релиз.
     // Удачный запрос релиз всегда сохраняет, так что лишних запросов это не даёт.
+    // Время проверки в будущем значит, что часы были сбиты: иначе сеть молчала бы до того момента.
     private static bool CooldownExpired(AppUpdateState state, DateTimeOffset now) =>
         state.LatestRelease is null
         || state.LastCheckUtc is not { } last
+        || now < last
         || now - last >= CheckInterval;
 
     private bool IsNewer(AppUpdateInfo? release)

@@ -219,6 +219,19 @@ public class AppUpdateServiceTests
     }
 
     [Fact]
+    public async Task Check_time_in_the_future_does_not_block_the_network()
+    {
+        // Часы были сбиты вперёд: иначе проверка молчала бы до того самого момента.
+        var (service, store, source) = Build(Newer);
+        store.Update(s => s with { LastCheckUtc = Now.AddDays(30), LatestRelease = Newer });
+
+        await service.CheckAsync(Now);
+
+        Assert.Equal(1, source.Calls);
+        Assert.Equal(Now, store.Load().LastCheckUtc);
+    }
+
+    [Fact]
     public async Task Check_after_24h_hits_the_source_again()
     {
         var path = TempPath();
