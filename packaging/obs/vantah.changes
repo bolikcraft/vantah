@@ -1,4 +1,12 @@
 -------------------------------------------------------------------
+Tue Oct 13 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
+
+- Update to 0.6.4: Vantah remembers a new version that it found and
+  shows the update banner again after a restart.
+- While Vantah runs in the tray, it looks for a new version every day.
+- The About window shows a link to the new version.
+
+-------------------------------------------------------------------
 Mon Oct 12 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
 
 - Update to 0.6.3: use Avalonia 12.1.4, which fixes the duplicate
