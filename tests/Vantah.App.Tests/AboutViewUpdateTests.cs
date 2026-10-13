@@ -30,6 +30,9 @@ public class AboutViewUpdateTests
             .Where(b => b.IsEffectivelyVisible && b.NavigateUri != new Uri(AboutViewModel.RepositoryUrl))
             .ToList();
 
+    // Подпись ссылки — TextBlock с переносом: длинные переводы в узком окне иначе обрезаются.
+    private static string? LinkText(HyperlinkButton link) => Assert.IsType<TextBlock>(link.Content).Text;
+
     [AvaloniaFact]
     public void No_update_link_while_no_newer_release_is_known()
     {
@@ -47,7 +50,7 @@ public class AboutViewUpdateTests
         Dispatcher.UIThread.RunJobs();
 
         var link = Assert.Single(UpdateLinks(window));
-        Assert.Equal("A new version of Vantah is available — 0.7.0", link.Content);
+        Assert.Equal("A new version of Vantah is available — 0.7.0", LinkText(link));
         Assert.Equal(new Uri(Release.ReleaseUrl), link.NavigateUri);
     }
 
@@ -89,7 +92,7 @@ public class AboutViewUpdateTests
             Localizer.Instance.SetLanguage("ru");
             Dispatcher.UIThread.RunJobs();
 
-            Assert.Equal("Доступна новая версия Vantah — 0.7.0", Assert.Single(UpdateLinks(window)).Content);
+            Assert.Equal("Доступна новая версия Vantah — 0.7.0", LinkText(Assert.Single(UpdateLinks(window))));
         }
         finally
         {

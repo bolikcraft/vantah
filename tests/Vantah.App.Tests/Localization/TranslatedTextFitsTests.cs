@@ -18,6 +18,7 @@ using Vantah.Core.Models;
 using Vantah.Core.Settings;
 using Vantah.Core.State;
 using Vantah.Core.Traffic;
+using Vantah.Core.Update;
 using Vantah.Core.Vpn;
 using Xunit;
 using Location = Vantah.Core.Models.Location;
@@ -158,10 +159,17 @@ public class TranslatedTextFitsTests
 
             CheckView("Процессы", new ProcessesView { DataContext = new ProcessesViewModel(new StubMonitor(Processes())) });
             // Со ссылкой на новую версию — без неё проверялась бы только короткая строка версии.
+            // Окно настоящего размера: в общем окне 800×800 ссылка влезала, а в настоящем 460×280
+            // длинные переводы обрезались.
             var about = new AboutViewModel(new FakeVpnService());
-            about.ShowUpdate(new Vantah.Core.Update.AppUpdateInfo(
+            about.ShowUpdate(new AppUpdateInfo(
                 "v10.10.10", "https://github.com/bolikcraft/vantah/releases/tag/v10.10.10"));
-            CheckView("О программе", new AboutView { DataContext = about });
+            var aboutWindow = new DialogWindow(() => "", new AboutView { DataContext = about },
+                MainWindow.AboutWidth, MainWindow.AboutHeight);
+            aboutWindow.Show();
+            Check("О программе", aboutWindow);
+            failures.AddRange(BelowTheBottom(aboutWindow).Select(t => $"{code} / О программе: «{t}» ниже края окна"));
+            aboutWindow.Close();
 
             var login = LoginVm();
             var loginView = new LoginView { DataContext = login };
@@ -198,6 +206,18 @@ public class TranslatedTextFitsTests
             Dispatcher.UIThread.RunJobs();
         }
     }
+
+    /// <summary>
+    /// Видимые подписи, которые ушли за нижний край окна. Перенос строк спасает от обрезки
+    /// по ширине, но толкает текст вниз, а окно фиксированной высоты его обрежет.
+    /// </summary>
+    private static IEnumerable<string> BelowTheBottom(Window window) =>
+        window.GetVisualDescendants().OfType<TextBlock>()
+            .Where(t => t.IsEffectivelyVisible && !string.IsNullOrEmpty(t.Text))
+            .Where(t => t.TranslatePoint(new Point(0, t.Bounds.Height), window) is { } bottom
+                        && bottom.Y > window.ClientSize.Height + 0.5)
+            .Select(t => t.Text!)
+            .ToList();
 
     private static Window Show(Control view)
     {

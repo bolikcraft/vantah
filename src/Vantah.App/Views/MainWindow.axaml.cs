@@ -40,10 +40,13 @@ public partial class MainWindow : Window
              width: 560, height: 320);
 
     // «О программе» — две строки версий, ссылка и правовая сноска: окно по умолчанию (560×720)
-    // оставляло под ними полэкрана пустоты. Высоты хватает и на самый длинный перевод сноски.
+    // оставляло под ними полэкрана пустоты. Размер проверяет TranslatedTextFitsTests на всех языках.
+    internal const double AboutWidth = 460;
+    internal const double AboutHeight = 280;
+
     private void OnAboutClick(object? sender, RoutedEventArgs e) =>
         Open("about", LocKeys.Menu_About, vm => new AboutView { DataContext = vm.About },
-             width: 460, height: 280);
+             width: AboutWidth, height: AboutHeight);
 
     /// <summary>
     /// Открытие откладываем на следующий такт диспетчера: Avalonia поднимает Click ДО того, как
