@@ -68,6 +68,24 @@ public class UpdateBannerTests
         Assert.Equal("https://github.com/bolikcraft/vantah/releases/tag/v0.2.0", opened);
     }
 
+    [AvaloniaTheory]
+    [InlineData("not a url")]
+    [InlineData("file:///etc/passwd")]
+    [InlineData("")]
+    public void Open_release_falls_back_to_the_latest_release_page_for_a_broken_url(string url)
+    {
+        // Релиз читается и из appupdate.json, а файл мог испортиться. Браузер такую ссылку
+        // не откроет, и кнопка «Скачать» стала бы пустышкой.
+        var (vm, _) = Build();
+        string? opened = null;
+        vm.BrowserOpener = u => { opened = u; return Task.CompletedTask; };
+        vm.Show(new AppUpdateInfo("v0.2.0", url));
+
+        vm.OpenReleaseCommand.Execute(null);
+
+        Assert.Equal("https://github.com/bolikcraft/vantah/releases/latest", opened);
+    }
+
     [AvaloniaFact]
     public void Main_window_shows_the_banner_only_when_an_update_is_available()
     {

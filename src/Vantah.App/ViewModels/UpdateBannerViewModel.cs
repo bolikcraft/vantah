@@ -48,7 +48,7 @@ public partial class UpdateBannerViewModel : ObservableObject
     [RelayCommand]
     private async Task OpenReleaseAsync()
     {
-        if (_info is { } info && BrowserOpener is { } open) await open(info.ReleaseUrl);
+        if (_info is { } info && BrowserOpener is { } open) await open(info.ReleasePageUri().AbsoluteUri);
     }
 
     [RelayCommand]

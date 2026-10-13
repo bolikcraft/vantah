@@ -10,7 +10,17 @@
     <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto" RowSpacing="6">
       <TextBlock Grid.Row="0" Grid.Column="0" Opacity="0.7"
                  Text="{Binding [About_Version], Source={x:Static loc:Localizer.Instance}}"/>
-      <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding AppVersion}"/>
+      <!-- Ссылка в той же ячейке, а не отдельной строкой сетки: пустая строка сетки
+           всё равно получила бы RowSpacing, и без обновления появился бы лишний зазор. -->
+      <StackPanel Grid.Row="0" Grid.Column="1">
+        <TextBlock Text="{Binding AppVersion}"/>
+        <!-- Строка длинная, а окно узкое (460 px): без переноса de/fr/it обрезаются. -->
+        <HyperlinkButton NavigateUri="{Binding UpdateUri}"
+                         IsVisible="{Binding HasUpdate}" Margin="0,4,0,0"
+                         HorizontalAlignment="Left" Padding="0" MinHeight="0">
+          <TextBlock Text="{Binding UpdateText}" TextWrapping="Wrap"/>
+        </HyperlinkButton>
+      </StackPanel>
       <TextBlock Grid.Row="1" Grid.Column="0" Opacity="0.7"
                  Text="{Binding [About_CliVersion], Source={x:Static loc:Localizer.Instance}}"/>
       <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding CliVersion}" TextWrapping="Wrap"/>

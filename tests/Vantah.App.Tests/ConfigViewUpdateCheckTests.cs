@@ -23,7 +23,7 @@ public class ConfigViewUpdateCheckTests
         var root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
         var statePath = System.IO.Path.Combine(root, "appupdate.json");
         var updateStore = new AppUpdateStore(statePath);
-        if (saved is { } s) updateStore.Save(s);
+        if (saved is { } s) updateStore.Update(_ => s);
         var appUpdates = new AppUpdateService(new StubSource(), updateStore, "0.1.0");
         var vm = new ConfigViewModel(
             new FakeConfigService(), new AppStateStore(),

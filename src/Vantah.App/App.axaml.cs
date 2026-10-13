@@ -219,7 +219,7 @@ public partial class App : Application
             login.ClipboardWriter = text => window.Clipboard?.SetTextAsync(text) ?? Task.CompletedTask;
 
             // Проверка обновлений — фоном и без ожидания: старт и автоподключение она не задерживает.
-            _ = CheckAppUpdateAsync(appUpdates, updateBanner);
+            _ = new AppUpdateMonitor(appUpdates, updateBanner, about).Start();
 
             // Системный трей + сворачивание окна вместо выхода. Иконки цветные (серый /
             // янтарный / зелёный) — знак среднего тона читается и на светлой, и на тёмной
@@ -286,22 +286,6 @@ public partial class App : Application
     {
         try { await coordinator.PollOnceAsync(); }
         catch { /* тик опроса не должен ронять UI-поток */ }
-    }
-
-    // Проверка новой версии Vantah при старте. Результат кладём в плашку только через
-    // Dispatcher: заполнение привязанных свойств из фонового потока в UI не доезжает.
-    private static async Task CheckAppUpdateAsync(AppUpdateService updates, UpdateBannerViewModel banner)
-    {
-        try
-        {
-            var info = await updates.CheckAsync(DateTimeOffset.UtcNow);
-            if (info is null) return;
-            Dispatcher.UIThread.Post(() => banner.Show(info));
-        }
-        catch
-        {
-            // Проверка обновлений необязательна и не должна ронять старт приложения.
-        }
     }
 
     // Папка для выгрузки логов — через системный диалог окна; без окна (или без поддержки
