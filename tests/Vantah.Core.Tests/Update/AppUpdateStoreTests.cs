@@ -30,6 +30,7 @@ public sealed class AppUpdateStoreTests : IDisposable
         Assert.True(state.Enabled);
         Assert.Null(state.LastCheckUtc);
         Assert.Null(state.DismissedVersion);
+        Assert.Null(state.LatestRelease);
     }
 
     [Fact]
@@ -39,17 +40,38 @@ public sealed class AppUpdateStoreTests : IDisposable
         var store = new AppUpdateStore(path);
         var when = new DateTimeOffset(2026, 7, 21, 10, 0, 0, TimeSpan.Zero);
 
+        var release = new AppUpdateInfo("v0.3.0", "https://github.com/bolikcraft/vantah/releases/tag/v0.3.0");
+
         store.Save(new AppUpdateState
         {
             Enabled = false,
             LastCheckUtc = when,
             DismissedVersion = "v0.2.0",
+            LatestRelease = release,
         });
 
         var loaded = new AppUpdateStore(path).Load();
         Assert.False(loaded.Enabled);
         Assert.Equal(when, loaded.LastCheckUtc);
         Assert.Equal("v0.2.0", loaded.DismissedVersion);
+        Assert.Equal(release, loaded.LatestRelease);
+    }
+
+    [Fact]
+    public void File_from_an_older_version_without_the_release_still_loads()
+    {
+        // Так файл писали прежние версии: релиза в нём нет.
+        var path = TempPath();
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllText(path,
+            """{"Enabled":false,"LastCheckUtc":"2026-07-21T10:00:00+00:00","DismissedVersion":"v0.2.0"}""");
+
+        var loaded = new AppUpdateStore(path).Load();
+
+        Assert.False(loaded.Enabled);
+        Assert.Equal(new DateTimeOffset(2026, 7, 21, 10, 0, 0, TimeSpan.Zero), loaded.LastCheckUtc);
+        Assert.Equal("v0.2.0", loaded.DismissedVersion);
+        Assert.Null(loaded.LatestRelease);
     }
 
     [Fact]

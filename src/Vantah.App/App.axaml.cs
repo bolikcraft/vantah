@@ -295,7 +295,7 @@ public partial class App : Application
         try
         {
             var info = await updates.CheckAsync(DateTimeOffset.UtcNow);
-            if (info is null) return;
+            if (info is null || updates.IsDismissed(info)) return;
             Dispatcher.UIThread.Post(() => banner.Show(info));
         }
         catch

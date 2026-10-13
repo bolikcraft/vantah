@@ -11,4 +11,10 @@ public sealed record AppUpdateState
 
     /// <summary>Тег версии, которую пользователь скрыл крестиком.</summary>
     public string? DismissedVersion { get; init; }
+
+    /// <summary>
+    /// Последний релиз, который вернул источник, — новее он текущей версии или нет.
+    /// Хранится, чтобы между проверками раз в сутки помнить найденное обновление.
+    /// </summary>
+    public AppUpdateInfo? LatestRelease { get; init; }
 }

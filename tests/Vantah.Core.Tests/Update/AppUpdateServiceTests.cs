@@ -64,7 +64,17 @@ public class AppUpdateServiceTests
     }
 
     [Fact]
-    public async Task Second_check_within_24h_does_not_hit_the_source()
+    public async Task Successful_check_stores_the_release()
+    {
+        var (service, store, _) = Build(Newer);
+
+        await service.CheckAsync(Now);
+
+        Assert.Equal(Newer, store.Load().LatestRelease);
+    }
+
+    [Fact]
+    public async Task Second_check_within_24h_returns_the_stored_release_without_hitting_the_source()
     {
         var path = TempPath();
         var (first, _, _) = Build(Newer, path: path);
@@ -73,8 +83,76 @@ public class AppUpdateServiceTests
         var (second, _, source) = Build(Newer, path: path);
         var info = await second.CheckAsync(Now.AddHours(23));
 
-        Assert.Null(info);
+        Assert.Equal(Newer, info);
         Assert.Equal(0, source.Calls);
+    }
+
+    [Fact]
+    public async Task Release_is_remembered_across_restarts()
+    {
+        // Плашку увидели, вышли через «Выйти», запустили снова в пределах суток — и без сети.
+        var path = TempPath();
+        var (first, _, _) = Build(Newer, path: path);
+        await first.CheckAsync(Now);
+
+        var (second, _, _) = Build(release: null, path: path);
+
+        Assert.Equal(Newer, await second.CheckAsync(Now.AddHours(1)));
+    }
+
+    [Fact]
+    public async Task Failed_check_after_24h_falls_back_to_the_stored_release()
+    {
+        var path = TempPath();
+        var (first, _, _) = Build(Newer, path: path);
+        await first.CheckAsync(Now);
+
+        var (second, store, source) = Build(release: null, path: path);
+        var info = await second.CheckAsync(Now.AddHours(25));
+
+        Assert.Equal(Newer, info);
+        Assert.Equal(1, source.Calls);
+        Assert.Equal(Now, store.Load().LastCheckUtc);
+    }
+
+    [Fact]
+    public async Task Check_after_24h_replaces_the_stored_release()
+    {
+        var path = TempPath();
+        var (first, _, _) = Build(Newer, path: path);
+        await first.CheckAsync(Now);
+
+        var next = new AppUpdateInfo("v0.3.0", "https://github.com/bolikcraft/vantah/releases/tag/v0.3.0");
+        var (second, store, _) = Build(next, path: path);
+        var info = await second.CheckAsync(Now.AddHours(25));
+
+        Assert.Equal(next, info);
+        Assert.Equal(next, store.Load().LatestRelease);
+    }
+
+    [Fact]
+    public async Task Stored_release_is_not_an_update_once_the_app_is_upgraded_to_it()
+    {
+        var path = TempPath();
+        var (first, _, _) = Build(Newer, path: path);
+        await first.CheckAsync(Now);
+
+        var (upgraded, _, _) = Build(Newer, current: "0.2.0", path: path);
+
+        Assert.Null(await upgraded.CheckAsync(Now.AddHours(1)));
+    }
+
+    [Fact]
+    public async Task Disabled_check_hides_the_stored_release()
+    {
+        var path = TempPath();
+        var (first, _, _) = Build(Newer, path: path);
+        await first.CheckAsync(Now);
+        first.Enabled = false;
+
+        var (second, _, _) = Build(Newer, path: path);
+
+        Assert.Null(await second.CheckAsync(Now.AddHours(1)));
     }
 
     [Fact]
@@ -140,7 +218,21 @@ public class AppUpdateServiceTests
     }
 
     [Fact]
-    public async Task Dismissed_version_stays_hidden_on_later_checks()
+    public async Task Dismissed_version_is_still_reported_by_the_check()
+    {
+        // Крестик прячет только плашку: «О программе» о новой версии говорит и после него.
+        var path = TempPath();
+        var (first, _, _) = Build(Newer, path: path);
+        await first.CheckAsync(Now);
+        first.Dismiss("v0.2.0");
+
+        var (second, _, _) = Build(Newer, path: path);
+
+        Assert.Equal(Newer, await second.CheckAsync(Now.AddHours(25)));
+    }
+
+    [Fact]
+    public async Task Dismissed_version_stays_dismissed_on_later_checks()
     {
         var path = TempPath();
         var (first, _, _) = Build(Newer, path: path);
@@ -148,11 +240,22 @@ public class AppUpdateServiceTests
         first.Dismiss("v0.2.0");
 
         var (second, _, _) = Build(Newer, path: path);
-        Assert.Null(await second.CheckAsync(Now.AddHours(25)));
+        var info = await second.CheckAsync(Now.AddHours(25));
+
+        Assert.NotNull(info);
+        Assert.True(second.IsDismissed(info));
     }
 
     [Fact]
-    public async Task A_version_newer_than_the_dismissed_one_is_shown()
+    public void Nothing_is_dismissed_until_the_cross_is_clicked()
+    {
+        var (service, _, _) = Build(Newer);
+
+        Assert.False(service.IsDismissed(Newer));
+    }
+
+    [Fact]
+    public async Task A_version_newer_than_the_dismissed_one_is_not_dismissed()
     {
         var path = TempPath();
         var (first, _, _) = Build(Newer, path: path);
@@ -161,7 +264,9 @@ public class AppUpdateServiceTests
 
         var next = new AppUpdateInfo("v0.3.0", "https://github.com/bolikcraft/vantah/releases/tag/v0.3.0");
         var (second, _, _) = Build(next, path: path);
+        var info = await second.CheckAsync(Now.AddHours(25));
 
-        Assert.Equal("v0.3.0", (await second.CheckAsync(Now.AddHours(25)))?.Version);
+        Assert.Equal("v0.3.0", info?.Version);
+        Assert.False(second.IsDismissed(info!));
     }
 }
