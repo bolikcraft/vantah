@@ -15,8 +15,6 @@ public partial class AboutViewModel : ObservableObject, IReloadableSection
 {
     public const string RepositoryUrl = "https://github.com/bolikcraft/vantah";
 
-    private const string LatestReleaseUrl = RepositoryUrl + "/releases/latest";
-
     private const string DefaultVersion = "1.0.0";
 
     private readonly IVpnService _vpn;
@@ -74,7 +72,7 @@ public partial class AboutViewModel : ObservableObject, IReloadableSection
     public void ShowUpdate(AppUpdateInfo? info)
     {
         _update = info;
-        UpdateUri = info is null ? null : ReleaseUri(info.ReleaseUrl);
+        UpdateUri = info?.ReleasePageUri();
         RefreshUpdateText();
         HasUpdate = info is not null;
     }
@@ -83,13 +81,6 @@ public partial class AboutViewModel : ObservableObject, IReloadableSection
         UpdateText = _update is null
             ? ""
             : Localizer.Instance.Format(LocKeys.Update_Available, _update.Version.TrimStart('v', 'V'));
-
-    // Ссылка приходит из appupdate.json, а файл мог испортиться. Чужую схему или мусор
-    // в NavigateUri не пускаем — ведём на последний релиз.
-    private static Uri ReleaseUri(string? url) =>
-        Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https"
-            ? uri
-            : new Uri(LatestReleaseUrl);
 
     private async Task LoadCliVersionAsync(CancellationToken ct)
     {
