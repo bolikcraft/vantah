@@ -41,7 +41,8 @@ public sealed class AppUpdateMonitor(
         try { info = await updates.CheckAsync(_time.GetUtcNow(), ct); }
         catch { return; /* сбой одной проверки цикл не останавливает: через час попробуем снова */ }
 
-        // Привязанные свойства, заполненные из фонового потока, в UI не доезжают.
+        // Вьюмодели меняем на UI-потоке: там жмут крестик, и проверка IsDismissed в Apply
+        // не разойдётся с Dismiss.
         Dispatcher.UIThread.Post(() => Apply(info));
     }
 
@@ -50,7 +51,6 @@ public sealed class AppUpdateMonitor(
         try
         {
             about.ShowUpdate(info);
-            // Скрытие проверяем на UI-потоке: крестик жмут здесь же, и проверка с ним не разойдётся.
             // На null плашку не прячем: её закрывает только пользователь.
             if (info is not null && !updates.IsDismissed(info)) banner.Show(info);
         }

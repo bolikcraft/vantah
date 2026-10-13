@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Threading.Channels;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
@@ -137,6 +139,26 @@ public sealed class AppUpdateMonitorTests : IDisposable
 
         Assert.Equal(1, rig.Source.Calls);
         Assert.False(rig.Source.CalledOnUiThread);
+    }
+
+    [AvaloniaFact]
+    public async Task Results_reach_the_view_models_on_the_ui_thread()
+    {
+        // Крестик жмут на UI-потоке. Покажи монитор плашку с фона — проверка скрытой версии
+        // разошлась бы с нажатием, и закрытая плашка всплыла бы снова.
+        var rig = Build(new ScriptedSource(Returns(Release)));
+        var changes = new ConcurrentQueue<(string Property, bool OnUiThread)>();
+        PropertyChangedEventHandler track = (_, e) =>
+            changes.Enqueue((e.PropertyName ?? "", Dispatcher.UIThread.CheckAccess()));
+        rig.Banner.PropertyChanged += track;
+        rig.About.PropertyChanged += track;
+
+        _ = rig.Monitor.Start(_stop.Token);
+        await rig.Time.NextSleepAsync();
+
+        Assert.Contains(changes, c => c.Property == nameof(UpdateBannerViewModel.IsVisible));
+        Assert.Contains(changes, c => c.Property == nameof(AboutViewModel.HasUpdate));
+        Assert.All(changes, c => Assert.True(c.OnUiThread, $"{c.Property} изменено не на UI-потоке"));
     }
 
     [AvaloniaFact]
