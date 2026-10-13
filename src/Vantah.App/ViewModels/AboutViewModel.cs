@@ -6,6 +6,7 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Vantah.App.Localization;
 using Vantah.App.Services;
+using Vantah.Core.Update;
 using Vantah.Core.Vpn;
 
 namespace Vantah.App.ViewModels;
@@ -13,6 +14,8 @@ namespace Vantah.App.ViewModels;
 public partial class AboutViewModel : ObservableObject, IReloadableSection
 {
     public const string RepositoryUrl = "https://github.com/bolikcraft/vantah";
+
+    private const string LatestReleaseUrl = RepositoryUrl + "/releases/latest";
 
     private const string DefaultVersion = "1.0.0";
 
@@ -24,6 +27,13 @@ public partial class AboutViewModel : ObservableObject, IReloadableSection
 
     [ObservableProperty] private string _cliVersion = Localizer.Instance[LocKeys.Common_Loading];
 
+    // Релиз новее текущей версии; null — обновления нет и ссылку не показываем.
+    private AppUpdateInfo? _update;
+
+    [ObservableProperty] private bool _hasUpdate;
+    [ObservableProperty] private string _updateText = "";
+    [ObservableProperty] private Uri? _updateUri;
+
     public AboutViewModel(IVpnService vpn)
     {
         _vpn = vpn;
@@ -31,6 +41,7 @@ public partial class AboutViewModel : ObservableObject, IReloadableSection
         {
             OnPropertyChanged(nameof(LegalNotice));
             if (_cliVersionKey is { } key) CliVersion = Localizer.Instance[key];
+            RefreshUpdateText();
         });
         LoadTask = LoadCliVersionAsync(CancellationToken.None);
     }
@@ -58,6 +69,27 @@ public partial class AboutViewModel : ObservableObject, IReloadableSection
     public Uri RepositoryUri { get; } = new(RepositoryUrl);
 
     public string LegalNotice => Localizer.Instance[LocKeys.About_LegalNotice];
+
+    /// <summary>Показать ссылку на более новый релиз; null — убрать её. Вызывать на UI-потоке.</summary>
+    public void ShowUpdate(AppUpdateInfo? info)
+    {
+        _update = info;
+        UpdateUri = info is null ? null : ReleaseUri(info.ReleaseUrl);
+        RefreshUpdateText();
+        HasUpdate = info is not null;
+    }
+
+    private void RefreshUpdateText() =>
+        UpdateText = _update is null
+            ? ""
+            : Localizer.Instance.Format(LocKeys.Update_Available, _update.Version.TrimStart('v', 'V'));
+
+    // Ссылка приходит из appupdate.json, а файл мог испортиться. Чужую схему или мусор
+    // в NavigateUri не пускаем — ведём на последний релиз.
+    private static Uri ReleaseUri(string? url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https"
+            ? uri
+            : new Uri(LatestReleaseUrl);
 
     private async Task LoadCliVersionAsync(CancellationToken ct)
     {

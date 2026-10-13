@@ -157,7 +157,11 @@ public class TranslatedTextFitsTests
             CheckView("Лицензия", new LicenseView { DataContext = license });
 
             CheckView("Процессы", new ProcessesView { DataContext = new ProcessesViewModel(new StubMonitor(Processes())) });
-            CheckView("О программе", new AboutView { DataContext = new AboutViewModel(new FakeVpnService()) });
+            // Со ссылкой на новую версию — без неё проверялась бы только короткая строка версии.
+            var about = new AboutViewModel(new FakeVpnService());
+            about.ShowUpdate(new Vantah.Core.Update.AppUpdateInfo(
+                "v10.10.10", "https://github.com/bolikcraft/vantah/releases/tag/v10.10.10"));
+            CheckView("О программе", new AboutView { DataContext = about });
 
             var login = LoginVm();
             var loginView = new LoginView { DataContext = login };
