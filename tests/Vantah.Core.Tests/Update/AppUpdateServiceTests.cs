@@ -43,6 +43,43 @@ public class AppUpdateServiceTests
     }
 
     [Fact]
+    public async Task Check_reports_nothing_when_the_toggle_was_switched_off_while_it_was_running()
+    {
+        // Иначе плашка всплыла бы сразу после того, как пользователь выключил проверку.
+        var store = new AppUpdateStore(TempPath());
+        var service = new AppUpdateService(new SourceThatEditsState(store, Newer), store, "0.1.0");
+
+        Assert.Null(await service.CheckAsync(Now));
+    }
+
+    [Fact]
+    public async Task Release_found_while_the_toggle_was_switched_off_is_still_stored()
+    {
+        // Запрос уже состоялся, и его ответ верен: включат проверку снова — сеть не понадобится.
+        var store = new AppUpdateStore(TempPath());
+        var service = new AppUpdateService(new SourceThatEditsState(store, Newer), store, "0.1.0");
+
+        await service.CheckAsync(Now);
+
+        Assert.Equal(Newer, store.Load().LatestRelease);
+        Assert.Equal(Now, store.Load().LastCheckUtc);
+    }
+
+    [Fact]
+    public async Task Failed_check_reports_nothing_when_the_toggle_was_switched_off_while_it_was_running()
+    {
+        // Сеть молчит, а релиз со вчерашней проверки лежит в файле — его тоже не показываем.
+        var path = TempPath();
+        var (first, _, _) = Build(Newer, path: path);
+        await first.CheckAsync(Now);
+
+        var store = new AppUpdateStore(path);
+        var service = new AppUpdateService(new SourceThatEditsState(store, release: null), store, "0.1.0");
+
+        Assert.Null(await service.CheckAsync(Now.AddHours(25)));
+    }
+
+    [Fact]
     public async Task First_check_reports_a_newer_release()
     {
         var (service, _, source) = Build(Newer);

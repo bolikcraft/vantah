@@ -26,21 +26,20 @@ public sealed class AppUpdateService(IAppReleaseSource source, AppUpdateStore st
         var state = store.Load();
         if (!state.Enabled) return null;
 
-        var release = state.LatestRelease;
         if (state.LastCheckUtc is not { } last || now - last >= CheckInterval)
         {
-            // Неудачную проверку временем не отмечаем: иначе один старт без сети заглушил бы
-            // проверку на сутки. Пока сети нет, отвечаем тем, что нашли раньше.
-            if (await source.GetLatestAsync(ct) is { } fetched)
-            {
-                // Не снимок, снятый ДО запроса: запрос длится до 10 секунд, и за это время пользователь
-                // мог снять галку или нажать крестик — запись снимка вернула бы их назад.
-                store.Update(s => s with { LastCheckUtc = now, LatestRelease = fetched });
-                release = fetched;
-            }
+            var fetched = await source.GetLatestAsync(ct);
+            // Запрос длится до 10 секунд, и за это время пользователь мог выключить проверку:
+            // дальше смотрим на свежее состояние, а не на снимок до запроса.
+            // Неудачу временем не отмечаем, чтобы один старт без сети не заглушил проверку на сутки.
+            state = fetched is null
+                ? store.Load()
+                : store.Update(s => s with { LastCheckUtc = now, LatestRelease = fetched });
+            // Релиз сохранён и при выключенной проверке, но показывать его уже нельзя.
+            if (!state.Enabled) return null;
         }
 
-        return IsNewer(release) ? release : null;
+        return IsNewer(state.LatestRelease) ? state.LatestRelease : null;
     }
 
     /// <summary>Пользователь скрыл эту версию крестиком на плашке.</summary>
