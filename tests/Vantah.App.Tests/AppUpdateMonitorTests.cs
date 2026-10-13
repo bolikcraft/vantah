@@ -20,7 +20,11 @@ public sealed class AppUpdateMonitorTests : IDisposable
     private readonly CancellationTokenSource _stop = new();
 
     // Цикл монитора бесконечный: без отмены он пережил бы тест.
-    public void Dispose() => _stop.Cancel();
+    public void Dispose()
+    {
+        _stop.Cancel();
+        _stop.Dispose();
+    }
 
     private static Func<AppUpdateInfo?> Returns(AppUpdateInfo? release) => () => release;
 
