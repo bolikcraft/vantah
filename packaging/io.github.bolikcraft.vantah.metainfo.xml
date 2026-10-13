@@ -97,6 +97,17 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.6.4" date="2026-10-13">
+      <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.6.4</url>
+      <description>
+        <p>Fixes in this release:</p>
+        <ul>
+          <li>Vantah remembers a new version that it found. After you quit and start Vantah again, the update banner shows again, also without network.</li>
+          <li>While Vantah runs in the tray, it looks for a new version every day, not only at start.</li>
+          <li>The About window shows a link to the new version, also after you close the banner.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.6.3" date="2026-10-12">
       <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.6.3</url>
       <description>
