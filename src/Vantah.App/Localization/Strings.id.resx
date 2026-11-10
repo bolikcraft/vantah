@@ -478,7 +478,7 @@
     <value>Mulai diperkecil ke baki sistem</value>
   </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
-    <value>Periksa pembaruan Vantah</value>
+    <value>Periksa pembaruan</value>
   </data>
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (tetap terlindungi jika koneksi terputus)</value>
@@ -515,6 +515,12 @@
   </data>
   <data name="Update_Dismiss" xml:space="preserve">
     <value>Sembunyikan versi ini</value>
+  </data>
+  <data name="Update_CliAvailable" xml:space="preserve">
+    <value>Versi baru AdGuard VPN tersedia</value>
+  </data>
+  <data name="Update_CliAvailableFormat" xml:space="preserve">
+    <value>Versi baru AdGuard VPN tersedia — {0}</value>
   </data>
 
   <!-- Меню «☰» -->
