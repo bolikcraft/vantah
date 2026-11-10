@@ -19,6 +19,9 @@ public partial class MainWindowViewModel : ObservableObject
     /// <summary>Плашка «доступна новая версия Vantah»; null — проверка обновлений не подключена.</summary>
     public UpdateBannerViewModel? UpdateBanner { get; }
 
+    /// <summary>Плашка «доступна новая версия AdGuard VPN»; null — проверка обновлений CLI не подключена.</summary>
+    public CliUpdateBannerViewModel? CliUpdateBanner { get; }
+
     // Гейт формы входа. Гейтимся по «!= LoggedOut» (а не «== LoggedIn»), чтобы при Unknown
     // (CLI недоступен/зонд не прошёл) не мигать формой входа зря.
     [ObservableProperty] private bool _isLoggedIn = true;
@@ -38,7 +41,8 @@ public partial class MainWindowViewModel : ObservableObject
         ConfigViewModel config,
         LoginViewModel login,
         AppStateStore store,
-        UpdateBannerViewModel? updateBanner = null)
+        UpdateBannerViewModel? updateBanner = null,
+        CliUpdateBannerViewModel? cliUpdateBanner = null)
     {
         Status = status;
         Locations = locations;
@@ -49,6 +53,7 @@ public partial class MainWindowViewModel : ObservableObject
         Config = config;
         Login = login;
         UpdateBanner = updateBanner;
+        CliUpdateBanner = cliUpdateBanner;
 
         store.Changed += (_, s) => Dispatcher.UIThread.Post(
             () => IsLoggedIn = s.LoginState != LoginState.LoggedOut);

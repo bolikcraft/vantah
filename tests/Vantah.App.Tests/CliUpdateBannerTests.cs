@@ -1,4 +1,6 @@
+using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Vantah.App.Tests;
 using Vantah.App.ViewModels;
 using Vantah.Core.Update;
 using Xunit;
@@ -125,5 +127,44 @@ public class CliUpdateBannerTests
 
         Assert.False(vm.IsUpdated);
         Assert.Contains("2.4.0", vm.Text);
+    }
+
+    [AvaloniaFact]
+    public void Main_window_shows_the_cli_banner_only_when_visible()
+    {
+        var (vm, _) = Build();
+        var window = MainWindowFactory.Build(cliBanner: vm);
+        window.Show();
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+
+        var host = window.FindControl<Avalonia.Controls.Border>("CliUpdateBannerHost")!;
+        Assert.False(host.IsVisible);
+
+        vm.Show("2.3.1");
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        Assert.True(host.IsVisible);
+
+        vm.Hide();
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        Assert.False(host.IsVisible);
+    }
+
+    [AvaloniaFact]
+    public void Update_button_hides_after_a_successful_update()
+    {
+        // Build() по умолчанию даёт стаб с исходом Updated.
+        var (vm, _) = Build();
+        var window = MainWindowFactory.Build(cliBanner: vm);
+        window.Show();
+        vm.Show("2.3.1");
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+
+        var button = window.FindControl<Avalonia.Controls.Button>("CliUpdateNowButton")!;
+        Assert.True(button.IsVisible);
+
+        vm.UpdateNowCommand.Execute(null);
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+
+        Assert.False(button.IsVisible);
     }
 }

@@ -28,25 +28,48 @@
     </Style>
   </Window.Styles>
 
-  <!-- Верхняя строка — плашка об обновлении Vantah; она вне логин-гейта и видна и на форме входа. -->
+  <!-- Верхняя строка — плашки об обновлениях Vantah и AdGuard VPN; они вне логин-гейта. -->
   <Grid RowDefinitions="Auto,*">
 
-    <Border x:Name="UpdateBannerHost" Grid.Row="0"
-            Background="#333B82F6" CornerRadius="6" Padding="10" Margin="10,10,10,0"
-            IsVisible="{Binding UpdateBanner.IsVisible, FallbackValue=False}">
-      <DockPanel LastChildFill="True">
-        <Button DockPanel.Dock="Right" Margin="8,0,0,0"
-                Command="{Binding UpdateBanner.DismissCommand}"
-                Content="✕"
-                Background="Transparent"
-                ToolTip.Tip="{Binding [Update_Dismiss], Source={x:Static loc:Localizer.Instance}}"/>
-        <Button DockPanel.Dock="Right"
-                Command="{Binding UpdateBanner.OpenReleaseCommand}"
-                Content="{Binding [Update_Download], Source={x:Static loc:Localizer.Instance}}"/>
-        <TextBlock VerticalAlignment="Center" TextWrapping="Wrap"
-                   Text="{Binding UpdateBanner.Text}"/>
-      </DockPanel>
-    </Border>
+    <StackPanel Grid.Row="0" Spacing="8" Margin="10,10,10,0">
+
+      <Border x:Name="UpdateBannerHost"
+              Background="#333B82F6" CornerRadius="6" Padding="10"
+              IsVisible="{Binding UpdateBanner.IsVisible, FallbackValue=False}">
+        <DockPanel LastChildFill="True">
+          <Button DockPanel.Dock="Right" Margin="8,0,0,0"
+                  Command="{Binding UpdateBanner.DismissCommand}"
+                  Content="✕"
+                  Background="Transparent"
+                  ToolTip.Tip="{Binding [Update_Dismiss], Source={x:Static loc:Localizer.Instance}}"/>
+          <Button DockPanel.Dock="Right"
+                  Command="{Binding UpdateBanner.OpenReleaseCommand}"
+                  Content="{Binding [Update_Download], Source={x:Static loc:Localizer.Instance}}"/>
+          <TextBlock VerticalAlignment="Center" TextWrapping="Wrap"
+                     Text="{Binding UpdateBanner.Text}"/>
+        </DockPanel>
+      </Border>
+
+      <Border x:Name="CliUpdateBannerHost"
+              Background="#333B82F6" CornerRadius="6" Padding="10"
+              IsVisible="{Binding CliUpdateBanner.IsVisible, FallbackValue=False}">
+        <DockPanel LastChildFill="True">
+          <Button DockPanel.Dock="Right" Margin="8,0,0,0"
+                  Command="{Binding CliUpdateBanner.DismissCommand}"
+                  Content="✕"
+                  Background="Transparent"
+                  ToolTip.Tip="{Binding [Update_Dismiss], Source={x:Static loc:Localizer.Instance}}"/>
+          <Button x:Name="CliUpdateNowButton" DockPanel.Dock="Right"
+                  Command="{Binding CliUpdateBanner.UpdateNowCommand}"
+                  IsVisible="{Binding !CliUpdateBanner.IsUpdated, FallbackValue=True}"
+                  IsEnabled="{Binding !CliUpdateBanner.IsUpdating, FallbackValue=True}"
+                  Content="{Binding [Settings_InstallUpdate], Source={x:Static loc:Localizer.Instance}}"/>
+          <TextBlock VerticalAlignment="Center" TextWrapping="Wrap"
+                     Text="{Binding CliUpdateBanner.Text}"/>
+        </DockPanel>
+      </Border>
+
+    </StackPanel>
 
     <!-- Пока не выполнен вход — форма входа поверх всего, рабочий UI скрыт.
          Гейт держим на обёртке: у самой LoginView DataContext = Login, и IsLoggedIn
