@@ -39,4 +39,17 @@ public class UpdateCheckParserTests
     {
         Assert.True(UpdateCheckParser.Parse("").IsLatest);
     }
+
+    [Fact]
+    public void Real_update_output_with_the_word_latest_still_reports_the_update()
+    {
+        // Живой вывод adguardvpn-cli 1.7.13 при доступной 1.8.2. Слово «latest» стоит во фразе
+        // про установку обновления и не должно глушить обнаружение новой версии.
+        var s = UpdateCheckParser.Parse(
+            "> AdGuard VPN v1.8.2 is now available\n" +
+            "You can update to the latest version by running `adguardvpn-cli update`");
+
+        Assert.False(s.IsLatest);
+        Assert.Equal("1.8.2", s.LatestVersion);
+    }
 }
