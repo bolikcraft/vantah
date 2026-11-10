@@ -1,4 +1,15 @@
 -------------------------------------------------------------------
+Tue Nov 10 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
+
+- Update to 0.7.1: Vantah checks for a new version of AdGuard VPN
+  (adguardvpn-cli) at start and every hour. A second banner tells when
+  a new version is available and has an "Update now" button.
+- Fix: the banner did not show. The output of "check-update" has the
+  word "latest" also when an update is available; Vantah now reads the
+  update notice first.
+- The settings switch now controls both update checks.
+
+-------------------------------------------------------------------
 Tue Oct 13 00:00:00 UTC 2026 - bolikcraft <bolikcraft@gmail.com>
 
 - Update to 0.6.4: Vantah remembers a new version that it found and
