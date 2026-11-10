@@ -97,6 +97,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.7.1" date="2026-11-10">
+      <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.7.1</url>
+      <description>
+        <p>Fixed in this release:</p>
+        <ul>
+          <li>The banner about a new version of AdGuard VPN did not show. The output of "check-update" has the word "latest" also when an update is available. Now Vantah reads the update notice first.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.7.0" date="2026-11-10">
       <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.7.0</url>
       <description>
