@@ -478,7 +478,7 @@
     <value>Start minimized to the tray</value>
   </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
-    <value>Check for Vantah updates</value>
+    <value>Check for updates</value>
   </data>
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (stay protected if the connection drops)</value>
@@ -515,6 +515,12 @@
   </data>
   <data name="Update_Dismiss" xml:space="preserve">
     <value>Hide this version</value>
+  </data>
+  <data name="Update_CliAvailable" xml:space="preserve">
+    <value>A new version of AdGuard VPN is available</value>
+  </data>
+  <data name="Update_CliAvailableFormat" xml:space="preserve">
+    <value>A new version of AdGuard VPN is available — {0}</value>
   </data>
 
   <!-- Меню «☰» -->

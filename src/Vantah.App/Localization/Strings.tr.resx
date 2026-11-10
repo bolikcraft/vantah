@@ -478,7 +478,7 @@
     <value>Sistem tepsisine küçültülmüş başlat</value>
   </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
-    <value>Vantah güncellemelerini denetle</value>
+    <value>Güncellemeleri denetle</value>
   </data>
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (bağlantı koparsa korumayı sürdür)</value>
@@ -515,6 +515,12 @@
   </data>
   <data name="Update_Dismiss" xml:space="preserve">
     <value>Bu sürümü gizle</value>
+  </data>
+  <data name="Update_CliAvailable" xml:space="preserve">
+    <value>Yeni bir AdGuard VPN sürümü mevcut</value>
+  </data>
+  <data name="Update_CliAvailableFormat" xml:space="preserve">
+    <value>Yeni bir AdGuard VPN sürümü mevcut — {0}</value>
   </data>
 
   <!-- Меню «☰» -->

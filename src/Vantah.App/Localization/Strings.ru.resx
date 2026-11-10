@@ -478,7 +478,7 @@
     <value>Запускать свёрнутым в трей</value>
   </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
-    <value>Проверять обновления Vantah</value>
+    <value>Проверять обновления</value>
   </data>
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (не терять защиту при обрыве)</value>
@@ -515,6 +515,12 @@
   </data>
   <data name="Update_Dismiss" xml:space="preserve">
     <value>Скрыть эту версию</value>
+  </data>
+  <data name="Update_CliAvailable" xml:space="preserve">
+    <value>Доступна новая версия AdGuard VPN</value>
+  </data>
+  <data name="Update_CliAvailableFormat" xml:space="preserve">
+    <value>Доступна новая версия AdGuard VPN — {0}</value>
   </data>
 
   <!-- Меню «☰» -->

@@ -154,6 +154,9 @@ public partial class App : Application
                     new GitHubRedirectReleaseSource(appVersion)),
                 new AppUpdateStore(), appVersion);
             var updateBanner = new UpdateBannerViewModel(appUpdates);
+            // Плашка «доступна новая версия AdGuard VPN»: check-update/update -y через CLI.
+            var cliUpdateStore = new CliUpdateStore();
+            var cliUpdateBanner = new CliUpdateBannerViewModel(cliUpdater, cliUpdateStore);
 
             // Пикер папки для выгрузки логов работает через StorageProvider окна, а окно
             // создаётся ниже — вьюмодели передаём отложенную ссылку, замыкание её увидит позже.
@@ -188,7 +191,7 @@ public partial class App : Application
                 new ProcessesViewModel(processes),
                 configVm,
                 login,
-                store, updateBanner);
+                store, updateBanner, cliUpdateBanner);
 
             var window = new MainWindow { DataContext = mainVm };
             mainWindowRef = window;
@@ -220,6 +223,8 @@ public partial class App : Application
 
             // Проверка обновлений — фоном и без ожидания: старт и автоподключение она не задерживает.
             _ = new AppUpdateMonitor(appUpdates, updateBanner, about).Start();
+            // Тумблер у проверок общий: выключенная проверка Vantah гасит и проверку CLI.
+            _ = new CliUpdateMonitor(updateChecker, cliUpdateBanner, appUpdates, cliUpdateStore).Start();
 
             // Системный трей + сворачивание окна вместо выхода. Иконки цветные (серый /
             // янтарный / зелёный) — знак среднего тона читается и на светлой, и на тёмной

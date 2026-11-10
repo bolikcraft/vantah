@@ -25,7 +25,8 @@ public static class MainWindowFactory
         LoginState state = LoginState.LoggedIn,
         AppStateStore? store = null,
         FakeAuthService? auth = null,
-        UpdateBannerViewModel? banner = null)
+        UpdateBannerViewModel? banner = null,
+        CliUpdateBannerViewModel? cliBanner = null)
     {
         var temp = Path.Combine(Path.GetTempPath(), "vantah-tests", Guid.NewGuid().ToString("N"));
         store ??= new AppStateStore();
@@ -52,7 +53,7 @@ public static class MainWindowFactory
             new ConfigViewModel(new FakeConfigService(), store, new LanguageStore(Path.Combine(temp, "language")),
                 new FakeUpdateChecker(), new FakeLogExporter(), () => Task.FromResult<string?>(null)),
             new LoginViewModel(auth, coordinator), store,
-            banner);
+            banner, cliBanner);
 
         return new MainWindow { DataContext = vm };
     }

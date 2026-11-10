@@ -478,7 +478,7 @@
     <value>启动时最小化到托盘</value>
   </data>
   <data name="Settings_CheckAppUpdates" xml:space="preserve">
-    <value>检查 Vantah 更新</value>
+    <value>检查更新</value>
   </data>
   <data name="Settings_KillSwitch" xml:space="preserve">
     <value>Kill switch (连接中断时保持保护)</value>
@@ -515,6 +515,12 @@
   </data>
   <data name="Update_Dismiss" xml:space="preserve">
     <value>忽略此版本</value>
+  </data>
+  <data name="Update_CliAvailable" xml:space="preserve">
+    <value>AdGuard VPN 有新版本可用</value>
+  </data>
+  <data name="Update_CliAvailableFormat" xml:space="preserve">
+    <value>AdGuard VPN 有新版本可用 — {0}</value>
   </data>
 
   <!-- Меню «☰» -->

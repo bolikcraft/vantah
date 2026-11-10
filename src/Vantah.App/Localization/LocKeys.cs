@@ -183,6 +183,10 @@ public static class LocKeys
     public const string Update_Download = "Update_Download";
     public const string Update_Dismiss = "Update_Dismiss";
 
+    // Плашка «доступна новая версия AdGuard VPN» в главном окне
+    public const string Update_CliAvailable = "Update_CliAvailable";
+    public const string Update_CliAvailableFormat = "Update_CliAvailableFormat";
+
     // Выбор языка
     public const string Lang_Label = "Lang_Label";
 
