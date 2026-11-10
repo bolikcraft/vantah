@@ -97,6 +97,18 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.7.0" date="2026-11-10">
+      <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.7.0</url>
+      <description>
+        <p>New in this release:</p>
+        <ul>
+          <li>Vantah checks for a new version of AdGuard VPN (adguardvpn-cli) at start and then every hour. A second banner tells you when a new version is available.</li>
+          <li>The banner has an "Update now" button. It runs the CLI self-update. When the update is complete, restart Vantah.</li>
+          <li>The cross on the banner hides one version forever.</li>
+          <li>The settings switch now controls both checks: for Vantah and for AdGuard VPN.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.6.4" date="2026-10-13">
       <url type="details">https://github.com/bolikcraft/vantah/releases/tag/v0.6.4</url>
       <description>
